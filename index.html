@@ -204,6 +204,24 @@
   .toast.show { opacity:1; }
   .toast.success { background:var(--green-dark); }
   .toast.error-toast { background:var(--red); }
+  /* DETALLE MOV */
+  .det-header { padding:20px; background:linear-gradient(135deg,var(--green-mid),var(--green-light)); color:white; border-radius:20px; margin-bottom:16px; }
+  .det-folio { font-family:'DM Mono',monospace; font-size:18px; font-weight:700; }
+  .det-tipo { font-size:13px; opacity:0.85; margin-top:4px; }
+  .det-fecha { font-size:12px; opacity:0.7; margin-top:2px; }
+  .det-section { background:var(--bg); border-radius:12px; padding:14px; display:flex; flex-direction:column; gap:10px; }
+  .det-row { display:flex; justify-content:space-between; align-items:center; }
+  .det-label { font-size:12px; color:var(--text-muted); font-weight:600; text-transform:uppercase; letter-spacing:0.04em; }
+  .det-value { font-size:14px; font-weight:600; text-align:right; max-width:60%; }
+  .det-arrow { display:flex; align-items:center; gap:8px; font-size:14px; font-weight:600; }
+  .det-arrow span { color:var(--text-muted); font-size:12px; }
+  .det-badge { padding:4px 12px; border-radius:20px; font-size:13px; font-weight:700; }
+  .det-ok { background:#E8F5E9; color:#2E7D32; }
+  .det-cancel { background:#FDECEA; color:#C62828; }
+  .det-qty-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  .det-qty-card { background:white; border-radius:10px; padding:12px; text-align:center; border:1px solid var(--border); }
+  .det-qty-val { font-size:20px; font-weight:700; }
+  .det-qty-lab { font-size:11px; color:var(--text-muted); margin-top:2px; }
 </style>
 </head>
 <body>
@@ -412,6 +430,24 @@
         <input class="form-input" id="fDocRef" type="text" placeholder="Ej. FACTURA F1234, TICKET 5678">
       </div>
 
+      <!-- Proveedor / Cliente -->
+      <div class="form-row">
+        <div class="form-group">
+          <div class="form-label">Proveedor</div>
+          <input class="form-input" id="fProveedor" type="text" placeholder="Opcional">
+        </div>
+        <div class="form-group">
+          <div class="form-label">Cliente</div>
+          <input class="form-input" id="fCliente" type="text" placeholder="Opcional">
+        </div>
+      </div>
+
+      <!-- Lote / Caducidad -->
+      <div class="form-group">
+        <div class="form-label">Lote / Caducidad</div>
+        <input class="form-input" id="fLote" type="text" placeholder="Ej. MP89040226">
+      </div>
+
       <!-- Estado -->
       <div class="form-group">
         <div class="form-label">Estado <span>*</span></div>
@@ -441,6 +477,18 @@
 
 <!-- Toast -->
 <div class="toast" id="toast"></div>
+
+<!-- MODAL DETALLE MOVIMIENTO -->
+<div class="modal-overlay" id="detModalOverlay" onclick="closeDetModal(event)">
+  <div class="modal-sheet" id="detModalSheet">
+    <div class="modal-handle"></div>
+    <div class="modal-header">
+      <div class="modal-title">Detalle de movimiento</div>
+      <button class="modal-close" onclick="document.getElementById('detModalOverlay').classList.remove('open')">✕</button>
+    </div>
+    <div class="modal-body" id="detModalBody"></div>
+  </div>
+</div>
 
 <!-- SCANNER -->
 <div class="page" id="page-scanner">
@@ -698,7 +746,7 @@ function renderMovimientos() {
   const container = document.getElementById('movContainer');
   if (!allMovimientos.length) { container.innerHTML = '<div class="empty-state">No hay movimientos disponibles</div>'; return; }
 
-  container.innerHTML = allMovimientos.slice(0, 25).map(m => {
+  container.innerHTML = allMovimientos.slice(0, 25).map((m, idx) => {
     const tipo = m['TipoMov'] || '';
     const folio = m['FolioMov'] || m['DocumentoRef'] || '—';
     const clave = m['ClaveProducto'] || '';
@@ -712,7 +760,7 @@ function renderMovimientos() {
     const qty = cantKg > 0 ? formatNum(cantKg)+' kg' : formatNum(cantPz)+' pz';
     const qtyClass = cancelado ? '' : (esEntrada ? 'positive' : 'negative');
     const prefix = cancelado ? '' : (esEntrada ? '+' : '-');
-    return `<div class="mov-item">
+    return `<div class="mov-item" onclick="openDetalle(${idx})">`
       <div class="mov-icon-wrap ${cancelado?'':iconClass}">${cancelado?'❌':icon}</div>
       <div class="mov-body">
         <div class="mov-folio">${folio}</div>
@@ -812,6 +860,59 @@ function closeModalOutside(e) {
   if (e.target === document.getElementById('modalOverlay')) closeModal();
 }
 
+function closeDetModal(e) {
+  if (e.target === document.getElementById('detModalOverlay'))
+    document.getElementById('detModalOverlay').classList.remove('open');
+}
+
+function openDetalle(idx) {
+  const m = allMovimientos[idx];
+  if (!m) return;
+  const tipo = m['TipoMov'] || '—';
+  const folio = m['FolioMov'] || m['DocumentoRef'] || '—';
+  const clave = m['ClaveProducto'] || '—';
+  const desc = m['Descripcion'] || '—';
+  const origen = m['UbicacionOrigen'] || '—';
+  const destino = m['UbicacionDestino'] || '—';
+  const cantPz = parseFloat(m['CantidadPz'] || 0);
+  const cantKg = parseFloat(m['CantidadKg'] || 0);
+  const docRef = m['DocumentoRef'] || '—';
+  const estado = m['Estado'] || '—';
+  const obs = m['Observaciones'] || '—';
+  const captura = m['Captura'] || '—';
+  const esOk = estado === 'OK';
+
+  // Formatear fecha desde objeto Date de gviz
+  let fechaStr = '—';
+  const fv = m['FechaMov'];
+  if (fv && typeof fv === 'string' && fv.startsWith('Date(')) {
+    const parts = fv.replace('Date(','').replace(')','').split(',').map(Number);
+    fechaStr = `${String(parts[2]).padStart(2,'0')}/${String(parts[1]+1).padStart(2,'0')}/${parts[0]}`;
+  }
+
+  document.getElementById('detModalBody').innerHTML = `
+    <div class="det-header">
+      <div class="det-folio">${folio}</div>
+      <div class="det-tipo">${tipo}</div>
+      <div class="det-fecha">📅 ${fechaStr}</div>
+    </div>
+    <div class="det-section">
+      <div class="det-row"><div class="det-label">Producto</div><div class="det-value">${clave}</div></div>
+      <div class="det-row"><div class="det-label">Descripción</div><div class="det-value" style="font-size:13px;font-weight:500">${desc}</div></div>
+      <div class="det-row"><div class="det-label">Ruta</div><div class="det-arrow">${origen} <span>→</span> ${destino}</div></div>
+      <div class="det-row"><div class="det-label">Documento</div><div class="det-value">${docRef}</div></div>
+      <div class="det-row"><div class="det-label">Estado</div><div class="det-badge ${esOk?'det-ok':'det-cancel'}">${estado}</div></div>
+      <div class="det-row"><div class="det-label">Captura</div><div class="det-value">${captura}</div></div>
+      ${obs !== '—' ? `<div class="det-row"><div class="det-label">Observaciones</div><div class="det-value" style="font-size:13px;font-weight:400">${obs}</div></div>` : ''}
+    </div>
+    <div class="det-qty-grid">
+      <div class="det-qty-card"><div class="det-qty-val">${formatNum(cantPz)}</div><div class="det-qty-lab">Piezas</div></div>
+      <div class="det-qty-card"><div class="det-qty-val">${formatNum(cantKg)}</div><div class="det-qty-lab">Kilogramos</div></div>
+    </div>`;
+  document.getElementById('detModalOverlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
 function resetForm() {
   selectedTipo = '';
   selectedProducto = null;
@@ -827,6 +928,9 @@ function resetForm() {
   document.getElementById('fOrigen').value = '';
   document.getElementById('fDestino').value = '';
   document.getElementById('fDocRef').value = '';
+  document.getElementById('fProveedor').value = '';
+  document.getElementById('fCliente').value = '';
+  document.getElementById('fLote').value = '';
   document.getElementById('fEstado').value = 'OK';
   document.getElementById('fObs').value = '';
   ['fCantPz','fCantKg','fOrigen','fDestino','fDocRef'].forEach(id => document.getElementById(id).classList.remove('error'));
@@ -945,6 +1049,9 @@ async function submitMovimiento() {
     UbicacionDestino: destino,
     CantidadPz: parseFloat(cantPz) || 0,
     CantidadKg: parseFloat(cantKg) || 0,
+    Proveedor: document.getElementById('fProveedor').value,
+    Cliente: document.getElementById('fCliente').value,
+    LoteCaducidad: document.getElementById('fLote').value,
     Captura: 'U01',
     Estado: document.getElementById('fEstado').value,
     Observaciones: obs,
