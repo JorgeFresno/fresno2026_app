@@ -620,13 +620,13 @@ async function loadInventario() {
 async function loadMovimientos() {
   try {
     const table = await fetchSheet('Movimientos');
-    // Limpiar emojis de todos los headers
     if (table && table.cols) {
-      table.cols = table.cols.map((col, i) => {
+      table.cols = table.cols.map(col => {
         if (col.label) {
-          // Extraer última palabra (quita emojis y texto decorativo)
-          const parts = col.label.trim().split(/\s+/);
-          col.label = parts[parts.length - 1] || col.id;
+          // Remover emojis y caracteres especiales, dejar solo texto ASCII + letras españolas
+          col.label = col.label
+            .replace(/[\u{1F000}-\u{1FFFF}]|[\u{2600}-\u{27FF}]|[\u{2300}-\u{23FF}]/gu, '')
+            .trim();
         }
         return col;
       });
@@ -896,6 +896,11 @@ function openDetalle(idx) {
   const estado = m['Estado'] || '—';
   const obs = m['Observaciones'] || '—';
   const captura = m['Captura'] || '—';
+  const proveedor = m['Proveedor'] || '—';
+  const cliente = m['Cliente'] || '—';
+  const lote = m['LoteCaducidad'] || '—';
+  const autoriza = m['Autoriza'] || '—';
+  const folioQR = m['Folio_QR'] || '—';
   const esOk = estado === 'OK';
 
   // Formatear fecha desde objeto Date de gviz
@@ -915,10 +920,16 @@ function openDetalle(idx) {
     <div class="det-section">
       <div class="det-row"><div class="det-label">Producto</div><div class="det-value">${clave}</div></div>
       <div class="det-row"><div class="det-label">Descripción</div><div class="det-value" style="font-size:13px;font-weight:500">${desc}</div></div>
-      <div class="det-row"><div class="det-label">Ruta</div><div class="det-arrow">${origen} <span>→</span> ${destino}</div></div>
+      <div class="det-row"><div class="det-label">Origen</div><div class="det-value">${origen}</div></div>
+      <div class="det-row"><div class="det-label">Destino</div><div class="det-value">${destino}</div></div>
       <div class="det-row"><div class="det-label">Documento</div><div class="det-value">${docRef}</div></div>
+      ${proveedor !== '—' ? `<div class="det-row"><div class="det-label">Proveedor</div><div class="det-value">${proveedor}</div></div>` : ''}
+      ${cliente !== '—' ? `<div class="det-row"><div class="det-label">Cliente</div><div class="det-value">${cliente}</div></div>` : ''}
+      ${lote !== '—' ? `<div class="det-row"><div class="det-label">Lote / Caducidad</div><div class="det-value">${lote}</div></div>` : ''}
       <div class="det-row"><div class="det-label">Estado</div><div class="det-badge ${esOk?'det-ok':'det-cancel'}">${estado}</div></div>
       <div class="det-row"><div class="det-label">Captura</div><div class="det-value">${captura}</div></div>
+      ${autoriza !== '—' ? `<div class="det-row"><div class="det-label">Autoriza</div><div class="det-value">${autoriza}</div></div>` : ''}
+      ${folioQR !== '—' ? `<div class="det-row"><div class="det-label">Folio QR</div><div class="det-value" style="font-family:'DM Mono',monospace;font-size:12px">${folioQR}</div></div>` : ''}
       ${obs !== '—' ? `<div class="det-row"><div class="det-label">Observaciones</div><div class="det-value" style="font-size:13px;font-weight:400">${obs}</div></div>` : ''}
     </div>
     <div class="det-qty-grid">
