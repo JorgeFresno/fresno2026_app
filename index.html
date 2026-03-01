@@ -358,11 +358,24 @@
             <option value="">— Origen —</option>
             <option>Proveedor</option>
             <option>BN</option>
-            <option>B1</option>
             <option>B2</option>
-            <option>B3</option>
-            <option>Producción</option>
+            <option>T1</option>
+            <option>T2</option>
+            <option>T3</option>
+            <option>T4</option>
+            <option>TA8</option>
+            <option>TB11</option>
+            <option>T9</option>
+            <option>T10</option>
+            <option>T12</option>
+            <option>T13</option>
+            <option>T14</option>
+            <option>Polietilenos</option>
+            <option>Fumigacion</option>
+            <option>AlmacenMaquila</option>
+            <option>AlmacenMerma</option>
             <option>Cliente</option>
+            <option>MesaDespensas</option>
           </select>
         </div>
         <div class="form-group">
@@ -370,11 +383,24 @@
           <select class="form-input form-select" id="fDestino">
             <option value="">— Destino —</option>
             <option>BN</option>
-            <option>B1</option>
             <option>B2</option>
-            <option>B3</option>
-            <option>Producción</option>
+            <option>T1</option>
+            <option>T2</option>
+            <option>T3</option>
+            <option>T4</option>
+            <option>TA8</option>
+            <option>TB11</option>
+            <option>T9</option>
+            <option>T10</option>
+            <option>T12</option>
+            <option>T13</option>
+            <option>T14</option>
+            <option>Polietilenos</option>
+            <option>Fumigacion</option>
+            <option>AlmacenMaquila</option>
+            <option>AlmacenMerma</option>
             <option>Cliente</option>
+            <option>MesaDespensas</option>
             <option>Proveedor</option>
           </select>
         </div>
@@ -812,12 +838,18 @@ function selectTipo(tipo, el) {
   document.querySelectorAll('.type-btn').forEach(b => b.classList.remove('selected'));
   el.classList.add('selected');
   // Pre-llenar ubicaciones según tipo
-  if (tipo.includes('Entrada')) {
+  if (tipo.includes('Entrada compra')) {
     document.getElementById('fOrigen').value = 'Proveedor';
     document.getElementById('fDestino').value = 'BN';
-  } else if (tipo.includes('Salida')) {
+  } else if (tipo.includes('Salida venta')) {
     document.getElementById('fOrigen').value = 'BN';
     document.getElementById('fDestino').value = 'Cliente';
+  } else if (tipo.includes('Salida a producción')) {
+    document.getElementById('fOrigen').value = 'BN';
+    document.getElementById('fDestino').value = 'T1';
+  } else if (tipo.includes('Entrada producción')) {
+    document.getElementById('fOrigen').value = 'T1';
+    document.getElementById('fDestino').value = 'BN';
   }
 }
 
