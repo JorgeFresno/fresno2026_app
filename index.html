@@ -671,8 +671,9 @@ function populateSelect(id, items) {
     items.map(i => `<option value="${i}">${i}</option>`).join('');
   if (current) el.value = current;
 }
+
+async function loadPedidos() {
   try {
-    const table = await fetchSheet('Agenda_Pedidos');
     const rows = tableToObjects(table);
     renderPedidos(rows.slice(0, 15));
   } catch(e) {
