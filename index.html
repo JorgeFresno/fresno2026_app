@@ -690,13 +690,6 @@ function selectCatalogItem(el, hiddenId, inputId, sugId) {
   document.getElementById(inputId).value = value;
   document.getElementById(sugId).style.display = 'none';
 }
-  const el = document.getElementById(id);
-  if (!el) return;
-  const current = el.value;
-  el.innerHTML = '<option value="">— Seleccionar —</option>' +
-    items.map(i => `<option value="${i}">${i}</option>`).join('');
-  if (current) el.value = current;
-}
 
 async function loadPedidos() {
   try {
