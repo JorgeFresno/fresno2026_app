@@ -676,16 +676,18 @@ function searchCatalog(inputId, hiddenId, list, sugId) {
   if (q.length < 1) { sugBox.style.display = 'none'; return; }
   const matches = list.filter(i => i.toLowerCase().includes(q)).slice(0, 7);
   if (!matches.length) { sugBox.style.display = 'none'; return; }
-  sugBox.innerHTML = matches.map(i =>
-    `<div class="suggestion-item" onclick="selectCatalog('${inputId}','${hiddenId}','${sugId}','${i.replace(/'/g,"\\'")}')">${i}</div>`
-  ).join('');
+  sugBox.innerHTML = matches.map(i => {
+    const safe = i.replace(/"/g, '&quot;');
+    return `<div class="suggestion-item" onclick="selectCatalogItem(this,'${hiddenId}','${inputId}','${sugId}')" data-value="${safe}">${i}</div>`;
+  }).join('');
   sugBox.className = 'product-suggestion';
   sugBox.style.display = 'block';
 }
 
-function selectCatalog(inputId, hiddenId, sugId, value) {
-  document.getElementById(inputId).value = value;
+function selectCatalogItem(el, hiddenId, inputId, sugId) {
+  const value = el.getAttribute('data-value');
   document.getElementById(hiddenId).value = value;
+  document.getElementById(inputId).value = value;
   document.getElementById(sugId).style.display = 'none';
 }
   const el = document.getElementById(id);
