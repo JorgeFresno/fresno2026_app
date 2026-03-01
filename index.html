@@ -161,6 +161,49 @@
   .ps-pending { background:#FFF8E1; color:#F57F17; }
   .ps-delayed { background:#FDECEA; color:#B71C1C; }
   .ps-done { background:#E8F5E9; color:#1B5E20; }
+
+  /* MODAL */
+  .modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.55); z-index:200; display:none; align-items:flex-end; justify-content:center; animation:fadeOverlay 0.2s ease; }
+  .modal-overlay.open { display:flex; }
+  @keyframes fadeOverlay { from{opacity:0} to{opacity:1} }
+  .modal-sheet { background:white; border-radius:24px 24px 0 0; width:100%; max-width:430px; max-height:92vh; overflow-y:auto; padding:0 0 40px; animation:slideUp 0.25s ease; }
+  @keyframes slideUp { from{transform:translateY(60px);opacity:0} to{transform:translateY(0);opacity:1} }
+  .modal-handle { width:40px; height:4px; background:#DDD; border-radius:2px; margin:14px auto 0; }
+  .modal-header { padding:16px 20px 12px; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; }
+  .modal-title { font-size:17px; font-weight:700; }
+  .modal-close { width:32px; height:32px; border-radius:50%; background:var(--bg); border:none; font-size:18px; cursor:pointer; display:flex; align-items:center; justify-content:center; color:var(--text-secondary); }
+  .modal-body { padding:16px 20px; display:flex; flex-direction:column; gap:14px; }
+  .form-group { display:flex; flex-direction:column; gap:6px; }
+  .form-label { font-size:12px; font-weight:600; color:var(--text-secondary); text-transform:uppercase; letter-spacing:0.05em; }
+  .form-label span { color:var(--red); }
+  .form-input { border:1.5px solid var(--border); border-radius:12px; padding:12px 14px; font-size:15px; font-family:'DM Sans',sans-serif; color:var(--text-primary); background:white; outline:none; width:100%; transition:border-color 0.15s; }
+  .form-input:focus { border-color:var(--green-mid); }
+  .form-input.error { border-color:var(--red); }
+  .form-select { appearance:none; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23999' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right 14px center; padding-right:36px; }
+  .form-row { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  .folio-preview { font-family:'DM Mono',monospace; font-size:13px; color:var(--green-dark); background:var(--green-pale); border-radius:8px; padding:8px 12px; font-weight:600; display:inline-block; }
+  .product-suggestion { border:1.5px solid var(--border); border-radius:12px; overflow:hidden; }
+  .suggestion-item { padding:10px 14px; cursor:pointer; border-bottom:1px solid var(--border); transition:background 0.1s; }
+  .suggestion-item:last-child { border-bottom:none; }
+  .suggestion-item:active { background:var(--green-pale); }
+  .suggestion-name { font-size:14px; font-weight:500; }
+  .suggestion-code { font-size:11px; color:var(--text-muted); font-family:'DM Mono',monospace; margin-top:1px; }
+  .form-btn-submit { background:linear-gradient(135deg,var(--green-mid),var(--green-light)); color:white; border:none; border-radius:14px; padding:16px; font-size:16px; font-weight:700; width:100%; cursor:pointer; font-family:'DM Sans',sans-serif; display:flex; align-items:center; justify-content:center; gap:8px; transition:opacity 0.15s; }
+  .form-btn-submit:disabled { opacity:0.6; }
+  .form-btn-submit.saving { opacity:0.7; }
+  .mov-fab { position:fixed; bottom:88px; right:calc(50% - 215px + 20px); background:linear-gradient(135deg,var(--green-mid),var(--green-light)); color:white; border:none; border-radius:50%; width:56px; height:56px; font-size:28px; cursor:pointer; box-shadow:0 4px 16px rgba(61,122,38,0.45); display:none; align-items:center; justify-content:center; z-index:99; transition:transform 0.15s; }
+  .mov-fab.visible { display:flex; }
+  .mov-fab:active { transform:scale(0.93); }
+  .type-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; }
+  .type-btn { border:1.5px solid var(--border); border-radius:12px; padding:10px 6px; text-align:center; cursor:pointer; transition:all 0.15s; background:white; }
+  .type-btn.selected { border-color:var(--green-dark); background:var(--green-pale); }
+  .type-btn-icon { font-size:20px; margin-bottom:4px; }
+  .type-btn-label { font-size:11px; font-weight:600; color:var(--text-secondary); line-height:1.2; }
+  .type-btn.selected .type-btn-label { color:var(--green-dark); }
+  .toast { position:fixed; bottom:100px; left:50%; transform:translateX(-50%); background:#1A1A1A; color:white; padding:12px 20px; border-radius:12px; font-size:14px; font-weight:500; z-index:300; opacity:0; transition:opacity 0.2s; pointer-events:none; white-space:nowrap; }
+  .toast.show { opacity:1; }
+  .toast.success { background:var(--green-dark); }
+  .toast.error-toast { background:var(--red); }
 </style>
 </head>
 <body>
@@ -240,6 +283,138 @@
     <div id="movContainer"><div class="loading-state"><div class="loading-spinner"></div>Cargando movimientos...</div></div>
   </div>
 </div>
+
+<!-- FAB Nuevo Movimiento -->
+<button class="mov-fab" id="movFab" onclick="openModal()" title="Nuevo movimiento">+</button>
+
+<!-- MODAL NUEVO MOVIMIENTO -->
+<div class="modal-overlay" id="modalOverlay" onclick="closeModalOutside(event)">
+  <div class="modal-sheet" id="modalSheet">
+    <div class="modal-handle"></div>
+    <div class="modal-header">
+      <div class="modal-title">📋 Nuevo Movimiento</div>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body">
+
+      <!-- Folio auto -->
+      <div class="form-group">
+        <div class="form-label">Folio generado</div>
+        <div class="folio-preview" id="folioPreview">Cargando...</div>
+      </div>
+
+      <!-- Tipo de movimiento -->
+      <div class="form-group">
+        <div class="form-label">Tipo de movimiento <span>*</span></div>
+        <div class="type-grid">
+          <div class="type-btn" onclick="selectTipo('Entrada compra',this)"><div class="type-btn-icon">🌾</div><div class="type-btn-label">Entrada compra</div></div>
+          <div class="type-btn" onclick="selectTipo('Salida venta/despacho',this)"><div class="type-btn-icon">🚀</div><div class="type-btn-label">Salida / despacho</div></div>
+          <div class="type-btn" onclick="selectTipo('Ajuste positivo',this)"><div class="type-btn-icon">✅</div><div class="type-btn-label">Ajuste positivo</div></div>
+          <div class="type-btn" onclick="selectTipo('Ajuste negativo',this)"><div class="type-btn-icon">📉</div><div class="type-btn-label">Ajuste negativo</div></div>
+          <div class="type-btn" onclick="selectTipo('Entrada producción',this)"><div class="type-btn-icon">🏭</div><div class="type-btn-label">Entrada producción</div></div>
+          <div class="type-btn" onclick="selectTipo('Salida a producción',this)"><div class="type-btn-icon">⚙️</div><div class="type-btn-label">Salida producción</div></div>
+        </div>
+        <input type="hidden" id="fTipoMov">
+      </div>
+
+      <!-- Buscar producto -->
+      <div class="form-group">
+        <div class="form-label">Producto <span>*</span></div>
+        <input class="form-input" id="fProductoSearch" type="text" placeholder="🔍 Buscar por clave o nombre..." oninput="searchProductos()" autocomplete="off">
+        <div id="fProductoSuggestions" style="display:none"></div>
+        <div id="fProductoSelected" style="display:none; margin-top:6px;">
+          <div class="folio-preview" style="background:#E3F2FD;color:#1565C0;display:flex;align-items:center;justify-content:space-between;">
+            <span id="fProductoLabel">—</span>
+            <button onclick="clearProducto()" style="background:none;border:none;cursor:pointer;font-size:14px;color:#999;padding:0 0 0 8px;">✕</button>
+          </div>
+        </div>
+        <input type="hidden" id="fClaveProducto">
+        <input type="hidden" id="fDescripcion">
+      </div>
+
+      <!-- Fecha -->
+      <div class="form-group">
+        <div class="form-label">Fecha <span>*</span></div>
+        <input class="form-input" id="fFecha" type="date">
+      </div>
+
+      <!-- Cantidades -->
+      <div class="form-row">
+        <div class="form-group">
+          <div class="form-label">Cantidad pz <span>*</span></div>
+          <input class="form-input" id="fCantPz" type="number" min="0" placeholder="0">
+        </div>
+        <div class="form-group">
+          <div class="form-label">Cantidad kg <span>*</span></div>
+          <input class="form-input" id="fCantKg" type="number" min="0" step="0.01" placeholder="0.00">
+        </div>
+      </div>
+
+      <!-- Ubicaciones -->
+      <div class="form-row">
+        <div class="form-group">
+          <div class="form-label">Origen <span>*</span></div>
+          <select class="form-input form-select" id="fOrigen">
+            <option value="">— Origen —</option>
+            <option>Proveedor</option>
+            <option>BN</option>
+            <option>B1</option>
+            <option>B2</option>
+            <option>B3</option>
+            <option>Producción</option>
+            <option>Cliente</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <div class="form-label">Destino <span>*</span></div>
+          <select class="form-input form-select" id="fDestino">
+            <option value="">— Destino —</option>
+            <option>BN</option>
+            <option>B1</option>
+            <option>B2</option>
+            <option>B3</option>
+            <option>Producción</option>
+            <option>Cliente</option>
+            <option>Proveedor</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Documento Ref -->
+      <div class="form-group">
+        <div class="form-label">Documento referencia <span>*</span></div>
+        <input class="form-input" id="fDocRef" type="text" placeholder="Ej. FACTURA F1234, TICKET 5678">
+      </div>
+
+      <!-- Estado -->
+      <div class="form-group">
+        <div class="form-label">Estado <span>*</span></div>
+        <select class="form-input form-select" id="fEstado">
+          <option value="OK">✅ OK</option>
+          <option value="CANCELADO">❌ CANCELADO</option>
+        </select>
+      </div>
+
+      <!-- Observaciones -->
+      <div class="form-group">
+        <div class="form-label">Observaciones</div>
+        <input class="form-input" id="fObs" type="text" placeholder="Opcional">
+      </div>
+
+      <!-- Submit -->
+      <button class="form-btn-submit" id="fSubmitBtn" onclick="submitMovimiento()">
+        💾 Guardar movimiento
+      </button>
+
+      <div style="font-size:11px;color:var(--text-muted);text-align:center;margin-top:-4px;">
+        Se guardará directamente en Google Sheets
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
 
 <!-- SCANNER -->
 <div class="page" id="page-scanner">
@@ -582,6 +757,197 @@ function navTo(page) {
   document.getElementById('page-' + page).classList.add('active');
   document.getElementById('nav-' + page).classList.add('active');
   window.scrollTo(0, 0);
+  // Mostrar FAB solo en movimientos
+  const fab = document.getElementById('movFab');
+  fab.classList.toggle('visible', page === 'movimientos');
+}
+
+// ---- MODAL ----
+let selectedTipo = '';
+let selectedProducto = null;
+let APPS_SCRIPT_URL = ''; // Se configura al pegar el URL del Apps Script
+
+function openModal() {
+  resetForm();
+  generarFolio();
+  // Fecha de hoy
+  const hoy = new Date();
+  document.getElementById('fFecha').value = hoy.toISOString().split('T')[0];
+  document.getElementById('modalOverlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeModal() {
+  document.getElementById('modalOverlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+function closeModalOutside(e) {
+  if (e.target === document.getElementById('modalOverlay')) closeModal();
+}
+
+function resetForm() {
+  selectedTipo = '';
+  selectedProducto = null;
+  document.querySelectorAll('.type-btn').forEach(b => b.classList.remove('selected'));
+  document.getElementById('fTipoMov').value = '';
+  document.getElementById('fProductoSearch').value = '';
+  document.getElementById('fProductoSuggestions').style.display = 'none';
+  document.getElementById('fProductoSelected').style.display = 'none';
+  document.getElementById('fClaveProducto').value = '';
+  document.getElementById('fDescripcion').value = '';
+  document.getElementById('fCantPz').value = '';
+  document.getElementById('fCantKg').value = '';
+  document.getElementById('fOrigen').value = '';
+  document.getElementById('fDestino').value = '';
+  document.getElementById('fDocRef').value = '';
+  document.getElementById('fEstado').value = 'OK';
+  document.getElementById('fObs').value = '';
+  ['fCantPz','fCantKg','fOrigen','fDestino','fDocRef'].forEach(id => document.getElementById(id).classList.remove('error'));
+}
+
+function selectTipo(tipo, el) {
+  selectedTipo = tipo;
+  document.getElementById('fTipoMov').value = tipo;
+  document.querySelectorAll('.type-btn').forEach(b => b.classList.remove('selected'));
+  el.classList.add('selected');
+  // Pre-llenar ubicaciones según tipo
+  if (tipo.includes('Entrada')) {
+    document.getElementById('fOrigen').value = 'Proveedor';
+    document.getElementById('fDestino').value = 'BN';
+  } else if (tipo.includes('Salida')) {
+    document.getElementById('fOrigen').value = 'BN';
+    document.getElementById('fDestino').value = 'Cliente';
+  }
+}
+
+function searchProductos() {
+  const q = document.getElementById('fProductoSearch').value.toLowerCase().trim();
+  const sugBox = document.getElementById('fProductoSuggestions');
+  if (q.length < 2) { sugBox.style.display = 'none'; return; }
+  const matches = allProducts.filter(p =>
+    p.clave.toLowerCase().includes(q) || p.nombre.toLowerCase().includes(q)
+  ).slice(0, 6);
+  if (!matches.length) { sugBox.style.display = 'none'; return; }
+  sugBox.innerHTML = matches.map(p => `
+    <div class="suggestion-item" onclick="selectProducto('${p.clave}','${p.nombre.replace(/'/g,"\\'")}')">
+      <div class="suggestion-name">${p.nombre}</div>
+      <div class="suggestion-code">${p.clave} · ${p.tipo === 'granel' ? 'Granel' : 'PT'}</div>
+    </div>`).join('');
+  sugBox.className = 'product-suggestion';
+  sugBox.style.display = 'block';
+}
+
+function selectProducto(clave, nombre) {
+  selectedProducto = { clave, nombre };
+  document.getElementById('fClaveProducto').value = clave;
+  document.getElementById('fDescripcion').value = nombre;
+  document.getElementById('fProductoLabel').textContent = `${clave} · ${nombre}`;
+  document.getElementById('fProductoSearch').value = '';
+  document.getElementById('fProductoSuggestions').style.display = 'none';
+  document.getElementById('fProductoSelected').style.display = 'block';
+}
+
+function clearProducto() {
+  selectedProducto = null;
+  document.getElementById('fClaveProducto').value = '';
+  document.getElementById('fDescripcion').value = '';
+  document.getElementById('fProductoSelected').style.display = 'none';
+}
+
+async function generarFolio() {
+  // Genera folio local basado en último folio visible
+  const last = allMovimientos.map(m => {
+    const f = String(m['FolioMov'] || '');
+    const num = parseInt(f.replace(/\D/g,'')) || 0;
+    return num;
+  });
+  const maxNum = last.length ? Math.max(...last) : 0;
+  const siguiente = String(maxNum + 1).padStart(5, '0');
+  document.getElementById('folioPreview').textContent = `Mov_${siguiente}`;
+  return `Mov_${siguiente}`;
+}
+
+function showToast(msg, type='') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show ' + (type==='success'?'success':type==='error'?'error-toast':'');
+  setTimeout(() => t.className = 'toast', 2800);
+}
+
+async function submitMovimiento() {
+  // Validación
+  const errors = [];
+  if (!selectedTipo) { showToast('⚠️ Selecciona el tipo de movimiento', 'error'); return; }
+  if (!document.getElementById('fClaveProducto').value) { showToast('⚠️ Selecciona un producto', 'error'); return; }
+
+  const cantPz = document.getElementById('fCantPz').value;
+  const cantKg = document.getElementById('fCantKg').value;
+  const origen = document.getElementById('fOrigen').value;
+  const destino = document.getElementById('fDestino').value;
+  const docRef = document.getElementById('fDocRef').value.trim();
+
+  let hasError = false;
+  if (!cantPz && !cantKg) {
+    document.getElementById('fCantPz').classList.add('error');
+    document.getElementById('fCantKg').classList.add('error');
+    hasError = true;
+  }
+  if (!origen) { document.getElementById('fOrigen').classList.add('error'); hasError = true; }
+  if (!destino) { document.getElementById('fDestino').classList.add('error'); hasError = true; }
+  if (!docRef) { document.getElementById('fDocRef').classList.add('error'); hasError = true; }
+  if (hasError) { showToast('⚠️ Completa los campos obligatorios', 'error'); return; }
+
+  const folio = document.getElementById('folioPreview').textContent;
+  const fecha = document.getElementById('fFecha').value;
+  const obs = document.getElementById('fObs').value;
+
+  const payload = {
+    FechaMov: fecha,
+    TipoMov: selectedTipo,
+    FolioMov: folio,
+    DocumentoRef: docRef,
+    ClaveProducto: document.getElementById('fClaveProducto').value,
+    Descripcion: document.getElementById('fDescripcion').value,
+    UbicacionOrigen: origen,
+    UbicacionDestino: destino,
+    CantidadPz: parseFloat(cantPz) || 0,
+    CantidadKg: parseFloat(cantKg) || 0,
+    Captura: 'U01',
+    Estado: document.getElementById('fEstado').value,
+    Observaciones: obs,
+    Folio_QR: folio
+  };
+
+  const btn = document.getElementById('fSubmitBtn');
+  btn.disabled = true;
+  btn.textContent = '⏳ Guardando...';
+
+  if (!APPS_SCRIPT_URL) {
+    // Sin URL configurado — mostrar datos para revisión
+    console.log('Payload listo:', payload);
+    showToast('⚙️ Configura el URL del Apps Script para guardar en Sheets', 'error');
+    btn.disabled = false;
+    btn.innerHTML = '💾 Guardar movimiento';
+    return;
+  }
+
+  try {
+    await fetch(APPS_SCRIPT_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    showToast('✅ Movimiento guardado: ' + folio, 'success');
+    closeModal();
+    setTimeout(() => syncData(), 1500);
+  } catch(e) {
+    showToast('❌ Error al guardar. Revisa conexión.', 'error');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '💾 Guardar movimiento';
+  }
 }
 
 updateDate();
