@@ -648,8 +648,12 @@ async function loadMovimientos() {
 async function loadProveedores() {
   try {
     const table = await fetchSheet('Proveedores');
+    if (table && table.cols && table.cols[0]) {
+      const parts = (table.cols[0].label || '').trim().split(/\s+/);
+      table.cols[0].label = parts[parts.length - 1] || 'Proveedor';
+    }
     const rows = tableToObjects(table);
-    allProveedores = rows.map(r => r['Proveedor'] || '').filter(Boolean).sort();
+    allProveedores = rows.map(r => Object.values(r)[0] || '').filter(Boolean).sort();
     populateSelect('fProveedor', allProveedores);
   } catch(e) { console.warn('No se cargaron proveedores', e); }
 }
@@ -657,8 +661,12 @@ async function loadProveedores() {
 async function loadClientes() {
   try {
     const table = await fetchSheet('Clientes');
+    if (table && table.cols && table.cols[0]) {
+      const parts = (table.cols[0].label || '').trim().split(/\s+/);
+      table.cols[0].label = parts[parts.length - 1] || 'Cliente';
+    }
     const rows = tableToObjects(table);
-    allClientes = rows.map(r => r['Cliente'] || '').filter(Boolean).sort();
+    allClientes = rows.map(r => Object.values(r)[0] || '').filter(Boolean).sort();
     populateSelect('fCliente', allClientes);
   } catch(e) { console.warn('No se cargaron clientes', e); }
 }
@@ -892,9 +900,11 @@ let APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby2ZdgEc1aDweu6wz
 function openModal() {
   resetForm();
   generarFolio();
-  // Fecha de hoy
   const hoy = new Date();
   document.getElementById('fFecha').value = hoy.toISOString().split('T')[0];
+  // Re-poblar selects por si acaso
+  if (allProveedores.length) populateSelect('fProveedor', allProveedores);
+  if (allClientes.length) populateSelect('fCliente', allClientes);
   document.getElementById('modalOverlay').classList.add('open');
   document.body.style.overflow = 'hidden';
 }
@@ -960,6 +970,7 @@ function openDetalle(idx) {
       ${lote !== '—' ? `<div class="det-row"><div class="det-label">Lote / Caducidad</div><div class="det-value">${lote}</div></div>` : ''}
       <div class="det-row"><div class="det-label">Estado</div><div class="det-badge ${esOk?'det-ok':'det-cancel'}">${estado}</div></div>
       <div class="det-row"><div class="det-label">Captura</div><div class="det-value">${captura}</div></div>
+      ${lote !== '—' ? `<div class="det-row"><div class="det-label">Lote / Caducidad</div><div class="det-value">${lote}</div></div>` : ''}
       ${autoriza !== '—' ? `<div class="det-row"><div class="det-label">Autoriza</div><div class="det-value">${autoriza}</div></div>` : ''}
       ${folioQR !== '—' ? `<div class="det-row"><div class="det-label">Folio QR</div><div class="det-value" style="font-family:'DM Mono',monospace;font-size:12px">${folioQR}</div></div>` : ''}
       ${obs !== '—' ? `<div class="det-row"><div class="det-label">Observaciones</div><div class="det-value" style="font-size:13px;font-weight:400">${obs}</div></div>` : ''}
