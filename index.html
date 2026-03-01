@@ -439,11 +439,15 @@
       <div class="form-row">
         <div class="form-group">
           <div class="form-label">Proveedor</div>
-          <input class="form-input" id="fProveedor" type="text" placeholder="Opcional">
+          <select class="form-input form-select" id="fProveedor">
+            <option value="">— Seleccionar —</option>
+          </select>
         </div>
         <div class="form-group">
           <div class="form-label">Cliente</div>
-          <input class="form-input" id="fCliente" type="text" placeholder="Opcional">
+          <select class="form-input form-select" id="fCliente">
+            <option value="">— Seleccionar —</option>
+          </select>
         </div>
       </div>
 
@@ -536,6 +540,8 @@ const SHEET_ID = '19g3-vqAnNiqXmHnLvBSPm3eMqldA1fg4Y3crIHKcmOI';
 
 let allProducts = [];
 let allMovimientos = [];
+let allProveedores = [];
+let allClientes = [];
 let currentFilter = 'todos';
 let lastSync = null;
 
@@ -639,7 +645,32 @@ async function loadMovimientos() {
   }
 }
 
-async function loadPedidos() {
+async function loadProveedores() {
+  try {
+    const table = await fetchSheet('Proveedores');
+    const rows = tableToObjects(table);
+    allProveedores = rows.map(r => r['Proveedor'] || '').filter(Boolean).sort();
+    populateSelect('fProveedor', allProveedores);
+  } catch(e) { console.warn('No se cargaron proveedores', e); }
+}
+
+async function loadClientes() {
+  try {
+    const table = await fetchSheet('Clientes');
+    const rows = tableToObjects(table);
+    allClientes = rows.map(r => r['Cliente'] || '').filter(Boolean).sort();
+    populateSelect('fCliente', allClientes);
+  } catch(e) { console.warn('No se cargaron clientes', e); }
+}
+
+function populateSelect(id, items) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const current = el.value;
+  el.innerHTML = '<option value="">— Seleccionar —</option>' +
+    items.map(i => `<option value="${i}">${i}</option>`).join('');
+  if (current) el.value = current;
+}
   try {
     const table = await fetchSheet('Agenda_Pedidos');
     const rows = tableToObjects(table);
@@ -838,7 +869,7 @@ function updateDate() {
 
 async function syncData() {
   document.getElementById('productsContainer').innerHTML = '<div class="loading-state"><div class="loading-spinner"></div>Sincronizando...</div>';
-  await Promise.all([loadInventario(), loadMovimientos(), loadPedidos()]);
+  await Promise.all([loadInventario(), loadMovimientos(), loadPedidos(), loadProveedores(), loadClientes()]);
 }
 
 function navTo(page) {
