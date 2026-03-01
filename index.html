@@ -620,6 +620,17 @@ async function loadInventario() {
 async function loadMovimientos() {
   try {
     const table = await fetchSheet('Movimientos');
+    // Limpiar emojis de todos los headers
+    if (table && table.cols) {
+      table.cols = table.cols.map((col, i) => {
+        if (col.label) {
+          // Extraer última palabra (quita emojis y texto decorativo)
+          const parts = col.label.trim().split(/\s+/);
+          col.label = parts[parts.length - 1] || col.id;
+        }
+        return col;
+      });
+    }
     const rows = tableToObjects(table);
     allMovimientos = rows.slice(-50).reverse();
     renderMovimientos();
