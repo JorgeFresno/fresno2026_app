@@ -654,7 +654,6 @@ async function loadProveedores() {
     }
     const rows = tableToObjects(table);
     allProveedores = rows.map(r => Object.values(r)[0] || '').filter(Boolean).sort();
-    populateSelect('fProveedor', allProveedores);
   } catch(e) { console.warn('No se cargaron proveedores', e); }
 }
 
@@ -667,7 +666,6 @@ async function loadClientes() {
     }
     const rows = tableToObjects(table);
     allClientes = rows.map(r => Object.values(r)[0] || '').filter(Boolean).sort();
-    populateSelect('fCliente', allClientes);
   } catch(e) { console.warn('No se cargaron clientes', e); }
 }
 
@@ -921,9 +919,6 @@ function openModal() {
   generarFolio();
   const hoy = new Date();
   document.getElementById('fFecha').value = hoy.toISOString().split('T')[0];
-  // Re-poblar selects por si acaso
-  if (allProveedores.length) populateSelect('fProveedor', allProveedores);
-  if (allClientes.length) populateSelect('fCliente', allClientes);
   document.getElementById('modalOverlay').classList.add('open');
   document.body.style.overflow = 'hidden';
 }
