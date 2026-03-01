@@ -223,6 +223,22 @@
   .det-badge { padding:4px 12px; border-radius:20px; font-size:13px; font-weight:700; }
   .det-ok { background:#E8F5E9; color:#2E7D32; }
   .det-cancel { background:#FDECEA; color:#C62828; }
+  /* DETALLE PRODUCTO */
+  .prod-det-kpis { display:grid; grid-template-columns:repeat(2,1fr); gap:10px; }
+  .prod-det-kpi { background:white; border-radius:12px; padding:14px; text-align:center; border:1px solid var(--border); }
+  .prod-det-kpi-val { font-size:22px; font-weight:700; }
+  .prod-det-kpi-val.orange { color:var(--orange); }
+  .prod-det-kpi-val.green { color:#4CAF50; }
+  .prod-det-kpi-val.blue { color:#1565C0; }
+  .prod-det-kpi-lab { font-size:11px; color:var(--text-muted); margin-top:3px; }
+  .prod-det-mov { background:white; border-radius:10px; padding:10px 12px; border:1px solid var(--border); display:flex; align-items:center; gap:10px; }
+  .prod-det-mov-icon { width:36px; height:36px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0; }
+  .prod-det-mov-body { flex:1; min-width:0; }
+  .prod-det-mov-tipo { font-size:13px; font-weight:600; }
+  .prod-det-mov-fecha { font-size:11px; color:var(--text-muted); margin-top:1px; }
+  .prod-det-mov-qty { font-size:14px; font-weight:700; text-align:right; flex-shrink:0; }
+  .prod-det-mov-qty.pos { color:#4CAF50; }
+  .prod-det-mov-qty.neg { color:var(--red); }
   .det-qty-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
   .det-qty-card { background:white; border-radius:10px; padding:12px; text-align:center; border:1px solid var(--border); }
   .det-qty-val { font-size:20px; font-weight:700; }
@@ -481,6 +497,18 @@
         Se guardará directamente en Google Sheets
       </div>
     </div>
+  </div>
+</div>
+
+<!-- MODAL DETALLE PRODUCTO -->
+<div class="modal-overlay" id="prodDetModalOverlay" onclick="closeProdDet(event)">
+  <div class="modal-sheet" id="prodDetModalSheet">
+    <div class="modal-handle"></div>
+    <div class="modal-header">
+      <div class="modal-title">📦 Detalle de producto</div>
+      <button class="modal-close" onclick="document.getElementById('prodDetModalOverlay').classList.remove('open')">✕</button>
+    </div>
+    <div class="modal-body" id="prodDetModalBody"></div>
   </div>
 </div>
 
@@ -777,7 +805,7 @@ function renderProducts() {
     const pct = stock > 0 ? Math.min(100, Math.round((disponible / stock) * 100)) : 0;
     const statusMap = { ok:['status-ok','fill-green','Normal'], bajo:['status-low','fill-orange','Bajo'], critico:['status-critical','fill-red','Crítico'], zero:['status-zero','fill-gray','Sin stock'] };
     const [chipClass, fillClass, label] = statusMap[status];
-    return `<div class="product-card">
+    return `<div class="product-card" onclick="openProdDetalle('${p.clave}')">
       <div class="product-header">
         <div>
           <div class="product-name">${p.nombre}</div>
@@ -915,6 +943,66 @@ function openModal() {
   const hoy = new Date();
   document.getElementById('fFecha').value = hoy.toISOString().split('T')[0];
   document.getElementById('modalOverlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeProdDet(e) {
+  if (e.target === document.getElementById('prodDetModalOverlay'))
+    document.getElementById('prodDetModalOverlay').classList.remove('open');
+}
+
+function openProdDetalle(clave) {
+  const p = allProducts.find(p => p.clave === clave);
+  if (!p) return;
+  const isGranel = p.tipo === 'granel';
+  const stock = isGranel ? (p.stockKg || 0) : p.stockPz;
+  const reservado = isGranel ? (p.reservadoKg || 0) : p.reservado;
+  const disponible = isGranel ? (p.disponibleKg || 0) : p.disponible;
+  const porProducir = p.porProducir || 0;
+  const unidad = isGranel ? 'kg' : 'pz';
+
+  const movs = allMovimientos.filter(m => (m['ClaveProducto'] || '') === clave).slice(0, 10);
+  const iconMap = {'Entrada compra':'🌾','Salida venta/despacho':'🚀','Ajuste positivo':'✅','Ajuste negativo':'📉','Entrada producción':'📦','Salida a producción':'⚙️'};
+
+  const movHTML = movs.length ? movs.map(m => {
+    const tipo = m['TipoMov'] || '—';
+    const esEntrada = ENTRADAS.includes(tipo);
+    const cantPz = parseFloat(m['CantidadPz'] || 0);
+    const cantKg = parseFloat(m['CantidadKg'] || 0);
+    const qty = cantKg > 0 ? formatNum(cantKg)+' kg' : formatNum(cantPz)+' pz';
+    const icon = iconMap[tipo] || '📋';
+    const fv = m['FechaMov'];
+    let fechaStr = '—';
+    if (fv && typeof fv === 'string' && fv.startsWith('Date(')) {
+      const parts = fv.replace('Date(','').replace(')','').split(',').map(Number);
+      fechaStr = String(parts[2]).padStart(2,'0')+'/'+String(parts[1]+1).padStart(2,'0')+'/'+parts[0];
+    }
+    return `<div class="prod-det-mov">
+      <div class="prod-det-mov-icon ${esEntrada?'icon-green':'icon-orange'}">${icon}</div>
+      <div class="prod-det-mov-body">
+        <div class="prod-det-mov-tipo">${tipo}</div>
+        <div class="prod-det-mov-fecha">${fechaStr} · ${m['FolioMov'] || '—'}</div>
+      </div>
+      <div class="prod-det-mov-qty ${esEntrada?'pos':'neg'}">${esEntrada?'+':'-'}${qty}</div>
+    </div>`;
+  }).join('') : '<div class="empty-state" style="padding:20px">Sin movimientos registrados</div>';
+
+  document.getElementById('prodDetModalBody').innerHTML = `
+    <div class="det-header">
+      <div class="det-folio">${p.clave}</div>
+      <div class="det-tipo">${p.nombre}</div>
+      <div class="det-fecha">${isGranel ? '⚖️ Granel' : '📦 PT'}${p.gramaje ? ' · '+p.gramaje : ''}</div>
+    </div>
+    <div class="prod-det-kpis">
+      <div class="prod-det-kpi"><div class="prod-det-kpi-val">${formatNum(stock)}</div><div class="prod-det-kpi-lab">Stock ${unidad}</div></div>
+      <div class="prod-det-kpi"><div class="prod-det-kpi-val orange">${formatNum(reservado)}</div><div class="prod-det-kpi-lab">Reservado</div></div>
+      <div class="prod-det-kpi"><div class="prod-det-kpi-val green">${formatNum(disponible)}</div><div class="prod-det-kpi-lab">Disponible</div></div>
+      <div class="prod-det-kpi"><div class="prod-det-kpi-val blue">${formatNum(porProducir)}</div><div class="prod-det-kpi-lab">Por producir</div></div>
+    </div>
+    <div class="section-title" style="margin-top:4px">Últimos movimientos</div>
+    <div style="display:flex;flex-direction:column;gap:8px">${movHTML}</div>`;
+
+  document.getElementById('prodDetModalOverlay').classList.add('open');
   document.body.style.overflow = 'hidden';
 }
 
