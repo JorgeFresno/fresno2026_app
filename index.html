@@ -439,15 +439,15 @@
       <div class="form-row">
         <div class="form-group">
           <div class="form-label">Proveedor</div>
-          <select class="form-input form-select" id="fProveedor">
-            <option value="">— Seleccionar —</option>
-          </select>
+          <input class="form-input" id="fProveedorSearch" type="text" placeholder="🔍 Buscar proveedor..." oninput="searchCatalog('fProveedorSearch','fProveedor',allProveedores,'fProveedorSug')" autocomplete="off">
+          <div id="fProveedorSug" style="display:none"></div>
+          <input type="hidden" id="fProveedor">
         </div>
         <div class="form-group">
           <div class="form-label">Cliente</div>
-          <select class="form-input form-select" id="fCliente">
-            <option value="">— Seleccionar —</option>
-          </select>
+          <input class="form-input" id="fClienteSearch" type="text" placeholder="🔍 Buscar cliente..." oninput="searchCatalog('fClienteSearch','fCliente',allClientes,'fClienteSug')" autocomplete="off">
+          <div id="fClienteSug" style="display:none"></div>
+          <input type="hidden" id="fCliente">
         </div>
       </div>
 
@@ -671,7 +671,25 @@ async function loadClientes() {
   } catch(e) { console.warn('No se cargaron clientes', e); }
 }
 
-function populateSelect(id, items) {
+function searchCatalog(inputId, hiddenId, list, sugId) {
+  const q = document.getElementById(inputId).value.toLowerCase().trim();
+  const sugBox = document.getElementById(sugId);
+  document.getElementById(hiddenId).value = '';
+  if (q.length < 1) { sugBox.style.display = 'none'; return; }
+  const matches = list.filter(i => i.toLowerCase().includes(q)).slice(0, 7);
+  if (!matches.length) { sugBox.style.display = 'none'; return; }
+  sugBox.innerHTML = matches.map(i =>
+    `<div class="suggestion-item" onclick="selectCatalog('${inputId}','${hiddenId}','${sugId}','${i.replace(/'/g,"\\'")}')">${i}</div>`
+  ).join('');
+  sugBox.className = 'product-suggestion';
+  sugBox.style.display = 'block';
+}
+
+function selectCatalog(inputId, hiddenId, sugId, value) {
+  document.getElementById(inputId).value = value;
+  document.getElementById(hiddenId).value = value;
+  document.getElementById(sugId).style.display = 'none';
+}
   const el = document.getElementById(id);
   if (!el) return;
   const current = el.value;
@@ -682,6 +700,7 @@ function populateSelect(id, items) {
 
 async function loadPedidos() {
   try {
+    const table = await fetchSheet('Agenda_Pedidos');
     const rows = tableToObjects(table);
     renderPedidos(rows.slice(0, 15));
   } catch(e) {
@@ -998,8 +1017,12 @@ function resetForm() {
   document.getElementById('fOrigen').value = '';
   document.getElementById('fDestino').value = '';
   document.getElementById('fDocRef').value = '';
+  document.getElementById('fProveedorSearch').value = '';
   document.getElementById('fProveedor').value = '';
+  document.getElementById('fProveedorSug').style.display = 'none';
+  document.getElementById('fClienteSearch').value = '';
   document.getElementById('fCliente').value = '';
+  document.getElementById('fClienteSug').style.display = 'none';
   document.getElementById('fLote').value = '';
   document.getElementById('fEstado').value = 'OK';
   document.getElementById('fObs').value = '';
