@@ -506,7 +506,7 @@
     <div class="modal-handle"></div>
     <div class="modal-header">
       <div class="modal-title">📦 Detalle de producto</div>
-      <button class="modal-close" onclick="document.getElementById('prodDetModalOverlay').classList.remove('open');unlockScroll()">✕</button>
+      <button class="modal-close" onclick="document.getElementById('prodDetModalOverlay').classList.remove('open');">✕</button>
     </div>
     <div class="modal-body" id="prodDetModalBody"></div>
   </div>
@@ -521,7 +521,7 @@
     <div class="modal-handle"></div>
     <div class="modal-header">
       <div class="modal-title">Detalle de movimiento</div>
-      <button class="modal-close" onclick="document.getElementById('detModalOverlay').classList.remove('open');unlockScroll()">✕</button>
+      <button class="modal-close" onclick="document.getElementById('detModalOverlay').classList.remove('open');">✕</button>
     </div>
     <div class="modal-body" id="detModalBody"></div>
   </div>
@@ -943,13 +943,13 @@ function openModal() {
   const hoy = new Date();
   document.getElementById('fFecha').value = hoy.toISOString().split('T')[0];
   document.getElementById('modalOverlay').classList.add('open');
-  lockScroll();
+  
 }
 
 function closeProdDet(e) {
   if (e.target === document.getElementById('prodDetModalOverlay')) {
     document.getElementById('prodDetModalOverlay').classList.remove('open');
-    unlockScroll();
+    un
   }
 }
 
@@ -1005,7 +1005,7 @@ function openProdDetalle(clave) {
     <div style="display:flex;flex-direction:column;gap:8px">${movHTML}</div>`;
 
   document.getElementById('prodDetModalOverlay').classList.add('open');
-  lockScroll();
+  
 }
 
 let scrollY = 0;
@@ -1014,7 +1014,7 @@ function lockScroll() {
   document.body.classList.add('modal-open');
   document.body.style.top = `-${scrollY}px`;
 }
-function unlockScroll() {
+function  {
   document.body.classList.remove('modal-open');
   document.body.style.top = '';
   window.scrollTo(0, scrollY);
@@ -1022,7 +1022,7 @@ function unlockScroll() {
 
 function closeModal() {
   document.getElementById('modalOverlay').classList.remove('open');
-  unlockScroll();
+  un
 }
 
 function closeModalOutside(e) {
@@ -1032,7 +1032,7 @@ function closeModalOutside(e) {
 function closeDetModal(e) {
   if (e.target === document.getElementById('detModalOverlay')) {
     document.getElementById('detModalOverlay').classList.remove('open');
-    unlockScroll();
+    un
   }
 }
 
@@ -1093,7 +1093,7 @@ function openDetalle(idx) {
       <div class="det-qty-card"><div class="det-qty-val">${formatNum(cantKg)}</div><div class="det-qty-lab">Kilogramos</div></div>
     </div>`;
   document.getElementById('detModalOverlay').classList.add('open');
-  lockScroll();
+  
 }
 
 function resetForm() {
