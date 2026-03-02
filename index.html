@@ -208,7 +208,7 @@
   .toast { position:fixed; bottom:100px; left:50%; transform:translateX(-50%); background:#1A1A1A; color:white; padding:12px 20px; border-radius:12px; font-size:14px; font-weight:500; z-index:300; opacity:0; transition:opacity 0.2s; pointer-events:none; white-space:nowrap; }
   .toast.show { opacity:1; }
   .toast.success { background:var(--green-dark); }
-  .toast.error-toast { background:var(--red); }
+  .modal-open { position: fixed; width: 100%; }
   /* DETALLE MOV */
   .det-header { padding:20px; background:linear-gradient(135deg,var(--green-mid),var(--green-light)); color:white; border-radius:20px; margin-bottom:16px; }
   .det-folio { font-family:'DM Mono',monospace; font-size:18px; font-weight:700; }
@@ -506,7 +506,7 @@
     <div class="modal-handle"></div>
     <div class="modal-header">
       <div class="modal-title">📦 Detalle de producto</div>
-      <button class="modal-close" onclick="document.getElementById('prodDetModalOverlay').classList.remove('open');document.body.style.overflow=''">✕</button>
+      <button class="modal-close" onclick="document.getElementById('prodDetModalOverlay').classList.remove('open');unlockScroll()">✕</button>
     </div>
     <div class="modal-body" id="prodDetModalBody"></div>
   </div>
@@ -521,7 +521,7 @@
     <div class="modal-handle"></div>
     <div class="modal-header">
       <div class="modal-title">Detalle de movimiento</div>
-      <button class="modal-close" onclick="document.getElementById('detModalOverlay').classList.remove('open');document.body.style.overflow=''">✕</button>
+      <button class="modal-close" onclick="document.getElementById('detModalOverlay').classList.remove('open');unlockScroll()">✕</button>
     </div>
     <div class="modal-body" id="detModalBody"></div>
   </div>
@@ -943,13 +943,13 @@ function openModal() {
   const hoy = new Date();
   document.getElementById('fFecha').value = hoy.toISOString().split('T')[0];
   document.getElementById('modalOverlay').classList.add('open');
-  document.body.style.overflow = 'hidden';
+  lockScroll();
 }
 
 function closeProdDet(e) {
   if (e.target === document.getElementById('prodDetModalOverlay')) {
     document.getElementById('prodDetModalOverlay').classList.remove('open');
-    document.body.style.overflow = '';
+    unlockScroll();
   }
 }
 
@@ -1005,12 +1005,24 @@ function openProdDetalle(clave) {
     <div style="display:flex;flex-direction:column;gap:8px">${movHTML}</div>`;
 
   document.getElementById('prodDetModalOverlay').classList.add('open');
-  document.body.style.overflow = 'hidden';
+  lockScroll();
+}
+
+let scrollY = 0;
+function lockScroll() {
+  scrollY = window.scrollY;
+  document.body.classList.add('modal-open');
+  document.body.style.top = `-${scrollY}px`;
+}
+function unlockScroll() {
+  document.body.classList.remove('modal-open');
+  document.body.style.top = '';
+  window.scrollTo(0, scrollY);
 }
 
 function closeModal() {
   document.getElementById('modalOverlay').classList.remove('open');
-  document.body.style.overflow = '';
+  unlockScroll();
 }
 
 function closeModalOutside(e) {
@@ -1020,7 +1032,7 @@ function closeModalOutside(e) {
 function closeDetModal(e) {
   if (e.target === document.getElementById('detModalOverlay')) {
     document.getElementById('detModalOverlay').classList.remove('open');
-    document.body.style.overflow = '';
+    unlockScroll();
   }
 }
 
@@ -1081,7 +1093,7 @@ function openDetalle(idx) {
       <div class="det-qty-card"><div class="det-qty-val">${formatNum(cantKg)}</div><div class="det-qty-lab">Kilogramos</div></div>
     </div>`;
   document.getElementById('detModalOverlay').classList.add('open');
-  document.body.style.overflow = 'hidden';
+  lockScroll();
 }
 
 function resetForm() {
