@@ -574,7 +574,10 @@ let allClientes = [];
 let currentFilter = 'todos';
 let lastSync = null;
 
-async function fetchSheet(sheetName) {
+function generateMovId() {
+  return 'mid_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+}
+  async function fetchSheet(sheetName) {
   const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(sheetName)}`;
   const res = await fetch(url);
   const text = await res.text();
@@ -936,7 +939,7 @@ function navTo(page) {
 // ---- MODAL ----
 let selectedTipo = '';
 let selectedProducto = null;
-let APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby2ZdgEc1aDweu6wz0ndFyVIpjicTwy86-NnKFSPaBYnzwIT8I-D8aOq0nywqH1oFbeDQ/exec';
+let APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwMNbHZeQUPxnrYNN6T3J_Fi758FkwzdEMYA9jNYvrYlXzTHQpDNnpk9OtsalGaIXGHIA/exec';
 
 function openModal() {
   resetForm();
@@ -1227,6 +1230,7 @@ async function submitMovimiento() {
   const obs = document.getElementById('fObs').value;
 
   const payload = {
+    movId: generateMovId(),
     FechaMov: fecha,
     TipoMov: selectedTipo,
     FolioMov: folio,
