@@ -506,7 +506,7 @@
     <div class="modal-handle"></div>
     <div class="modal-header">
       <div class="modal-title">📦 Detalle de producto</div>
-      <button class="modal-close" onclick="document.getElementById('prodDetModalOverlay').classList.remove('open')">✕</button>
+      <button class="modal-close" onclick="document.getElementById('prodDetModalOverlay').classList.remove('open');document.body.style.overflow=''">✕</button>
     </div>
     <div class="modal-body" id="prodDetModalBody"></div>
   </div>
@@ -521,7 +521,7 @@
     <div class="modal-handle"></div>
     <div class="modal-header">
       <div class="modal-title">Detalle de movimiento</div>
-      <button class="modal-close" onclick="document.getElementById('detModalOverlay').classList.remove('open')">✕</button>
+      <button class="modal-close" onclick="document.getElementById('detModalOverlay').classList.remove('open');document.body.style.overflow=''">✕</button>
     </div>
     <div class="modal-body" id="detModalBody"></div>
   </div>
@@ -947,8 +947,10 @@ function openModal() {
 }
 
 function closeProdDet(e) {
-  if (e.target === document.getElementById('prodDetModalOverlay'))
+  if (e.target === document.getElementById('prodDetModalOverlay')) {
     document.getElementById('prodDetModalOverlay').classList.remove('open');
+    document.body.style.overflow = '';
+  }
 }
 
 function openProdDetalle(clave) {
@@ -1016,8 +1018,10 @@ function closeModalOutside(e) {
 }
 
 function closeDetModal(e) {
-  if (e.target === document.getElementById('detModalOverlay'))
+  if (e.target === document.getElementById('detModalOverlay')) {
     document.getElementById('detModalOverlay').classList.remove('open');
+    document.body.style.overflow = '';
+  }
 }
 
 function openDetalle(idx) {
