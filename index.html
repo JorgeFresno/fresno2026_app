@@ -1015,7 +1015,7 @@ function lockScroll() {
   document.body.classList.add('modal-open');
   document.body.style.top = `-${scrollY}px`;
 }
-function  {
+function unlockScroll() {
   document.body.classList.remove('modal-open');
   document.body.style.top = '';
   window.scrollTo(0, scrollY);
