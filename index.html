@@ -612,15 +612,7 @@ async function loadAgenda() {
     console.error('Error loadAgenda:', e);
     document.getElementById('agendaContainer').innerHTML = '<div class="empty-state">⚠️ Error al cargar agenda.</div>';
   }
-}
-    const rows = tableToObjects(table);
-    allPedidos = rows.filter(r => r['PedidoRQF'] || r['PedidoID']);
-    updateAgendaKPIs();
-    renderAgenda();
-  } catch(e) {
-    document.getElementById('agendaContainer').innerHTML = '<div class="empty-state">⚠️ Error al cargar agenda.</div>';
-  }
-}
+
 
 function updateAgendaKPIs() {
   const activos = allPedidos.filter(p => !['Despachado','Cancelado'].includes(p['EstadoPedido']||''));
