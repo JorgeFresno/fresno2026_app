@@ -591,8 +591,210 @@ let allProveedores = [];
 let allClientes = [];
 let currentFilter = 'todos';
 let lastSync = null;
+  let allPedidos = [];
+let currentAgendaFilter = 'todos';
 
-function generateMovId() {
+async function loadAgenda() {
+  try {
+    const table = await fetchSheet('Agenda_Pedidos');
+    if (table && table.cols) {
+      table.cols = table.cols.map((col, i) => {
+        if (i === 0) {
+          const parts = (col.label || '').trim().split(/\s+/);
+          col.label = parts[parts.length - 1] || col.id;
+        }
+        return col;
+      });
+    }
+    const rows = tableToObjects(table);
+    allPedidos = rows.filter(r => r['PedidoRQF'] || r['PedidoID']);
+    updateAgendaKPIs();
+    renderAgenda();
+  } catch(e) {
+    document.getElementById('agendaContainer').innerHTML = '<div class="empty-state">⚠️ Error al cargar agenda.</div>';
+  }
+}
+
+function updateAgendaKPIs() {
+  const activos = allPedidos.filter(p => !['Despachado','Cancelado'].includes(p['EstadoPedido']||''));
+  const urgentes = allPedidos.filter(p => {
+    const dias = parseFloat(p['DiasRestantes']||99);
+    return dias <= 2 && !['Despachado','Cancelado'].includes(p['EstadoPedido']||'');
+  });
+  const despachados = allPedidos.filter(p => p['EstadoPedido'] === 'Despachado');
+  document.getElementById('agendaTotal').textContent = [...new Set(activos.map(p => p['PedidoRQF']||p['PedidoID']))].length;
+  document.getElementById('agendaUrgentes').textContent = [...new Set(urgentes.map(p => p['PedidoRQF']||p['PedidoID']))].length;
+  document.getElementById('agendaDespachados').textContent = [...new Set(despachados.map(p => p['PedidoRQF']||p['PedidoID']))].length;
+}
+
+function setAgendaFilter(f, el) {
+  currentAgendaFilter = f;
+  document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  renderAgenda();
+}
+
+function renderAgenda() {
+  const search = (document.getElementById('agendaSearch')?.value || '').toLowerCase();
+  let rows = [...allPedidos];
+  if (currentAgendaFilter !== 'todos') rows = rows.filter(r => (r['EstadoPedido']||'') === currentAgendaFilter);
+  if (search) rows = rows.filter(r => {
+    const id = String(r['PedidoRQF']||r['PedidoID']||'').toLowerCase();
+    const cli = String(r['Cliente']||'').toLowerCase();
+    return id.includes(search) || cli.includes(search);
+  });
+
+  // Agrupar por PedidoID
+  const pedidosMap = {};
+  rows.forEach(r => {
+    const id = r['PedidoRQF'] || r['PedidoID'] || '—';
+    if (!pedidosMap[id]) pedidosMap[id] = {
+      id, cliente: r['Cliente']||'', vendedor: r['Vendedor']||'',
+      fechaCompromiso: r['FechaCompromiso']||'', estado: r['EstadoPedido']||'Pendiente',
+      diasRestantes: parseFloat(r['DiasRestantes']||99), prioridad: r['Prioridad']||'',
+      productos: []
+    };
+    pedidosMap[id].productos.push(r);
+  });
+
+  const pedidos = Object.values(pedidosMap);
+  pedidos.sort((a,b) => a.diasRestantes - b.diasRestantes);
+
+  const container = document.getElementById('agendaContainer');
+  if (!pedidos.length) { container.innerHTML = '<div class="empty-state">No hay pedidos</div>'; return; }
+
+  const estadoStyles = {
+    'Pendiente': 'background:#FFF8E1;color:#F57F17',
+    'EnProduccion': 'background:#E3F2FD;color:#1565C0',
+    'Completo': 'background:#E8F5E9;color:#2E7D32',
+    'Despachado': 'background:#F3E5F5;color:#6A1B9A',
+    'Cancelado': 'background:#FDECEA;color:#C62828'
+  };
+
+  container.innerHTML = pedidos.map(p => {
+    const dias = p.diasRestantes;
+    const urgente = dias <= 0;
+    const proximo = dias <= 2 && dias > 0;
+    const borderColor = urgente ? '#E53935' : proximo ? '#F57C00' : '#E8E8E8';
+    const estStyle = estadoStyles[p.estado] || 'background:#F5F5F5;color:#999';
+    const nProd = p.productos.length;
+    let fechaStr = '—';
+    const fv = p.fechaCompromiso;
+    if (fv && typeof fv === 'string' && fv.startsWith('Date(')) {
+      const parts = fv.replace('Date(','').replace(')','').split(',').map(Number);
+      fechaStr = `${String(parts[2]).padStart(2,'0')}/${String(parts[1]+1).padStart(2,'0')}/${parts[0]}`;
+    } else if (fv) fechaStr = fv;
+
+    return `<div style="background:white;border-radius:14px;padding:16px;box-shadow:0 2px 12px rgba(0,0,0,0.08);border:1px solid ${borderColor};cursor:pointer;border-left:4px solid ${borderColor};" onclick="openPedidoDetalle('${p.id}')">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;">
+        <div>
+          <div style="font-size:15px;font-weight:700;font-family:'DM Mono',monospace;color:#2D5A1B">${p.id}</div>
+          <div style="font-size:12px;color:#666;margin-top:2px">${p.cliente}</div>
+          <div style="font-size:11px;color:#999;margin-top:1px">${p.vendedor}</div>
+        </div>
+        <div style="text-align:right">
+          <div style="padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;${estStyle}">${p.estado==='EnProduccion'?'En producción':p.estado}</div>
+          <div style="font-size:11px;color:${urgente?'#E53935':proximo?'#F57C00':'#999'};margin-top:4px;font-weight:${urgente||proximo?'700':'400'}">${urgente?'⚠️ VENCIDO':proximo?'⏰ '+dias+' días':'📅 '+dias+' días'}</div>
+        </div>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;padding-top:8px;border-top:1px solid #F0F0F0;">
+        <div style="font-size:12px;color:#666">📦 ${nProd} producto${nProd>1?'s':''} · 📅 ${fechaStr}</div>
+        ${p.prioridad ? `<div style="font-size:11px;color:#F57C00;font-weight:600">${p.prioridad}</div>` : ''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function openPedidoDetalle(pedidoId) {
+  const productos = allPedidos.filter(r => (r['PedidoRQF']||r['PedidoID']) === pedidoId);
+  if (!productos.length) return;
+  const p = productos[0];
+  const estado = p['EstadoPedido'] || 'Pendiente';
+  const cancelado = estado === 'Cancelado';
+  const despachado = estado === 'Despachado';
+
+  const prodHTML = productos.map(r => {
+    const clave = r['ClaveProducto'] || r['ClavePT'] || '—';
+    const desc = r['Descripcion'] || r['DescripcionPT'] || '—';
+    const cantPz = parseFloat(r['CantidadPedida_Pz']||r['CantidadPz']||0);
+    const cantKg = parseFloat(r['CantidadPedida_Kg']||r['CantidadKg']||0);
+    const dispPz = parseFloat(r['Pz_Disponibles']||0);
+    const faltaPz = parseFloat(r['Faltante_Pz']||0);
+    const hayStock = faltaPz <= 0;
+    return `<div style="background:white;border-radius:10px;padding:12px;border:1px solid ${hayStock?'#E8F5E9':'#FDECEA'};">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+        <div>
+          <div style="font-size:13px;font-weight:700;font-family:'DM Mono',monospace">${clave}</div>
+          <div style="font-size:12px;color:#666;margin-top:2px">${desc}</div>
+        </div>
+        <div style="text-align:right">
+          <div style="font-size:14px;font-weight:700">${cantPz>0?cantPz+' pz':''}${cantKg>0?(cantPz>0?' · ':'')+cantKg+' kg':''}</div>
+          <div style="font-size:11px;color:${hayStock?'#4CAF50':'#E53935'};font-weight:600">${hayStock?'✅ Hay stock':'⚠️ Falta '+faltaPz+' pz'}</div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+
+  document.getElementById('detModalBody').innerHTML = `
+    <div class="det-header">
+      <div class="det-folio">${pedidoId}</div>
+      <div class="det-tipo">${p['Cliente']||'—'}</div>
+      <div class="det-fecha">👤 ${p['Vendedor']||'—'}</div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:8px">${prodHTML}</div>
+    ${!despachado && !cancelado ? `<button class="form-btn-submit" onclick="despacharPedido('${pedidoId}')">🚀 Despachar pedido</button>` : ''}
+    ${despachado ? `<div style="text-align:center;padding:12px;background:#F3E5F5;border-radius:12px;color:#6A1B9A;font-weight:700">✅ Pedido despachado</div>` : ''}`;
+
+  document.getElementById('detModalOverlay').classList.add('open');
+}
+
+async function despacharPedido(pedidoId) {
+  const productos = allPedidos.filter(r => (r['PedidoRQF']||r['PedidoID']) === pedidoId);
+  if (!confirm('¿Despachar pedido ' + pedidoId + '? Se generarán ' + productos.length + ' movimientos de salida.')) return;
+
+  const fecha = new Date().toISOString().split('T')[0];
+  let exitosos = 0;
+
+  for (const r of productos) {
+    const clave = r['ClaveProducto'] || r['ClavePT'] || '';
+    const cantPz = parseFloat(r['CantidadPedida_Pz']||r['CantidadPz']||0);
+    const cantKg = parseFloat(r['CantidadPedida_Kg']||r['CantidadKg']||0);
+    if (!clave || (!cantPz && !cantKg)) continue;
+
+    const payload = {
+      movId: generateMovId(),
+      FechaMov: fecha,
+      TipoMov: 'Salida venta/despacho',
+      FolioMov: pedidoId,
+      DocumentoRef: pedidoId,
+      ClaveProducto: clave,
+      Descripcion: r['Descripcion'] || r['DescripcionPT'] || '',
+      UbicacionOrigen: 'BN',
+      UbicacionDestino: 'Cliente',
+      CantidadPz: cantPz,
+      CantidadKg: cantKg,
+      Cliente: r['Cliente'] || '',
+      Captura: 'U01',
+      Estado: 'OK',
+      Observaciones: 'Despacho pedido ' + pedidoId,
+      Folio_QR: pedidoId
+    };
+
+    try {
+      await fetch(APPS_SCRIPT_URL, {
+        method: 'POST', mode: 'no-cors',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      exitosos++;
+    } catch(e) { console.error('Error despachando', clave, e); }
+  }
+
+  document.getElementById('detModalOverlay').classList.remove('open');
+  showToast('🚀 Pedido ' + pedidoId + ' despachado (' + exitosos + ' movimientos)', 'success');
+  setTimeout(() => syncData(), 2000);
+}
+  function generateMovId() {
   return 'mid_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
 }
   async function fetchSheet(sheetName) {
