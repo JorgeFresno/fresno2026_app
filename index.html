@@ -742,7 +742,7 @@ function openPedidoDetalle(pedidoId) {
     </div>
     <div style="display:flex;flex-direction:column;gap:8px">${prodHTML}</div>
     ${!despachado && !cancelado ? `<button class="form-btn-submit" onclick="despacharPedido('${pedidoId}')">🚀 Despachar pedido</button>` : ''}
-    ${despachado ? `<div style="text-align:center;padding:12px;background:#F3E5F5;border-radius:12px;color:#6A1B9A;font-weight:700">✅ Pedido despachado</div>` : ''}`;
+    ${despachado ? `<div style="text-align:center;padding:12px;background:#F3E5F5;border-radius:12px;color:#6A1B9A;font-weight:700">✅ Pedido despachado</div>` : '`}
 
   document.getElementById('detModalOverlay').classList.add('open');
 }
