@@ -7,7 +7,6 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="El Fresno">
-
 <meta name="theme-color" content="#2D5A1B">
 <link rel="apple-touch-icon" href="logo.png">
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -22,6 +21,10 @@
     --red-pale: #FDECEA;
     --orange: #F57C00;
     --orange-pale: #FFF3E0;
+    --blue: #1565C0;
+    --blue-pale: #E3F2FD;
+    --purple: #6A1B9A;
+    --purple-pale: #F3E5F5;
     --text-primary: #1A1A1A;
     --text-secondary: #666;
     --text-muted: #999;
@@ -32,6 +35,8 @@
   }
   * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
   body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text-primary); max-width: 430px; margin: 0 auto; min-height: 100vh; overflow-x: hidden; }
+  
+  /* HEADER */
   .header { background: var(--green-dark); padding: 16px 20px 14px; position: sticky; top: 0; z-index: 100; }
   .header-top { display: flex; align-items: center; justify-content: space-between; }
   .header-brand { display: flex; align-items: center; gap: 10px; }
@@ -42,7 +47,14 @@
   .sync-btn { background: rgba(255,255,255,0.15); border: none; border-radius: 8px; padding: 6px 10px; color: white; font-size: 12px; cursor: pointer; font-family: 'DM Sans', sans-serif; display: flex; align-items: center; gap: 4px; transition: background 0.15s; }
   .sync-btn:active { background: rgba(255,255,255,0.25); }
   .avatar { width: 36px; height: 36px; border-radius: 50%; background: rgba(255,255,255,0.2); border: 2px solid rgba(255,255,255,0.4); display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; color: white; }
+  
+  /* LAYOUT */
   .content { padding: 16px 16px 100px; display: flex; flex-direction: column; gap: 14px; }
+  .page { display: none; animation: fadeIn 0.2s ease; }
+  .page.active { display: block; }
+  @keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+  
+  /* WELCOME */
   .welcome-card { background: linear-gradient(135deg, var(--green-mid) 0%, var(--green-light) 60%, var(--green-accent) 100%); border-radius: 20px; padding: 20px; color: white; position: relative; overflow: hidden; }
   .welcome-card::before { content: ''; position: absolute; top: -30px; right: -30px; width: 120px; height: 120px; background: rgba(255,255,255,0.08); border-radius: 50%; }
   .welcome-greeting { font-size: 13px; opacity: 0.85; margin-bottom: 2px; }
@@ -55,7 +67,11 @@
   .kpi { text-align: center; }
   .kpi-value { font-size: 22px; font-weight: 700; line-height: 1; }
   .kpi-label { font-size: 11px; opacity: 0.75; margin-top: 2px; }
+  
+  /* SECTION */
   .section-title { font-size: 11px; font-weight: 600; color: var(--text-muted); letter-spacing: 0.08em; text-transform: uppercase; display: flex; align-items: center; gap: 6px; margin-bottom: -4px; }
+  
+  /* ACTION CARDS */
   .action-card { background: var(--card); border-radius: 14px; padding: 14px 16px; display: flex; align-items: center; gap: 14px; cursor: pointer; transition: transform 0.15s; box-shadow: var(--shadow); border: 1px solid var(--border); }
   .action-card:active { transform: scale(0.98); }
   .action-icon { width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 24px; flex-shrink: 0; }
@@ -68,14 +84,17 @@
   .icon-orange { background: #FFF3E0; }
   .icon-purple { background: #F3E5F5; }
   .icon-teal { background: #E0F2F1; }
+  .icon-red { background: #FDECEA; }
+  
+  /* BOTTOM NAV */
   .bottom-nav { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 430px; background: white; border-top: 1px solid var(--border); display: grid; grid-template-columns: repeat(5,1fr); padding: 8px 0 20px; z-index: 100; }
-  .nav-item { display: flex; flex-direction: column; align-items: center; gap: 3px; cursor: pointer; padding: 4px 0; }
+  .nav-item { display: flex; flex-direction: column; align-items: center; gap: 3px; cursor: pointer; padding: 4px 0; position: relative; }
   .nav-icon { font-size: 22px; }
   .nav-label { font-size: 10px; font-weight: 500; color: var(--text-muted); }
   .nav-item.active .nav-label { color: var(--green-dark); font-weight: 600; }
-  .page { display: none; animation: fadeIn 0.2s ease; }
-  .page.active { display: block; }
-  @keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+  .nav-badge { position: absolute; top: 0; right: 20%; background: var(--red); color: white; border-radius: 10px; font-size: 9px; font-weight: 700; padding: 1px 5px; min-width: 16px; text-align: center; }
+  
+  /* INV SUMMARY */
   .inv-summary { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
   .inv-kpi-card { background: var(--card); border-radius: 16px; padding: 16px; box-shadow: var(--shadow); border: 1px solid var(--border); }
   .inv-kpi-icon { font-size: 24px; margin-bottom: 8px; }
@@ -85,13 +104,20 @@
   .badge-green { background: #E8F5E9; color: #2E7D32; }
   .badge-orange { background: #FFF3E0; color: #E65100; }
   .badge-blue { background: #E3F2FD; color: #1565C0; }
+  .badge-red { background: #FDECEA; color: #C62828; }
+  
+  /* FILTER TABS */
   .filter-tabs { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; scrollbar-width: none; }
   .filter-tabs::-webkit-scrollbar { display: none; }
   .filter-tab { flex-shrink: 0; padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: 500; cursor: pointer; border: 1.5px solid var(--border); background: white; color: var(--text-secondary); transition: all 0.15s; }
   .filter-tab.active { background: var(--green-dark); border-color: var(--green-dark); color: white; }
+  
+  /* SEARCH BAR */
   .search-bar { background: white; border: 1.5px solid var(--border); border-radius: 12px; padding: 12px 16px; display: flex; align-items: center; gap: 10px; font-size: 14px; }
-  #searchInput { border: none; outline: none; flex: 1; font-family: 'DM Sans', sans-serif; font-size: 14px; color: var(--text-primary); background: transparent; }
-  #searchInput::placeholder { color: var(--text-muted); }
+  .search-bar input { border: none; outline: none; flex: 1; font-family: 'DM Sans', sans-serif; font-size: 14px; color: var(--text-primary); background: transparent; }
+  .search-bar input::placeholder { color: var(--text-muted); }
+  
+  /* PRODUCT CARDS */
   .product-card { background: var(--card); border-radius: 14px; padding: 16px; box-shadow: var(--shadow); border: 1px solid var(--border); cursor: pointer; transition: transform 0.15s; }
   .product-card:active { transform: scale(0.99); }
   .product-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
@@ -115,21 +141,8 @@
   .stat-value.orange { color: var(--orange); }
   .stat-value.green { color: #4CAF50; }
   .stat-label { font-size: 10px; color: var(--text-muted); margin-top: 1px; }
-  .loading-state { text-align: center; padding: 40px 20px; color: var(--text-muted); }
-  .loading-spinner { width: 32px; height: 32px; border: 3px solid var(--border); border-top-color: var(--green-mid); border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 12px; }
-  @keyframes spin { to { transform: rotate(360deg); } }
-  .empty-state { text-align: center; padding: 40px 20px; color: var(--text-muted); font-size: 14px; }
-  .last-sync { font-size: 11px; color: var(--text-muted); text-align: center; padding: 4px 0; }
-  .alert-card { border-radius: 14px; padding: 14px 16px; display: flex; align-items: center; gap: 12px; cursor: pointer; border-left: 4px solid transparent; }
-  .alert-card.critical { background: var(--red-pale); border-left-color: var(--red); }
-  .alert-card.warning { background: var(--orange-pale); border-left-color: var(--orange); }
-  .alert-dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
-  .alert-dot.red { background: var(--red); } .alert-dot.orange { background: var(--orange); }
-  .alert-body { flex: 1; }
-  .alert-title { font-size: 14px; font-weight: 600; }
-  .alert-title.red { color: var(--red); } .alert-title.orange { color: var(--orange); }
-  .alert-sub { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
-  .alert-arrow { color: var(--text-muted); font-size: 16px; }
+  
+  /* MOVIMIENTOS */
   .mov-summary { background: var(--card); border-radius: 16px; padding: 16px; box-shadow: var(--shadow); border: 1px solid var(--border); display: grid; grid-template-columns: repeat(3,1fr); text-align: center; }
   .mov-stat-value { font-size: 24px; font-weight: 700; }
   .mov-stat-value.positive { color: #4CAF50; } .mov-stat-value.negative { color: var(--red); }
@@ -146,6 +159,26 @@
   .mov-qty { font-size: 15px; font-weight: 700; }
   .mov-qty.positive { color: #4CAF50; } .mov-qty.negative { color: var(--red); }
   .mov-time { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+  
+  /* STATES */
+  .loading-state { text-align: center; padding: 40px 20px; color: var(--text-muted); }
+  .loading-spinner { width: 32px; height: 32px; border: 3px solid var(--border); border-top-color: var(--green-mid); border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 12px; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .empty-state { text-align: center; padding: 40px 20px; color: var(--text-muted); font-size: 14px; }
+  .last-sync { font-size: 11px; color: var(--text-muted); text-align: center; padding: 4px 0; }
+  
+  /* ALERTS */
+  .alert-card { border-radius: 14px; padding: 14px 16px; display: flex; align-items: center; gap: 12px; cursor: pointer; border-left: 4px solid transparent; }
+  .alert-card.critical { background: var(--red-pale); border-left-color: var(--red); }
+  .alert-card.warning { background: var(--orange-pale); border-left-color: var(--orange); }
+  .alert-dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
+  .alert-dot.red { background: var(--red); } .alert-dot.orange { background: var(--orange); }
+  .alert-body { flex: 1; }
+  .alert-title { font-size: 14px; font-weight: 600; }
+  .alert-title.red { color: var(--red); } .alert-title.orange { color: var(--orange); }
+  .alert-sub { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
+
+  /* SCANNER */
   .scanner-area { background: #1A1A1A; border-radius: 20px; height: 280px; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; }
   .corner-box { width: 200px; height: 160px; position: relative; }
   .corner-box::before,.corner-box::after,.corner-box>span::before,.corner-box>span::after { content:''; position:absolute; width:24px; height:24px; border-color:#7BC950; border-style:solid; }
@@ -158,100 +191,189 @@
   .scanner-hint { position:absolute; bottom:16px; color:rgba(255,255,255,0.6); font-size:13px; }
   .scan-btn { background:linear-gradient(135deg,var(--green-mid),var(--green-light)); color:white; border:none; border-radius:14px; padding:16px; font-size:15px; font-weight:600; width:100%; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; font-family:'DM Sans',sans-serif; }
   .scan-btn-secondary { background:white; color:var(--text-primary); border:1.5px solid var(--border); border-radius:14px; padding:14px; font-size:14px; font-weight:500; width:100%; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; font-family:'DM Sans',sans-serif; }
-  .pedido-item { background:var(--card); border-radius:14px; padding:14px 16px; display:flex; align-items:center; gap:12px; box-shadow:var(--shadow); border:1px solid var(--border); cursor:pointer; }
-  .pedido-icon { width:44px; height:44px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:22px; }
-  .pedido-body { flex:1; }
-  .pedido-id { font-size:15px; font-weight:700; font-family:'DM Mono',monospace; color:var(--green-dark); }
-  .pedido-detail { font-size:12px; color:var(--text-secondary); margin-top:2px; }
-  .pedido-status { padding:4px 12px; border-radius:20px; font-size:12px; font-weight:600; flex-shrink:0; }
-  .ps-pending { background:#FFF8E1; color:#F57F17; }
-  .ps-delayed { background:#FDECEA; color:#B71C1C; }
-  .ps-done { background:#E8F5E9; color:#1B5E20; }
 
-  /* MODAL */
-  .modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.55); z-index:200; display:none; align-items:flex-end; justify-content:center; animation:fadeOverlay 0.2s ease; }
-  .modal-overlay.open { display:flex; }
+  /* ============================================
+     AGENDA PEDIDOS — ESTILOS NUEVOS
+     ============================================ */
+  
+  /* KPIs agenda 3 col */
+  .agenda-kpis { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .agenda-kpi { background: var(--card); border-radius: 16px; padding: 14px 12px; box-shadow: var(--shadow); border: 1px solid var(--border); text-align: center; }
+  .agenda-kpi-icon { font-size: 22px; margin-bottom: 6px; }
+  .agenda-kpi-value { font-size: 22px; font-weight: 700; line-height: 1; }
+  .agenda-kpi-label { font-size: 11px; color: var(--text-secondary); margin-top: 3px; }
+
+  /* Tarjeta pedido agrupado */
+  .pedido-card { background: var(--card); border-radius: 16px; box-shadow: var(--shadow); border: 1px solid var(--border); overflow: hidden; cursor: pointer; transition: transform 0.15s; }
+  .pedido-card:active { transform: scale(0.99); }
+  .pedido-card-header { padding: 14px 16px; display: flex; align-items: center; gap: 12px; }
+  .pedido-card-left { flex: 1; min-width: 0; }
+  .pedido-folio { font-family: 'DM Mono', monospace; font-size: 15px; font-weight: 700; color: var(--green-dark); }
+  .pedido-cliente { font-size: 13px; font-weight: 600; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .pedido-meta { font-size: 11px; color: var(--text-muted); margin-top: 3px; }
+  .pedido-right { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; flex-shrink: 0; }
+  .pedido-estado-chip { padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 700; white-space: nowrap; }
+  .pe-pendiente   { background: #FFF8E1; color: #F57F17; }
+  .pe-enproduccion { background: #E3F2FD; color: #1565C0; }
+  .pe-completo    { background: #E8F5E9; color: #2E7D32; }
+  .pe-despachado  { background: #F3E5F5; color: #6A1B9A; }
+  .pe-cancelado   { background: #FDECEA; color: #C62828; }
+  .pedido-productos-count { font-size: 11px; color: var(--text-muted); font-weight: 500; }
+
+  /* Líneas de productos dentro de la tarjeta */
+  .pedido-lineas { border-top: 1px solid var(--border); }
+  .pedido-linea { display: flex; align-items: center; gap: 10px; padding: 10px 16px; border-bottom: 1px solid var(--border); }
+  .pedido-linea:last-child { border-bottom: none; }
+  .pedido-linea-clave { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--text-muted); min-width: 70px; flex-shrink: 0; }
+  .pedido-linea-desc { flex: 1; font-size: 12px; font-weight: 500; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .pedido-linea-qty { font-size: 12px; font-weight: 700; color: var(--green-dark); flex-shrink: 0; }
+  .pedido-linea-semaforo { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+  .sem-verde { background: #4CAF50; }
+  .sem-amarillo { background: #FFC107; }
+  .sem-rojo { background: #F44336; }
+
+  /* Semáforo disponibilidad */
+  .disponibilidad-badge { font-size: 10px; font-weight: 600; padding: 2px 7px; border-radius: 10px; flex-shrink: 0; }
+  .disp-ok { background: #E8F5E9; color: #2E7D32; }
+  .disp-parcial { background: #FFF3E0; color: #E65100; }
+  .disp-sin { background: #FDECEA; color: #C62828; }
+
+  /* MODAL DETALLE PEDIDO */
+  .ped-det-header { background: linear-gradient(135deg, var(--green-mid), var(--green-dark)); border-radius: 16px; padding: 18px; color: white; margin-bottom: 16px; }
+  .ped-det-folio { font-family: 'DM Mono', monospace; font-size: 20px; font-weight: 700; }
+  .ped-det-cliente { font-size: 16px; font-weight: 600; margin-top: 4px; }
+  .ped-det-meta { font-size: 12px; opacity: 0.8; margin-top: 6px; display: flex; flex-wrap: wrap; gap: 8px; }
+  .ped-det-meta span { background: rgba(255,255,255,0.15); border-radius: 8px; padding: 3px 8px; }
+
+  /* Líneas del modal detalle */
+  .linea-det-card { background: var(--bg); border-radius: 12px; padding: 12px 14px; border: 1px solid var(--border); }
+  .linea-det-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
+  .linea-det-nombre { font-size: 14px; font-weight: 600; flex: 1; margin-right: 8px; }
+  .linea-det-clave { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+  .linea-det-stocks { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-top: 8px; }
+  .linea-det-stat { text-align: center; background: white; border-radius: 8px; padding: 8px 4px; border: 1px solid var(--border); }
+  .linea-det-val { font-size: 14px; font-weight: 700; }
+  .linea-det-val.orange { color: var(--orange); }
+  .linea-det-val.green { color: #4CAF50; }
+  .linea-det-val.red { color: var(--red); }
+  .linea-det-lab { font-size: 10px; color: var(--text-muted); margin-top: 2px; }
+
+  /* Botones de acción en modal pedido */
+  .estado-btn-group { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .estado-btn { border: 1.5px solid var(--border); border-radius: 12px; padding: 12px 8px; text-align: center; cursor: pointer; font-size: 13px; font-weight: 600; font-family: 'DM Sans', sans-serif; background: white; transition: all 0.15s; }
+  .estado-btn:active { transform: scale(0.97); }
+  .estado-btn.btn-produccion { border-color: #1565C0; color: #1565C0; background: #E3F2FD; }
+  .estado-btn.btn-completo { border-color: #2E7D32; color: #2E7D32; background: #E8F5E9; }
+  .estado-btn.btn-cancelar { border-color: var(--red); color: var(--red); background: #FDECEA; }
+  .estado-btn.btn-despachar { background: linear-gradient(135deg, var(--green-mid), var(--green-dark)); color: white; border-color: transparent; grid-column: 1 / -1; padding: 16px; font-size: 16px; border-radius: 14px; }
+  .estado-btn.btn-despachar:disabled { opacity: 0.5; }
+
+  /* MODAL NUEVO PEDIDO */
+  .lineas-container { display: flex; flex-direction: column; gap: 10px; }
+  .linea-form-card { background: var(--bg); border-radius: 12px; padding: 12px; border: 1px solid var(--border); position: relative; }
+  .linea-form-num { font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 8px; }
+  .linea-remove-btn { position: absolute; top: 10px; right: 10px; background: none; border: none; font-size: 18px; color: var(--red); cursor: pointer; padding: 0; }
+  .add-linea-btn { border: 2px dashed var(--green-mid); border-radius: 12px; padding: 14px; text-align: center; color: var(--green-mid); font-size: 14px; font-weight: 600; cursor: pointer; transition: background 0.15s; background: transparent; width: 100%; font-family: 'DM Sans', sans-serif; }
+  .add-linea-btn:active { background: var(--green-pale); }
+
+  /* FABs */
+  .mov-fab { position: fixed; bottom: 88px; right: calc(50% - 215px + 20px); background: linear-gradient(135deg,var(--green-mid),var(--green-light)); color: white; border: none; border-radius: 50%; width: 56px; height: 56px; font-size: 28px; cursor: pointer; box-shadow: 0 4px 16px rgba(61,122,38,0.45); display: none; align-items: center; justify-content: center; z-index: 99; transition: transform 0.15s; }
+  .mov-fab.visible { display: flex; }
+  .mov-fab:active { transform: scale(0.93); }
+
+  /* MODAL BASE */
+  .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.55); z-index: 200; display: none; align-items: flex-end; justify-content: center; }
+  .modal-overlay.open { display: flex; animation: fadeOverlay 0.2s ease; }
   @keyframes fadeOverlay { from{opacity:0} to{opacity:1} }
-  .modal-sheet { background:white; border-radius:24px 24px 0 0; width:100%; max-width:430px; max-height:92vh; overflow-y:auto; padding:0 0 40px; animation:slideUp 0.25s ease; }
+  .modal-sheet { background: white; border-radius: 24px 24px 0 0; width: 100%; max-width: 430px; max-height: 92vh; overflow-y: auto; padding: 0 0 40px; animation: slideUp 0.25s ease; }
   @keyframes slideUp { from{transform:translateY(60px);opacity:0} to{transform:translateY(0);opacity:1} }
-  .modal-handle { width:40px; height:4px; background:#DDD; border-radius:2px; margin:14px auto 0; }
-  .modal-header { padding:16px 20px 12px; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; }
-  .modal-title { font-size:17px; font-weight:700; }
-  .modal-close { width:32px; height:32px; border-radius:50%; background:var(--bg); border:none; font-size:18px; cursor:pointer; display:flex; align-items:center; justify-content:center; color:var(--text-secondary); }
-  .modal-body { padding:16px 20px; display:flex; flex-direction:column; gap:14px; }
-  .form-group { display:flex; flex-direction:column; gap:6px; }
-  .form-label { font-size:12px; font-weight:600; color:var(--text-secondary); text-transform:uppercase; letter-spacing:0.05em; }
-  .form-label span { color:var(--red); }
-  .form-input { border:1.5px solid var(--border); border-radius:12px; padding:12px 14px; font-size:15px; font-family:'DM Sans',sans-serif; color:var(--text-primary); background:white; outline:none; width:100%; transition:border-color 0.15s; }
-  .form-input:focus { border-color:var(--green-mid); }
-  .form-input.error { border-color:var(--red); }
-  .form-select { appearance:none; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23999' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right 14px center; padding-right:36px; }
-  .form-row { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
-  .folio-preview { font-family:'DM Mono',monospace; font-size:13px; color:var(--green-dark); background:var(--green-pale); border-radius:8px; padding:8px 12px; font-weight:600; display:inline-block; }
-  .product-suggestion { border:1.5px solid var(--border); border-radius:12px; overflow:hidden; }
-  .suggestion-item { padding:10px 14px; cursor:pointer; border-bottom:1px solid var(--border); transition:background 0.1s; }
-  .suggestion-item:last-child { border-bottom:none; }
-  .suggestion-item:active { background:var(--green-pale); }
-  .suggestion-name { font-size:14px; font-weight:500; }
-  .suggestion-code { font-size:11px; color:var(--text-muted); font-family:'DM Mono',monospace; margin-top:1px; }
-  .form-btn-submit { background:linear-gradient(135deg,var(--green-mid),var(--green-light)); color:white; border:none; border-radius:14px; padding:16px; font-size:16px; font-weight:700; width:100%; cursor:pointer; font-family:'DM Sans',sans-serif; display:flex; align-items:center; justify-content:center; gap:8px; transition:opacity 0.15s; }
-  .form-btn-submit:disabled { opacity:0.6; }
-  .form-btn-submit.saving { opacity:0.7; }
-  .mov-fab { position:fixed; bottom:88px; right:calc(50% - 215px + 20px); background:linear-gradient(135deg,var(--green-mid),var(--green-light)); color:white; border:none; border-radius:50%; width:56px; height:56px; font-size:28px; cursor:pointer; box-shadow:0 4px 16px rgba(61,122,38,0.45); display:none; align-items:center; justify-content:center; z-index:99; transition:transform 0.15s; }
-  .mov-fab.visible { display:flex; }
-  .mov-fab:active { transform:scale(0.93); }
-  .type-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; }
-  .type-btn { border:1.5px solid var(--border); border-radius:12px; padding:10px 6px; text-align:center; cursor:pointer; transition:all 0.15s; background:white; }
-  .type-btn.selected { border-color:var(--green-dark); background:var(--green-pale); }
-  .type-btn-icon { font-size:20px; margin-bottom:4px; }
-  .type-btn-label { font-size:11px; font-weight:600; color:var(--text-secondary); line-height:1.2; }
-  .type-btn.selected .type-btn-label { color:var(--green-dark); }
-  .toast { position:fixed; bottom:100px; left:50%; transform:translateX(-50%); background:#1A1A1A; color:white; padding:12px 20px; border-radius:12px; font-size:14px; font-weight:500; z-index:300; opacity:0; transition:opacity 0.2s; pointer-events:none; white-space:nowrap; }
-  .toast.show { opacity:1; }
-  .toast.success { background:var(--green-dark); }
-  .modal-open { position: fixed; width: 100%; }
+  .modal-handle { width: 40px; height: 4px; background: #DDD; border-radius: 2px; margin: 14px auto 0; }
+  .modal-header { padding: 16px 20px 12px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+  .modal-title { font-size: 17px; font-weight: 700; }
+  .modal-close { width: 32px; height: 32px; border-radius: 50%; background: var(--bg); border: none; font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--text-secondary); }
+  .modal-body { padding: 16px 20px; display: flex; flex-direction: column; gap: 14px; }
+  
+  /* FORM */
+  .form-group { display: flex; flex-direction: column; gap: 6px; }
+  .form-label { font-size: 12px; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em; }
+  .form-label span { color: var(--red); }
+  .form-input { border: 1.5px solid var(--border); border-radius: 12px; padding: 12px 14px; font-size: 15px; font-family: 'DM Sans', sans-serif; color: var(--text-primary); background: white; outline: none; width: 100%; transition: border-color 0.15s; }
+  .form-input:focus { border-color: var(--green-mid); }
+  .form-input.error { border-color: var(--red); }
+  .form-input-sm { border: 1.5px solid var(--border); border-radius: 10px; padding: 10px 12px; font-size: 14px; font-family: 'DM Sans', sans-serif; color: var(--text-primary); background: white; outline: none; width: 100%; transition: border-color 0.15s; }
+  .form-input-sm:focus { border-color: var(--green-mid); }
+  .form-select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23999' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 14px center; padding-right: 36px; }
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .folio-preview { font-family: 'DM Mono', monospace; font-size: 13px; color: var(--green-dark); background: var(--green-pale); border-radius: 8px; padding: 8px 12px; font-weight: 600; display: inline-block; }
+  .product-suggestion { border: 1.5px solid var(--border); border-radius: 12px; overflow: hidden; }
+  .suggestion-item { padding: 10px 14px; cursor: pointer; border-bottom: 1px solid var(--border); transition: background 0.1s; }
+  .suggestion-item:last-child { border-bottom: none; }
+  .suggestion-item:active { background: var(--green-pale); }
+  .suggestion-name { font-size: 14px; font-weight: 500; }
+  .suggestion-code { font-size: 11px; color: var(--text-muted); font-family: 'DM Mono', monospace; margin-top: 1px; }
+  .form-btn-submit { background: linear-gradient(135deg,var(--green-mid),var(--green-light)); color: white; border: none; border-radius: 14px; padding: 16px; font-size: 16px; font-weight: 700; width: 100%; cursor: pointer; font-family: 'DM Sans', sans-serif; display: flex; align-items: center; justify-content: center; gap: 8px; transition: opacity 0.15s; }
+  .form-btn-submit:disabled { opacity: 0.6; }
+
+  /* TYPE GRID */
+  .type-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 8px; }
+  .type-btn { border: 1.5px solid var(--border); border-radius: 12px; padding: 10px 6px; text-align: center; cursor: pointer; transition: all 0.15s; background: white; }
+  .type-btn.selected { border-color: var(--green-dark); background: var(--green-pale); }
+  .type-btn-icon { font-size: 20px; margin-bottom: 4px; }
+  .type-btn-label { font-size: 11px; font-weight: 600; color: var(--text-secondary); line-height: 1.2; }
+  .type-btn.selected .type-btn-label { color: var(--green-dark); }
+
   /* DETALLE MOV */
-  .det-header { padding:20px; background:linear-gradient(135deg,var(--green-mid),var(--green-light)); color:white; border-radius:20px; margin-bottom:16px; }
-  .det-folio { font-family:'DM Mono',monospace; font-size:18px; font-weight:700; }
-  .det-tipo { font-size:13px; opacity:0.85; margin-top:4px; }
-  .det-fecha { font-size:12px; opacity:0.7; margin-top:2px; }
-  .det-section { background:var(--bg); border-radius:12px; padding:14px; display:flex; flex-direction:column; gap:10px; }
-  .det-row { display:flex; justify-content:space-between; align-items:center; }
-  .det-label { font-size:12px; color:var(--text-muted); font-weight:600; text-transform:uppercase; letter-spacing:0.04em; }
-  .det-value { font-size:14px; font-weight:600; text-align:right; max-width:60%; }
-  .det-arrow { display:flex; align-items:center; gap:8px; font-size:14px; font-weight:600; }
-  .det-arrow span { color:var(--text-muted); font-size:12px; }
-  .det-badge { padding:4px 12px; border-radius:20px; font-size:13px; font-weight:700; }
-  .det-ok { background:#E8F5E9; color:#2E7D32; }
-  .det-cancel { background:#FDECEA; color:#C62828; }
+  .det-header { padding: 20px; background: linear-gradient(135deg,var(--green-mid),var(--green-light)); color: white; border-radius: 20px; margin-bottom: 16px; }
+  .det-folio { font-family: 'DM Mono', monospace; font-size: 18px; font-weight: 700; }
+  .det-tipo { font-size: 13px; opacity: 0.85; margin-top: 4px; }
+  .det-fecha { font-size: 12px; opacity: 0.7; margin-top: 2px; }
+  .det-section { background: var(--bg); border-radius: 12px; padding: 14px; display: flex; flex-direction: column; gap: 10px; }
+  .det-row { display: flex; justify-content: space-between; align-items: center; }
+  .det-label { font-size: 12px; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; }
+  .det-value { font-size: 14px; font-weight: 600; text-align: right; max-width: 60%; }
+  .det-badge { padding: 4px 12px; border-radius: 20px; font-size: 13px; font-weight: 700; }
+  .det-ok { background: #E8F5E9; color: #2E7D32; }
+  .det-cancel { background: #FDECEA; color: #C62828; }
+  .det-qty-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .det-qty-card { background: white; border-radius: 10px; padding: 12px; text-align: center; border: 1px solid var(--border); }
+  .det-qty-val { font-size: 20px; font-weight: 700; }
+  .det-qty-lab { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+
   /* DETALLE PRODUCTO */
-  .prod-det-kpis { display:grid; grid-template-columns:repeat(2,1fr); gap:10px; }
-  .prod-det-kpi { background:white; border-radius:12px; padding:14px; text-align:center; border:1px solid var(--border); }
-  .prod-det-kpi-val { font-size:22px; font-weight:700; }
-  .prod-det-kpi-val.orange { color:var(--orange); }
-  .prod-det-kpi-val.green { color:#4CAF50; }
-  .prod-det-kpi-val.blue { color:#1565C0; }
-  .prod-det-kpi-lab { font-size:11px; color:var(--text-muted); margin-top:3px; }
-  .prod-det-mov { background:white; border-radius:10px; padding:10px 12px; border:1px solid var(--border); display:flex; align-items:center; gap:10px; }
-  .prod-det-mov-icon { width:36px; height:36px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0; }
-  .prod-det-mov-body { flex:1; min-width:0; }
-  .prod-det-mov-tipo { font-size:13px; font-weight:600; }
-  .prod-det-mov-fecha { font-size:11px; color:var(--text-muted); margin-top:1px; }
-  .prod-det-mov-qty { font-size:14px; font-weight:700; text-align:right; flex-shrink:0; }
-  .prod-det-mov-qty.pos { color:#4CAF50; }
-  .prod-det-mov-qty.neg { color:var(--red); }
-  .det-qty-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
-  .det-qty-card { background:white; border-radius:10px; padding:12px; text-align:center; border:1px solid var(--border); }
-  .det-qty-val { font-size:20px; font-weight:700; }
-  .det-qty-lab { font-size:11px; color:var(--text-muted); margin-top:2px; }
+  .prod-det-kpis { display: grid; grid-template-columns: repeat(2,1fr); gap: 10px; }
+  .prod-det-kpi { background: white; border-radius: 12px; padding: 14px; text-align: center; border: 1px solid var(--border); }
+  .prod-det-kpi-val { font-size: 22px; font-weight: 700; }
+  .prod-det-kpi-val.orange { color: var(--orange); }
+  .prod-det-kpi-val.green { color: #4CAF50; }
+  .prod-det-kpi-val.blue { color: #1565C0; }
+  .prod-det-kpi-lab { font-size: 11px; color: var(--text-muted); margin-top: 3px; }
+  .prod-det-mov { background: white; border-radius: 10px; padding: 10px 12px; border: 1px solid var(--border); display: flex; align-items: center; gap: 10px; }
+  .prod-det-mov-icon { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+  .prod-det-mov-body { flex: 1; min-width: 0; }
+  .prod-det-mov-tipo { font-size: 13px; font-weight: 600; }
+  .prod-det-mov-fecha { font-size: 11px; color: var(--text-muted); margin-top: 1px; }
+  .prod-det-mov-qty { font-size: 14px; font-weight: 700; text-align: right; flex-shrink: 0; }
+  .prod-det-mov-qty.pos { color: #4CAF50; }
+  .prod-det-mov-qty.neg { color: var(--red); }
+
+  /* TOAST */
+  .toast { position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%); background: #1A1A1A; color: white; padding: 12px 20px; border-radius: 12px; font-size: 14px; font-weight: 500; z-index: 300; opacity: 0; transition: opacity 0.2s; pointer-events: none; white-space: nowrap; }
+  .toast.show { opacity: 1; }
+  .toast.success { background: var(--green-dark); }
+  .toast.error-toast { background: var(--red); }
+  .modal-open { position: fixed; width: 100%; }
+
+  /* DIVIDER */
+  .modal-section-title { font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.07em; padding: 4px 0 0; border-top: 1px solid var(--border); }
 </style>
 </head>
 <body>
 
+<!-- HEADER -->
 <div class="header">
   <div class="header-top">
     <div class="header-brand">
-      <div class="brand-icon" style="padding:2px;"><img src="logo.png" style="width:100%;height:100%;object-fit:contain;border-radius:8px;"></div>
+      <div class="brand-icon" style="padding:2px;"><img src="logo.png" style="width:100%;height:100%;object-fit:contain;border-radius:8px;" onerror="this.parentElement.textContent='🌿'"></div>
       <div class="brand-text"><h1>El Fresno</h1><p>Sistema de Gestión</p></div>
     </div>
     <div class="header-right">
@@ -261,7 +383,7 @@
   </div>
 </div>
 
-<!-- INICIO -->
+<!-- ======== INICIO ======== -->
 <div class="page active" id="page-inicio">
   <div class="content">
     <div class="welcome-card">
@@ -278,15 +400,47 @@
     <div class="section-title" id="alertsTitle" style="display:none">⚠️ Alertas activas</div>
     <div id="alertsContainer"></div>
     <div class="section-title">Acciones rápidas</div>
+    <div class="action-card" onclick="navTo('agenda')"><div class="action-icon icon-teal">📋</div><div class="action-body"><div class="action-title">Agenda de Pedidos</div><div class="action-sub" id="agendaQuickSub">Ver y despachar pedidos</div></div><div class="action-arrow">›</div></div>
     <div class="action-card" onclick="navTo('scanner')"><div class="action-icon icon-green">📱</div><div class="action-body"><div class="action-title">Escanear QR</div><div class="action-sub">Picking de pedidos con cámara</div></div><div class="action-arrow">›</div></div>
     <div class="action-card" onclick="navTo('inventario')"><div class="action-icon icon-blue">📦</div><div class="action-body"><div class="action-title">Inventario</div><div class="action-sub">Consultar stock en tiempo real</div></div><div class="action-arrow">›</div></div>
-    <div class="action-card" onclick="navTo('movimientos')"><div class="action-icon icon-teal">📋</div><div class="action-body"><div class="action-title">Movimientos</div><div class="action-sub">Historial de capturas</div></div><div class="action-arrow">›</div></div>
-    <div class="action-card" onclick="navTo('mas')"><div class="action-icon icon-orange">🏭</div><div class="action-body"><div class="action-title">Control Producción</div><div class="action-sub">Registrar producción y consumos</div></div><div class="action-arrow">›</div></div>
+    <div class="action-card" onclick="navTo('movimientos')"><div class="action-icon icon-orange">📋</div><div class="action-body"><div class="action-title">Movimientos</div><div class="action-sub">Historial de capturas</div></div><div class="action-arrow">›</div></div>
     <div id="lastSyncHome" class="last-sync"></div>
   </div>
 </div>
 
-<!-- INVENTARIO -->
+<!-- ======== AGENDA PEDIDOS ======== -->
+<div class="page" id="page-agenda">
+  <div class="content">
+    <!-- KPIs -->
+    <div class="agenda-kpis">
+      <div class="agenda-kpi"><div class="agenda-kpi-icon">📋</div><div class="agenda-kpi-value" id="agKpiActivos">—</div><div class="agenda-kpi-label">Activos</div></div>
+      <div class="agenda-kpi"><div class="agenda-kpi-icon">⚠️</div><div class="agenda-kpi-value" id="agKpiUrgentes">—</div><div class="agenda-kpi-label">Urgentes</div></div>
+      <div class="agenda-kpi"><div class="agenda-kpi-icon">🚀</div><div class="agenda-kpi-value" id="agKpiDespachados">—</div><div class="agenda-kpi-label">Despachados</div></div>
+    </div>
+
+    <!-- Filtros de estado -->
+    <div class="filter-tabs" id="agendaFilterTabs">
+      <div class="filter-tab active" onclick="setAgendaFilter('todos',this)">Todos</div>
+      <div class="filter-tab" onclick="setAgendaFilter('Pendiente',this)">⏳ Pendiente</div>
+      <div class="filter-tab" onclick="setAgendaFilter('EnProduccion',this)">🏭 Producción</div>
+      <div class="filter-tab" onclick="setAgendaFilter('Completo',this)">✅ Completo</div>
+      <div class="filter-tab" onclick="setAgendaFilter('Despachado',this)">🚀 Despachado</div>
+      <div class="filter-tab" onclick="setAgendaFilter('Cancelado',this)">❌ Cancelado</div>
+    </div>
+
+    <!-- Búsqueda -->
+    <div class="search-bar">🔍 <input id="agendaSearchInput" type="text" placeholder="Buscar pedido, cliente o producto..." oninput="renderAgenda()"></div>
+
+    <!-- Lista de pedidos -->
+    <div id="agendaContainer"><div class="loading-state"><div class="loading-spinner"></div>Cargando pedidos...</div></div>
+    <div id="lastSyncAgenda" class="last-sync"></div>
+  </div>
+</div>
+
+<!-- FAB Nuevo Pedido (visible en Agenda) -->
+<button class="mov-fab" id="agendaFab" onclick="openNuevoPedidoModal()" title="Nuevo pedido" style="display:none;">+</button>
+
+<!-- ======== INVENTARIO ======== -->
 <div class="page" id="page-inventario">
   <div class="content">
     <div class="inv-summary">
@@ -309,7 +463,7 @@
   </div>
 </div>
 
-<!-- MOVIMIENTOS -->
+<!-- ======== MOVIMIENTOS ======== -->
 <div class="page" id="page-movimientos">
   <div class="content">
     <div class="mov-summary">
@@ -323,11 +477,148 @@
     <div id="movContainer"><div class="loading-state"><div class="loading-spinner"></div>Cargando movimientos...</div></div>
   </div>
 </div>
-
-<!-- FAB Nuevo Movimiento -->
+<!-- FAB Movimientos -->
 <button class="mov-fab" id="movFab" onclick="openModal()" title="Nuevo movimiento">+</button>
 
-<!-- MODAL NUEVO MOVIMIENTO -->
+<!-- ======== SCANNER ======== -->
+<div class="page" id="page-scanner">
+  <div class="content">
+    <div class="scanner-area">
+      <div class="corner-box"><span></span></div>
+      <div class="scan-line"></div>
+      <div class="scanner-hint">Mantén estable · Auto-detección</div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:10px;">
+      <button class="scan-btn">📷 Activar cámara</button>
+      <button class="scan-btn-secondary">📁 Seleccionar pedido manualmente</button>
+    </div>
+  </div>
+</div>
+
+<!-- ======== MÁS ======== -->
+<div class="page" id="page-mas">
+  <div class="content">
+    <div class="section-title">Más opciones</div>
+    <div class="action-card"><div class="action-icon icon-green">⚙️</div><div class="action-body"><div class="action-title">Configuración</div><div class="action-sub">Usuarios, permisos, catálogos</div></div><div class="action-arrow">›</div></div>
+    <div class="action-card"><div class="action-icon icon-blue">📊</div><div class="action-body"><div class="action-title">Reportes</div><div class="action-sub">Exportar y consultar datos</div></div><div class="action-arrow">›</div></div>
+    <div class="action-card"><div class="action-icon icon-orange">🏭</div><div class="action-body"><div class="action-title">Control Producción</div><div class="action-sub">Movimiento siamés automático</div></div><div class="action-arrow">›</div></div>
+  </div>
+</div>
+
+<!-- BOTTOM NAV -->
+<nav class="bottom-nav">
+  <div class="nav-item active" id="nav-inicio" onclick="navTo('inicio')"><div class="nav-icon">🏠</div><div class="nav-label">Inicio</div></div>
+  <div class="nav-item" id="nav-agenda" onclick="navTo('agenda')"><div class="nav-icon">📋</div><div class="nav-label">Agenda</div><div class="nav-badge" id="navBadgeAgenda" style="display:none">0</div></div>
+  <div class="nav-item" id="nav-inventario" onclick="navTo('inventario')"><div class="nav-icon">📦</div><div class="nav-label">Inventario</div></div>
+  <div class="nav-item" id="nav-movimientos" onclick="navTo('movimientos')"><div class="nav-icon">📊</div><div class="nav-label">Movs.</div></div>
+  <div class="nav-item" id="nav-mas" onclick="navTo('mas')"><div class="nav-icon">⋯</div><div class="nav-label">Más</div></div>
+</nav>
+
+<!-- ====================================================
+     MODAL DETALLE PEDIDO
+     ==================================================== -->
+<div class="modal-overlay" id="pedDetModalOverlay" onclick="closePedDetModal(event)">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-header">
+      <div class="modal-title" id="pedDetModalTitle">📋 Detalle de pedido</div>
+      <button class="modal-close" onclick="document.getElementById('pedDetModalOverlay').classList.remove('open')">✕</button>
+    </div>
+    <div class="modal-body" id="pedDetModalBody"></div>
+  </div>
+</div>
+
+<!-- ====================================================
+     MODAL NUEVO PEDIDO
+     ==================================================== -->
+<div class="modal-overlay" id="nuevoPedidoModalOverlay" onclick="closeNuevoPedidoModal(event)">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-header">
+      <div class="modal-title">🆕 Nuevo Pedido</div>
+      <button class="modal-close" onclick="document.getElementById('nuevoPedidoModalOverlay').classList.remove('open')">✕</button>
+    </div>
+    <div class="modal-body">
+
+      <!-- Cabecera del pedido -->
+      <div class="modal-section-title" style="border-top:none;padding-top:0;">📄 Datos del pedido</div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <div class="form-label">Pedido/RQF <span>*</span></div>
+          <input class="form-input" id="npFolio" type="text" placeholder="Ej. PED.450">
+        </div>
+        <div class="form-group">
+          <div class="form-label">Estado</div>
+          <select class="form-input form-select" id="npEstado">
+            <option value="Pendiente">⏳ Pendiente</option>
+            <option value="EnProduccion">🏭 En producción</option>
+            <option value="Completo">✅ Completo</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <div class="form-label">Cliente <span>*</span></div>
+        <input class="form-input" id="npClienteSearch" type="text" placeholder="🔍 Buscar cliente..." oninput="searchCatalog('npClienteSearch','npCliente',allClientes,'npClienteSug')" autocomplete="off">
+        <div id="npClienteSug" style="display:none"></div>
+        <input type="hidden" id="npCliente">
+      </div>
+
+      <div class="form-group">
+        <div class="form-label">Vendedor</div>
+        <input class="form-input" id="npVendedor" type="text" placeholder="Nombre del vendedor">
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <div class="form-label">Fecha pedido <span>*</span></div>
+          <input class="form-input" id="npFechaPedido" type="date">
+        </div>
+        <div class="form-group">
+          <div class="form-label">Fecha compromiso</div>
+          <input class="form-input" id="npFechaCompromiso" type="date">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <div class="form-label">Prioridad</div>
+        <select class="form-input form-select" id="npPrioridad">
+          <option value="">Normal</option>
+          <option value="Alta">🔴 Alta</option>
+          <option value="Media">🟡 Media</option>
+          <option value="Baja">🟢 Baja</option>
+        </select>
+      </div>
+
+      <!-- Líneas de productos -->
+      <div class="modal-section-title">📦 Productos del pedido</div>
+
+      <div class="lineas-container" id="npLineasContainer">
+        <!-- Se generan dinámicamente -->
+      </div>
+
+      <button class="add-linea-btn" onclick="addLineaNuevoPedido()">+ Agregar producto</button>
+
+      <div class="form-group">
+        <div class="form-label">Observaciones</div>
+        <input class="form-input" id="npObs" type="text" placeholder="Opcional">
+      </div>
+
+      <button class="form-btn-submit" id="npSubmitBtn" onclick="submitNuevoPedido()">
+        💾 Guardar pedido
+      </button>
+
+      <div style="font-size:11px;color:var(--text-muted);text-align:center;margin-top:-4px;">
+        Se guardará directamente en Google Sheets · Una fila por producto
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ====================================================
+     MODAL NUEVO MOVIMIENTO (original)
+     ==================================================== -->
 <div class="modal-overlay" id="modalOverlay" onclick="closeModalOutside(event)">
   <div class="modal-sheet" id="modalSheet">
     <div class="modal-handle"></div>
@@ -336,14 +627,10 @@
       <button class="modal-close" onclick="closeModal()">✕</button>
     </div>
     <div class="modal-body">
-
-      <!-- Folio auto -->
       <div class="form-group">
         <div class="form-label">Folio generado</div>
         <div class="folio-preview" id="folioPreview">Cargando...</div>
       </div>
-
-      <!-- Tipo de movimiento -->
       <div class="form-group">
         <div class="form-label">Tipo de movimiento <span>*</span></div>
         <div class="type-grid">
@@ -356,8 +643,6 @@
         </div>
         <input type="hidden" id="fTipoMov">
       </div>
-
-      <!-- Buscar producto -->
       <div class="form-group">
         <div class="form-label">Producto <span>*</span></div>
         <input class="form-input" id="fProductoSearch" type="text" placeholder="🔍 Buscar por clave o nombre..." oninput="searchProductos()" autocomplete="off">
@@ -371,14 +656,10 @@
         <input type="hidden" id="fClaveProducto">
         <input type="hidden" id="fDescripcion">
       </div>
-
-      <!-- Fecha -->
       <div class="form-group">
         <div class="form-label">Fecha <span>*</span></div>
         <input class="form-input" id="fFecha" type="date">
       </div>
-
-      <!-- Cantidades -->
       <div class="form-row">
         <div class="form-group">
           <div class="form-label">Cantidad pz <span>*</span></div>
@@ -389,70 +670,26 @@
           <input class="form-input" id="fCantKg" type="number" min="0" step="0.01" placeholder="0.00">
         </div>
       </div>
-
-      <!-- Ubicaciones -->
       <div class="form-row">
         <div class="form-group">
           <div class="form-label">Origen <span>*</span></div>
           <select class="form-input form-select" id="fOrigen">
             <option value="">— Origen —</option>
-            <option>Proveedor</option>
-            <option>BN</option>
-            <option>B2</option>
-            <option>T1</option>
-            <option>T2</option>
-            <option>T3</option>
-            <option>T4</option>
-            <option>TA8</option>
-            <option>TB11</option>
-            <option>T9</option>
-            <option>T10</option>
-            <option>T12</option>
-            <option>T13</option>
-            <option>T14</option>
-            <option>Polietilenos</option>
-            <option>Fumigacion</option>
-            <option>AlmacenMaquila</option>
-            <option>AlmacenMerma</option>
-            <option>Cliente</option>
-            <option>MesaDespensas</option>
+            <option>Proveedor</option><option>BN</option><option>B2</option><option>T1</option><option>T2</option><option>T3</option><option>T4</option><option>TA8</option><option>TB11</option><option>T9</option><option>T10</option><option>T12</option><option>T13</option><option>T14</option><option>Polietilenos</option><option>Fumigacion</option><option>AlmacenMaquila</option><option>AlmacenMerma</option><option>Cliente</option><option>MesaDespensas</option>
           </select>
         </div>
         <div class="form-group">
           <div class="form-label">Destino <span>*</span></div>
           <select class="form-input form-select" id="fDestino">
             <option value="">— Destino —</option>
-            <option>BN</option>
-            <option>B2</option>
-            <option>T1</option>
-            <option>T2</option>
-            <option>T3</option>
-            <option>T4</option>
-            <option>TA8</option>
-            <option>TB11</option>
-            <option>T9</option>
-            <option>T10</option>
-            <option>T12</option>
-            <option>T13</option>
-            <option>T14</option>
-            <option>Polietilenos</option>
-            <option>Fumigacion</option>
-            <option>AlmacenMaquila</option>
-            <option>AlmacenMerma</option>
-            <option>Cliente</option>
-            <option>MesaDespensas</option>
-            <option>Proveedor</option>
+            <option>BN</option><option>B2</option><option>T1</option><option>T2</option><option>T3</option><option>T4</option><option>TA8</option><option>TB11</option><option>T9</option><option>T10</option><option>T12</option><option>T13</option><option>T14</option><option>Polietilenos</option><option>Fumigacion</option><option>AlmacenMaquila</option><option>AlmacenMerma</option><option>Cliente</option><option>MesaDespensas</option><option>Proveedor</option>
           </select>
         </div>
       </div>
-
-      <!-- Documento Ref -->
       <div class="form-group">
         <div class="form-label">Documento referencia <span>*</span></div>
         <input class="form-input" id="fDocRef" type="text" placeholder="Ej. FACTURA F1234, TICKET 5678">
       </div>
-
-      <!-- Proveedor / Cliente -->
       <div class="form-row">
         <div class="form-group">
           <div class="form-label">Proveedor</div>
@@ -467,14 +704,10 @@
           <input type="hidden" id="fCliente">
         </div>
       </div>
-
-      <!-- Lote / Caducidad -->
       <div class="form-group">
         <div class="form-label">Lote / Caducidad</div>
         <input class="form-input" id="fLote" type="text" placeholder="Ej. MP89040226">
       </div>
-
-      <!-- Estado -->
       <div class="form-group">
         <div class="form-label">Estado <span>*</span></div>
         <select class="form-input form-select" id="fEstado">
@@ -482,120 +715,104 @@
           <option value="CANCELADO">❌ CANCELADO</option>
         </select>
       </div>
-
-      <!-- Observaciones -->
       <div class="form-group">
         <div class="form-label">Observaciones</div>
         <input class="form-input" id="fObs" type="text" placeholder="Opcional">
       </div>
-
-      <!-- Submit -->
-      <button class="form-btn-submit" id="fSubmitBtn" onclick="submitMovimiento()">
-        💾 Guardar movimiento
-      </button>
-
-      <div style="font-size:11px;color:var(--text-muted);text-align:center;margin-top:-4px;">
-        Se guardará directamente en Google Sheets
-      </div>
+      <button class="form-btn-submit" id="fSubmitBtn" onclick="submitMovimiento()">💾 Guardar movimiento</button>
+      <div style="font-size:11px;color:var(--text-muted);text-align:center;margin-top:-4px;">Se guardará directamente en Google Sheets</div>
     </div>
   </div>
 </div>
 
 <!-- MODAL DETALLE PRODUCTO -->
 <div class="modal-overlay" id="prodDetModalOverlay" onclick="closeProdDet(event)">
-  <div class="modal-sheet" id="prodDetModalSheet">
+  <div class="modal-sheet">
     <div class="modal-handle"></div>
     <div class="modal-header">
       <div class="modal-title">📦 Detalle de producto</div>
-      <button class="modal-close" onclick="document.getElementById('prodDetModalOverlay').classList.remove('open');">✕</button>
+      <button class="modal-close" onclick="document.getElementById('prodDetModalOverlay').classList.remove('open')">✕</button>
     </div>
     <div class="modal-body" id="prodDetModalBody"></div>
   </div>
 </div>
 
-<!-- Toast -->
-<div class="toast" id="toast"></div>
-
 <!-- MODAL DETALLE MOVIMIENTO -->
 <div class="modal-overlay" id="detModalOverlay" onclick="closeDetModal(event)">
-  <div class="modal-sheet" id="detModalSheet">
+  <div class="modal-sheet">
     <div class="modal-handle"></div>
     <div class="modal-header">
       <div class="modal-title">Detalle de movimiento</div>
-      <button class="modal-close" onclick="document.getElementById('detModalOverlay').classList.remove('open');">✕</button>
+      <button class="modal-close" onclick="document.getElementById('detModalOverlay').classList.remove('open')">✕</button>
     </div>
     <div class="modal-body" id="detModalBody"></div>
   </div>
 </div>
 
-<!-- AGENDA PEDIDOS -->
-<div class="page" id="page-agenda">
-  <div class="content">
-    <div class="inv-summary" style="grid-template-columns:repeat(3,1fr)">
-      <div class="inv-kpi-card"><div class="inv-kpi-icon">📋</div><div class="inv-kpi-value" id="agendaTotal">—</div><div class="inv-kpi-label">Pedidos activos</div></div>
-      <div class="inv-kpi-card"><div class="inv-kpi-icon">⚠️</div><div class="inv-kpi-value" id="agendaUrgentes">—</div><div class="inv-kpi-label">Urgentes hoy</div></div>
-      <div class="inv-kpi-card"><div class="inv-kpi-icon">✅</div><div class="inv-kpi-value" id="agendaDespachados">—</div><div class="inv-kpi-label">Despachados</div></div>
-    </div>
-    <div class="filter-tabs">
-      <div class="filter-tab active" onclick="setAgendaFilter('todos',this)">Todos</div>
-      <div class="filter-tab" onclick="setAgendaFilter('Pendiente',this)">⏳ Pendiente</div>
-      <div class="filter-tab" onclick="setAgendaFilter('EnProduccion',this)">🏭 En producción</div>
-      <div class="filter-tab" onclick="setAgendaFilter('Completo',this)">✅ Completo</div>
-      <div class="filter-tab" onclick="setAgendaFilter('Despachado',this)">🚀 Despachado</div>
-    </div>
-    <div class="search-bar">🔍 <input id="agendaSearch" type="text" placeholder="Buscar pedido o cliente..." oninput="renderAgenda()" style="border:none;outline:none;flex:1;font-family:inherit;font-size:14px;background:transparent;"></div>
-    <div id="agendaContainer"><div class="loading-state"><div class="loading-spinner"></div>Cargando pedidos...</div></div>
-  </div>
-</div><!-- SCANNER -->
-<div class="page" id="page-scanner">
-  <div class="content">
-    <div class="scanner-area">
-      <div class="corner-box"><span></span></div>
-      <div class="scan-line"></div>
-      <div class="scanner-hint">Mantén estable · Auto-detección</div>
-    </div>
-    <div style="display:flex;flex-direction:column;gap:10px;">
-      <button class="scan-btn">📷 Activar cámara</button>
-      <button class="scan-btn-secondary">📁 Seleccionar pedido manualmente</button>
-    </div>
-    <div class="section-title">Pedidos recientes</div>
-    <div id="pedidosContainer"><div class="loading-state"><div class="loading-spinner"></div>Cargando pedidos...</div></div>
-  </div>
-</div>
-
-<!-- MÁS -->
-<div class="page" id="page-mas">
-  <div class="content">
-    <div class="section-title">Más opciones</div>
-    <div class="action-card"><div class="action-icon icon-green">⚙️</div><div class="action-body"><div class="action-title">Configuración</div><div class="action-sub">Usuarios, permisos, catálogos</div></div><div class="action-arrow">›</div></div>
-    <div class="action-card"><div class="action-icon icon-blue">📊</div><div class="action-body"><div class="action-title">Reportes</div><div class="action-sub">Exportar y consultar datos</div></div><div class="action-arrow">›</div></div>
-    <div class="action-card"><div class="action-icon icon-orange">🏭</div><div class="action-body"><div class="action-title">Control Producción</div><div class="action-sub">Movimiento siamés automático</div></div><div class="action-arrow">›</div></div>
-    <div class="action-card"><div class="action-icon icon-teal">📅</div><div class="action-body"><div class="action-title">Agenda Pedidos</div><div class="action-sub">Ver y gestionar pedidos</div></div><div class="action-arrow">›</div></div>
-  </div>
-</div>
-
-<nav class="bottom-nav">
-  <div class="nav-item active" id="nav-inicio" onclick="navTo('inicio')"><div class="nav-icon">🏠</div><div class="nav-label">Inicio</div></div>
-  <div class="nav-item" id="nav-agenda" onclick="navTo('agenda')"><div class="nav-icon">📋</div><div class="nav-label">Agenda</div></div>
-  <div class="nav-item" id="nav-inventario" onclick="navTo('inventario')"><div class="nav-icon">📦</div><div class="nav-label">Inventario</div></div>
-  <div class="nav-item" id="nav-movimientos" onclick="navTo('movimientos')"><div class="nav-icon">📋</div><div class="nav-label">Movimientos</div></div>
-  <div class="nav-item" id="nav-mas" onclick="navTo('mas')"><div class="nav-icon">⋯</div><div class="nav-label">Más</div></div>
-</nav>
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
 
 <script>
+// ==========================================
+//  CONFIG
+// ==========================================
 const SHEET_ID = '19g3-vqAnNiqXmHnLvBSPm3eMqldA1fg4Y3crIHKcmOI';
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwMNbHZeQUPxnrYNN6T3J_Fi758FkwzdEMYA9jNYvrYlXzTHQpDNnpk9OtsalGaIXGHIA/exec';
 
+// ==========================================
+//  STATE
+// ==========================================
 let allProducts = [];
 let allMovimientos = [];
 let allProveedores = [];
 let allClientes = [];
+let allPedidosRaw = [];        // filas crudas de Agenda_Pedidos
+let pedidosAgrupados = {};     // agrupados por PedidoRQF
 let currentFilter = 'todos';
+let currentAgendaFilter = 'todos';
 let lastSync = null;
+let selectedTipo = '';
+let selectedProducto = null;
+let npLineasCount = 0;
 
+// ==========================================
+//  UTILS
+// ==========================================
 function generateMovId() {
   return 'mid_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
 }
-  async function fetchSheet(sheetName) {
+
+function formatNum(n) {
+  if (n === null || n === undefined || n === '') return '—';
+  const num = Number(n);
+  if (isNaN(num)) return '—';
+  return num.toLocaleString('es-MX', { maximumFractionDigits: 1 });
+}
+
+function formatDate(v) {
+  if (!v) return '—';
+  if (typeof v === 'string' && v.startsWith('Date(')) {
+    const parts = v.replace('Date(','').replace(')','').split(',').map(Number);
+    return `${String(parts[2]).padStart(2,'0')}/${String(parts[1]+1).padStart(2,'0')}/${parts[0]}`;
+  }
+  if (typeof v === 'string' && v.includes('-')) {
+    const [y,m,d] = v.split('-');
+    return `${d}/${m}/${y}`;
+  }
+  return String(v);
+}
+
+function showToast(msg, type='') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show ' + (type==='success'?'success':type==='error'?'error-toast':'');
+  setTimeout(() => t.className = 'toast', 3000);
+}
+
+// ==========================================
+//  SHEETS FETCH
+// ==========================================
+async function fetchSheet(sheetName) {
   const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(sheetName)}`;
   const res = await fetch(url);
   const text = await res.text();
@@ -622,25 +839,25 @@ function tableToObjects(table) {
     });
 }
 
+function fixFirstHeader(table, fallback) {
+  if (!table || !table.cols) return table;
+  table.cols = table.cols.map((col, i) => {
+    if (i === 0) {
+      const parts = (col.label || '').trim().split(/\s+/);
+      col.label = parts[parts.length - 1] || fallback || col.id;
+    }
+    return col;
+  });
+  return table;
+}
+
+// ==========================================
+//  LOAD DATA
+// ==========================================
 async function loadInventario() {
   try {
     const [empTable, granTable] = await Promise.all([fetchSheet('Inventario_Empacado'), fetchSheet('Inventario_Granel')]);
-    
-    // Fix headers — Google Sheets adds emoji/spaces to first column label
-    function fixHeaders(table) {
-      if (!table || !table.cols) return table;
-      table.cols = table.cols.map((col, i) => {
-        if (i === 0) {
-          // Extract just the last word after space for first col (e.g. "📦 INVENTARIO EMPACADO ClavePT" -> "ClavePT")
-          const parts = (col.label || '').trim().split(/\s+/);
-          col.label = parts[parts.length - 1] || col.id;
-        }
-        return col;
-      });
-      return table;
-    }
-    
-    const empacados = tableToObjects(fixHeaders(empTable)).map(r => ({
+    const empacados = tableToObjects(fixFirstHeader(empTable,'ClavePT')).map(r => ({
       clave: String(r['ClavePT'] || ''),
       nombre: r['DescripcionPT'] || '',
       gramaje: r['Gramaje'] || '',
@@ -650,7 +867,7 @@ async function loadInventario() {
       porProducir: parseFloat(r['POR PRODUCIR']) || 0,
       tipo: 'empacado'
     }));
-    const graneles = tableToObjects(fixHeaders(granTable)).map(r => ({
+    const graneles = tableToObjects(fixFirstHeader(granTable,'ClavesGranel')).map(r => ({
       clave: String(r['ClavesGranel'] || ''),
       nombre: r['ProductosGranel'] || '',
       gramaje: '',
@@ -669,7 +886,7 @@ async function loadInventario() {
     renderProducts();
     updateSyncTime();
   } catch(e) {
-    document.getElementById('productsContainer').innerHTML = `<div class="empty-state">⚠️ No se pudo cargar el inventario.<br><small>Verifica que el archivo esté compartido públicamente en Google Sheets.</small></div>`;
+    document.getElementById('productsContainer').innerHTML = `<div class="empty-state">⚠️ No se pudo cargar el inventario.</div>`;
   }
 }
 
@@ -678,12 +895,7 @@ async function loadMovimientos() {
     const table = await fetchSheet('Movimientos');
     if (table && table.cols) {
       table.cols = table.cols.map(col => {
-        if (col.label) {
-          // Remover emojis y caracteres especiales, dejar solo texto ASCII + letras españolas
-          col.label = col.label
-            .replace(/[\u{1F000}-\u{1FFFF}]|[\u{2600}-\u{27FF}]|[\u{2300}-\u{23FF}]/gu, '')
-            .trim();
-        }
+        if (col.label) col.label = col.label.replace(/[\u{1F000}-\u{1FFFF}]|[\u{2600}-\u{27FF}]|[\u{2300}-\u{23FF}]/gu, '').trim();
         return col;
       });
     }
@@ -695,98 +907,577 @@ async function loadMovimientos() {
   }
 }
 
+async function loadAgenda() {
+  try {
+    const table = await fetchSheet('Agenda_Pedidos');
+    // Limpiar headers de emojis
+    if (table && table.cols) {
+      table.cols = table.cols.map(col => {
+        if (col.label) col.label = col.label.replace(/[\u{1F000}-\u{1FFFF}]|[\u{2600}-\u{27FF}]|[\u{2300}-\u{23FF}]/gu, '').trim();
+        return col;
+      });
+    }
+    allPedidosRaw = tableToObjects(table);
+    agruparPedidos();
+    renderAgenda();
+    updateAgendaKPIs();
+  } catch(e) {
+    console.error('Error cargando agenda:', e);
+    document.getElementById('agendaContainer').innerHTML = `<div class="empty-state">⚠️ Error al cargar la Agenda de Pedidos.<br><small>${e.message}</small></div>`;
+  }
+}
+
 async function loadProveedores() {
   try {
     const table = await fetchSheet('Proveedores');
-    if (table && table.cols && table.cols[0]) {
-      const parts = (table.cols[0].label || '').trim().split(/\s+/);
-      table.cols[0].label = parts[parts.length - 1] || 'Proveedor';
-    }
+    fixFirstHeader(table, 'Proveedor');
     const rows = tableToObjects(table);
     allProveedores = rows.map(r => Object.values(r)[0] || '').filter(Boolean).sort();
-  } catch(e) { console.warn('No se cargaron proveedores', e); }
+  } catch(e) { console.warn('No se cargaron proveedores'); }
 }
 
 async function loadClientes() {
   try {
     const table = await fetchSheet('Clientes');
-    if (table && table.cols && table.cols[0]) {
-      const parts = (table.cols[0].label || '').trim().split(/\s+/);
-      table.cols[0].label = parts[parts.length - 1] || 'Cliente';
-    }
+    fixFirstHeader(table, 'Cliente');
     const rows = tableToObjects(table);
     allClientes = rows.map(r => Object.values(r)[0] || '').filter(Boolean).sort();
-  } catch(e) { console.warn('No se cargaron clientes', e); }
+  } catch(e) { console.warn('No se cargaron clientes'); }
 }
 
-function searchCatalog(inputId, hiddenId, list, sugId) {
-  const q = document.getElementById(inputId).value.toLowerCase().trim();
-  const sugBox = document.getElementById(sugId);
-  document.getElementById(hiddenId).value = '';
-  if (q.length < 1) { sugBox.style.display = 'none'; return; }
-  const matches = list.filter(i => i.toLowerCase().includes(q)).slice(0, 7);
-  if (!matches.length) { sugBox.style.display = 'none'; return; }
-  sugBox.innerHTML = matches.map(i => {
-    const safe = i.replace(/"/g, '&quot;');
-    return `<div class="suggestion-item" onclick="selectCatalogItem(this,'${hiddenId}','${inputId}','${sugId}')" data-value="${safe}">${i}</div>`;
+// ==========================================
+//  AGENDA — AGRUPACIÓN Y RENDER
+// ==========================================
+function agruparPedidos() {
+  pedidosAgrupados = {};
+  allPedidosRaw.forEach(row => {
+    // Detectar la columna del folio (puede llamarse PedidoRQF, Pedido/RQF, etc.)
+    const folio = row['Pedido/RQF'] || row['PedidoRQF'] || row['Pedido_RQF'] || Object.values(row)[0] || '';
+    if (!folio) return;
+    const folioStr = String(folio).trim();
+    if (!pedidosAgrupados[folioStr]) {
+      pedidosAgrupados[folioStr] = {
+        folio: folioStr,
+        cliente: row['Cliente'] || '',
+        vendedor: row['Vendedor'] || '',
+        fechaPedido: row['FechaPedido'] || '',
+        fechaCompromiso: row['FechaCompromiso'] || '',
+        diasRestantes: parseFloat(row['DiasRestantes'] || 0),
+        estado: row['EstadoPedido'] || row['Estado'] || 'Pendiente',
+        prioridad: row['Prioridad'] || '',
+        lineas: []
+      };
+    }
+    pedidosAgrupados[folioStr].lineas.push({
+      clave: row['ClaveProducto'] || row['Clave'] || '',
+      descripcion: row['Descripcion'] || row['Descripción'] || '',
+      cantPz: parseFloat(row['CantidadPedida_Pz'] || row['CantidadPz'] || 0),
+      cantKg: parseFloat(row['CantidadPedida_Kg'] || row['CantidadKg'] || 0),
+      pzDisp: parseFloat(row['Pz_Disponibles'] || 0),
+      kgDisp: parseFloat(row['Kg_Disponibles'] || 0),
+      faltantePz: parseFloat(row['Faltante_Pz'] || 0),
+      faltanteKg: parseFloat(row['Faltante_Kg'] || 0),
+      semaforo: row['Semaforo'] || '',
+      observaciones: row['Observaciones'] || '',
+      rawRow: row
+    });
+  });
+}
+
+function updateAgendaKPIs() {
+  const todos = Object.values(pedidosAgrupados);
+  const activos = todos.filter(p => !['Despachado','Cancelado'].includes(p.estado));
+  const urgentes = todos.filter(p => p.diasRestantes <= 0 && !['Despachado','Cancelado'].includes(p.estado));
+  const despachados = todos.filter(p => p.estado === 'Despachado');
+  
+  document.getElementById('agKpiActivos').textContent = activos.length;
+  document.getElementById('agKpiUrgentes').textContent = urgentes.length;
+  document.getElementById('agKpiDespachados').textContent = despachados.length;
+
+  // Badge en nav
+  const badge = document.getElementById('navBadgeAgenda');
+  if (urgentes.length > 0) {
+    badge.textContent = urgentes.length;
+    badge.style.display = 'block';
+  } else {
+    badge.style.display = 'none';
+  }
+
+  // Quick sub en inicio
+  if (activos.length > 0) {
+    document.getElementById('agendaQuickSub').textContent = `${activos.length} activos · ${urgentes.length} urgentes hoy`;
+  }
+}
+
+function setAgendaFilter(f, el) {
+  currentAgendaFilter = f;
+  document.querySelectorAll('#agendaFilterTabs .filter-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  renderAgenda();
+}
+
+function getEstadoChip(estado) {
+  const map = {
+    'Pendiente':    ['pe-pendiente',   '⏳ Pendiente'],
+    'EnProduccion': ['pe-enproduccion','🏭 En prod.'],
+    'Completo':     ['pe-completo',    '✅ Completo'],
+    'Despachado':   ['pe-despachado',  '🚀 Despachado'],
+    'Cancelado':    ['pe-cancelado',   '❌ Cancelado'],
+  };
+  const [cls, label] = map[estado] || ['pe-pendiente', estado];
+  return `<div class="pedido-estado-chip ${cls}">${label}</div>`;
+}
+
+function getSemaforoClass(linea) {
+  // Si tiene datos de disponibilidad, calcular
+  if (linea.cantPz > 0) {
+    if (linea.faltantePz === 0 && linea.pzDisp >= linea.cantPz) return 'sem-verde';
+    if (linea.pzDisp > 0) return 'sem-amarillo';
+    return 'sem-rojo';
+  }
+  if (linea.cantKg > 0) {
+    if (linea.faltanteKg === 0 && linea.kgDisp >= linea.cantKg) return 'sem-verde';
+    if (linea.kgDisp > 0) return 'sem-amarillo';
+    return 'sem-rojo';
+  }
+  return 'sem-amarillo';
+}
+
+function renderAgenda() {
+  const search = (document.getElementById('agendaSearchInput')?.value || '').toLowerCase().trim();
+  let lista = Object.values(pedidosAgrupados);
+
+  // Filtro por estado
+  if (currentAgendaFilter !== 'todos') {
+    lista = lista.filter(p => p.estado === currentAgendaFilter);
+  }
+
+  // Búsqueda
+  if (search) {
+    lista = lista.filter(p =>
+      p.folio.toLowerCase().includes(search) ||
+      p.cliente.toLowerCase().includes(search) ||
+      p.lineas.some(l => l.clave.toLowerCase().includes(search) || l.descripcion.toLowerCase().includes(search))
+    );
+  }
+
+  // Ordenar: urgentes primero, luego por días restantes
+  lista.sort((a, b) => {
+    const prioOrder = { 'Alta': 0, 'Media': 1, '': 2, 'Baja': 3 };
+    if (prioOrder[a.prioridad] !== prioOrder[b.prioridad]) return prioOrder[a.prioridad] - prioOrder[b.prioridad];
+    return (a.diasRestantes || 0) - (b.diasRestantes || 0);
+  });
+
+  const container = document.getElementById('agendaContainer');
+  if (!lista.length) {
+    container.innerHTML = '<div class="empty-state">📋 No hay pedidos que coincidan</div>';
+    return;
+  }
+
+  container.innerHTML = lista.map(ped => {
+    const lineasHTML = ped.lineas.slice(0, 4).map(l => {
+      const qty = l.cantKg > 0 ? `${formatNum(l.cantKg)} kg` : `${formatNum(l.cantPz)} pz`;
+      const semClass = getSemaforoClass(l);
+      return `<div class="pedido-linea">
+        <div class="pedido-linea-semaforo ${semClass}"></div>
+        <div class="pedido-linea-clave">${l.clave}</div>
+        <div class="pedido-linea-desc">${l.descripcion}</div>
+        <div class="pedido-linea-qty">${qty}</div>
+      </div>`;
+    }).join('');
+
+    const masLineas = ped.lineas.length > 4
+      ? `<div class="pedido-linea" style="justify-content:center;color:var(--text-muted);font-size:11px;padding:8px 16px;">+${ped.lineas.length - 4} productos más</div>`
+      : '';
+
+    const diasStr = ped.diasRestantes < 0
+      ? `<span style="color:var(--red);font-weight:600;">${Math.abs(ped.diasRestantes)} días vencido</span>`
+      : ped.diasRestantes === 0
+      ? `<span style="color:var(--orange);font-weight:600;">Vence hoy</span>`
+      : `${ped.diasRestantes} días restantes`;
+
+    const fechaComp = formatDate(ped.fechaCompromiso);
+
+    return `<div class="pedido-card" onclick="openPedidoDetalle('${ped.folio}')">
+      <div class="pedido-card-header">
+        <div class="pedido-card-left">
+          <div class="pedido-folio">${ped.folio}</div>
+          <div class="pedido-cliente">${ped.cliente}</div>
+          <div class="pedido-meta">📅 ${fechaComp !== '—' ? 'Entrega: '+fechaComp : ''} · ${diasStr}${ped.vendedor ? ' · '+ped.vendedor : ''}</div>
+        </div>
+        <div class="pedido-right">
+          ${getEstadoChip(ped.estado)}
+          <div class="pedido-productos-count">${ped.lineas.length} producto${ped.lineas.length !== 1 ? 's' : ''}</div>
+        </div>
+      </div>
+      <div class="pedido-lineas">
+        ${lineasHTML}
+        ${masLineas}
+      </div>
+    </div>`;
   }).join('');
+}
+
+// ==========================================
+//  MODAL DETALLE PEDIDO
+// ==========================================
+function openPedidoDetalle(folio) {
+  const ped = pedidosAgrupados[folio];
+  if (!ped) return;
+
+  document.getElementById('pedDetModalTitle').textContent = `📋 ${folio}`;
+
+  const lineasHTML = ped.lineas.map((l, i) => {
+    const pedPz = l.cantPz;
+    const pedKg = l.cantKg;
+    const dispPz = l.pzDisp;
+    const dispKg = l.kgDisp;
+    const faltPz = l.faltantePz;
+    const faltKg = l.faltanteKg;
+
+    let dispBadge = '';
+    if (pedPz > 0) {
+      if (faltPz === 0) dispBadge = '<span class="disponibilidad-badge disp-ok">✅ Suficiente</span>';
+      else if (dispPz > 0) dispBadge = '<span class="disponibilidad-badge disp-parcial">⚠️ Parcial</span>';
+      else dispBadge = '<span class="disponibilidad-badge disp-sin">❌ Sin stock</span>';
+    }
+
+    return `<div class="linea-det-card">
+      <div class="linea-det-top">
+        <div>
+          <div class="linea-det-nombre">${l.descripcion || l.clave}</div>
+          <div class="linea-det-clave">${l.clave}</div>
+        </div>
+        ${dispBadge}
+      </div>
+      <div class="linea-det-stocks">
+        <div class="linea-det-stat">
+          <div class="linea-det-val">${pedPz > 0 ? formatNum(pedPz)+' pz' : formatNum(pedKg)+' kg'}</div>
+          <div class="linea-det-lab">Pedido</div>
+        </div>
+        <div class="linea-det-stat">
+          <div class="linea-det-val green">${pedPz > 0 ? formatNum(dispPz)+' pz' : formatNum(dispKg)+' kg'}</div>
+          <div class="linea-det-lab">Disponible</div>
+        </div>
+        <div class="linea-det-stat">
+          <div class="linea-det-val ${(pedPz > 0 ? faltPz : faltKg) > 0 ? 'red' : 'green'}">${pedPz > 0 ? formatNum(faltPz)+' pz' : formatNum(faltKg)+' kg'}</div>
+          <div class="linea-det-lab">Faltante</div>
+        </div>
+      </div>
+      ${l.observaciones ? `<div style="font-size:11px;color:var(--text-muted);margin-top:8px;">📝 ${l.observaciones}</div>` : ''}
+    </div>`;
+  }).join('');
+
+  // Botones de acción según estado actual
+  const estado = ped.estado;
+  let botonesHTML = '';
+
+  if (estado === 'Pendiente') {
+    botonesHTML = `
+      <button class="estado-btn btn-produccion" onclick="cambiarEstadoPedido('${folio}','EnProduccion')">🏭 Pasar a Producción</button>
+      <button class="estado-btn btn-cancelar" onclick="cambiarEstadoPedido('${folio}','Cancelado')">❌ Cancelar pedido</button>
+      <button class="estado-btn btn-despachar" onclick="despacharPedido('${folio}')">🚀 Despachar pedido completo</button>`;
+  } else if (estado === 'EnProduccion') {
+    botonesHTML = `
+      <button class="estado-btn btn-completo" onclick="cambiarEstadoPedido('${folio}','Completo')">✅ Marcar como Completo</button>
+      <button class="estado-btn btn-cancelar" onclick="cambiarEstadoPedido('${folio}','Cancelado')">❌ Cancelar pedido</button>
+      <button class="estado-btn btn-despachar" onclick="despacharPedido('${folio}')">🚀 Despachar pedido completo</button>`;
+  } else if (estado === 'Completo') {
+    botonesHTML = `
+      <button class="estado-btn btn-cancelar" onclick="cambiarEstadoPedido('${folio}','Cancelado')">❌ Cancelar pedido</button>
+      <button class="estado-btn btn-despachar" onclick="despacharPedido('${folio}')">🚀 Despachar pedido completo</button>`;
+  } else if (estado === 'Despachado') {
+    botonesHTML = `<div style="text-align:center;color:var(--text-muted);font-size:13px;padding:8px;">🚀 Este pedido ya fue despachado</div>`;
+  } else if (estado === 'Cancelado') {
+    botonesHTML = `<div style="text-align:center;color:var(--red);font-size:13px;padding:8px;">❌ Pedido cancelado</div>`;
+  }
+
+  document.getElementById('pedDetModalBody').innerHTML = `
+    <div class="ped-det-header">
+      <div class="ped-det-folio">${folio}</div>
+      <div class="ped-det-cliente">${ped.cliente}</div>
+      <div class="ped-det-meta">
+        ${ped.vendedor ? `<span>👤 ${ped.vendedor}</span>` : ''}
+        ${ped.fechaCompromiso ? `<span>📅 Entrega: ${formatDate(ped.fechaCompromiso)}</span>` : ''}
+        ${ped.prioridad ? `<span>🎯 Prioridad ${ped.prioridad}</span>` : ''}
+        <span>${getEstadoChip(ped.estado).replace(/class="pedido-estado-chip/g, 'style="display:inline-block" class="pedido-estado-chip')}</span>
+      </div>
+    </div>
+
+    <div class="section-title" style="margin-top:4px;">📦 Productos (${ped.lineas.length})</div>
+
+    <div style="display:flex;flex-direction:column;gap:10px;">
+      ${lineasHTML}
+    </div>
+
+    <div class="section-title" style="margin-top:8px;">⚡ Acciones</div>
+
+    <div class="estado-btn-group">
+      ${botonesHTML}
+    </div>
+  `;
+
+  document.getElementById('pedDetModalOverlay').classList.add('open');
+}
+
+function closePedDetModal(e) {
+  if (e.target === document.getElementById('pedDetModalOverlay')) {
+    document.getElementById('pedDetModalOverlay').classList.remove('open');
+  }
+}
+
+// ==========================================
+//  CAMBIAR ESTADO PEDIDO
+// ==========================================
+async function cambiarEstadoPedido(folio, nuevoEstado) {
+  const mensajes = {
+    'EnProduccion': '¿Pasar el pedido ' + folio + ' a En Producción?',
+    'Completo': '¿Marcar el pedido ' + folio + ' como Completo?',
+    'Cancelado': '¿Cancelar el pedido ' + folio + '? Esta acción no se puede deshacer.',
+    'Despachado': '¿Marcar el pedido ' + folio + ' como Despachado?'
+  };
+  if (!confirm(mensajes[nuevoEstado] || '¿Confirmar cambio de estado?')) return;
+
+  showToast('⏳ Actualizando estado...', '');
+  try {
+    await fetch(APPS_SCRIPT_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        accion: 'cambiarEstadoPedido',
+        PedidoRQF: folio,
+        NuevoEstado: nuevoEstado
+      })
+    });
+
+    // Actualizar localmente
+    if (pedidosAgrupados[folio]) {
+      pedidosAgrupados[folio].estado = nuevoEstado;
+    }
+    allPedidosRaw.forEach(r => {
+      const f = r['Pedido/RQF'] || r['PedidoRQF'] || '';
+      if (String(f).trim() === folio) r['EstadoPedido'] = nuevoEstado;
+    });
+
+    document.getElementById('pedDetModalOverlay').classList.remove('open');
+    renderAgenda();
+    updateAgendaKPIs();
+    showToast('✅ Estado actualizado: ' + nuevoEstado, 'success');
+    setTimeout(() => loadAgenda(), 2000);
+  } catch(e) {
+    showToast('❌ Error al actualizar estado', 'error');
+  }
+}
+
+async function despacharPedido(folio) {
+  if (!confirm('¿Despachar TODOS los productos del pedido ' + folio + '?\n\nEsto marcará todas las líneas como Despachado en Google Sheets.')) return;
+
+  showToast('⏳ Despachando pedido...', '');
+  try {
+    await fetch(APPS_SCRIPT_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        accion: 'despacharPedido',
+        PedidoRQF: folio
+      })
+    });
+
+    // Actualizar localmente
+    if (pedidosAgrupados[folio]) {
+      pedidosAgrupados[folio].estado = 'Despachado';
+    }
+    allPedidosRaw.forEach(r => {
+      const f = r['Pedido/RQF'] || r['PedidoRQF'] || '';
+      if (String(f).trim() === folio) r['EstadoPedido'] = 'Despachado';
+    });
+
+    document.getElementById('pedDetModalOverlay').classList.remove('open');
+    renderAgenda();
+    updateAgendaKPIs();
+    showToast('🚀 Pedido ' + folio + ' despachado', 'success');
+    setTimeout(() => loadAgenda(), 2000);
+  } catch(e) {
+    showToast('❌ Error al despachar', 'error');
+  }
+}
+
+// ==========================================
+//  MODAL NUEVO PEDIDO
+// ==========================================
+function openNuevoPedidoModal() {
+  npLineasCount = 0;
+  document.getElementById('npLineasContainer').innerHTML = '';
+  document.getElementById('npFolio').value = '';
+  document.getElementById('npClienteSearch').value = '';
+  document.getElementById('npCliente').value = '';
+  document.getElementById('npClienteSug').style.display = 'none';
+  document.getElementById('npVendedor').value = '';
+  document.getElementById('npEstado').value = 'Pendiente';
+  document.getElementById('npPrioridad').value = '';
+  document.getElementById('npObs').value = '';
+  const hoy = new Date().toISOString().split('T')[0];
+  document.getElementById('npFechaPedido').value = hoy;
+  document.getElementById('npFechaCompromiso').value = '';
+  // Agregar primera línea de producto
+  addLineaNuevoPedido();
+  document.getElementById('nuevoPedidoModalOverlay').classList.add('open');
+}
+
+function closeNuevoPedidoModal(e) {
+  if (e.target === document.getElementById('nuevoPedidoModalOverlay')) {
+    document.getElementById('nuevoPedidoModalOverlay').classList.remove('open');
+  }
+}
+
+function addLineaNuevoPedido() {
+  if (npLineasCount >= 8) { showToast('Máximo 8 productos por pedido', 'error'); return; }
+  npLineasCount++;
+  const idx = npLineasCount;
+  const div = document.createElement('div');
+  div.className = 'linea-form-card';
+  div.id = `npLinea_${idx}`;
+  div.innerHTML = `
+    <div class="linea-form-num">Producto ${idx}</div>
+    ${idx > 1 ? `<button class="linea-remove-btn" onclick="removeLinea(${idx})">✕</button>` : ''}
+    <div class="form-group" style="margin-bottom:8px;">
+      <input class="form-input-sm" id="npSearch_${idx}" type="text" placeholder="🔍 Buscar clave o nombre..." oninput="searchProductoLinea(${idx})" autocomplete="off">
+      <div id="npSug_${idx}" style="display:none"></div>
+      <div id="npSel_${idx}" style="display:none;margin-top:6px;">
+        <div style="background:#E3F2FD;color:#1565C0;border-radius:8px;padding:7px 10px;font-size:12px;font-weight:600;display:flex;align-items:center;justify-content:space-between;">
+          <span id="npSelLabel_${idx}">—</span>
+          <button onclick="clearLineaProducto(${idx})" style="background:none;border:none;cursor:pointer;font-size:13px;color:#999;">✕</button>
+        </div>
+      </div>
+      <input type="hidden" id="npClave_${idx}">
+      <input type="hidden" id="npDesc_${idx}">
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+      <div class="form-group">
+        <div class="form-label" style="font-size:10px;">Cant. Pz</div>
+        <input class="form-input-sm" id="npPz_${idx}" type="number" min="0" placeholder="0">
+      </div>
+      <div class="form-group">
+        <div class="form-label" style="font-size:10px;">Cant. Kg</div>
+        <input class="form-input-sm" id="npKg_${idx}" type="number" min="0" step="0.01" placeholder="0.00">
+      </div>
+    </div>
+    <div class="form-group" style="margin-top:8px;">
+      <input class="form-input-sm" id="npObsLinea_${idx}" type="text" placeholder="Observaciones (opcional)">
+    </div>`;
+  document.getElementById('npLineasContainer').appendChild(div);
+}
+
+function removeLinea(idx) {
+  const el = document.getElementById(`npLinea_${idx}`);
+  if (el) el.remove();
+}
+
+function searchProductoLinea(idx) {
+  const q = document.getElementById(`npSearch_${idx}`).value.toLowerCase().trim();
+  const sugBox = document.getElementById(`npSug_${idx}`);
+  if (q.length < 2) { sugBox.style.display = 'none'; return; }
+  const matches = allProducts.filter(p =>
+    p.clave.toLowerCase().includes(q) || p.nombre.toLowerCase().includes(q)
+  ).slice(0, 6);
+  if (!matches.length) { sugBox.style.display = 'none'; return; }
+  sugBox.innerHTML = matches.map(p => `
+    <div class="suggestion-item" onclick="selectLineaProducto(${idx},'${p.clave}','${p.nombre.replace(/'/g,"\\'")}')">
+      <div class="suggestion-name">${p.nombre}</div>
+      <div class="suggestion-code">${p.clave} · ${p.tipo === 'granel' ? 'Granel' : 'PT'}</div>
+    </div>`).join('');
   sugBox.className = 'product-suggestion';
   sugBox.style.display = 'block';
 }
 
-function selectCatalogItem(el, hiddenId, inputId, sugId) {
-  const value = el.getAttribute('data-value');
-  document.getElementById(hiddenId).value = value;
-  document.getElementById(inputId).value = value;
-  document.getElementById(sugId).style.display = 'none';
+function selectLineaProducto(idx, clave, nombre) {
+  document.getElementById(`npClave_${idx}`).value = clave;
+  document.getElementById(`npDesc_${idx}`).value = nombre;
+  document.getElementById(`npSelLabel_${idx}`).textContent = `${clave} · ${nombre}`;
+  document.getElementById(`npSearch_${idx}`).value = '';
+  document.getElementById(`npSug_${idx}`).style.display = 'none';
+  document.getElementById(`npSel_${idx}`).style.display = 'block';
 }
 
-async function loadPedidos() {
+function clearLineaProducto(idx) {
+  document.getElementById(`npClave_${idx}`).value = '';
+  document.getElementById(`npDesc_${idx}`).value = '';
+  document.getElementById(`npSel_${idx}`).style.display = 'none';
+}
+
+async function submitNuevoPedido() {
+  const folio = document.getElementById('npFolio').value.trim();
+  const cliente = document.getElementById('npCliente').value || document.getElementById('npClienteSearch').value.trim();
+  const vendedor = document.getElementById('npVendedor').value.trim();
+  const estado = document.getElementById('npEstado').value;
+  const prioridad = document.getElementById('npPrioridad').value;
+  const fechaPedido = document.getElementById('npFechaPedido').value;
+  const fechaCompromiso = document.getElementById('npFechaCompromiso').value;
+  const obs = document.getElementById('npObs').value.trim();
+
+  if (!folio) { showToast('⚠️ Ingresa el número de pedido', 'error'); return; }
+  if (!cliente) { showToast('⚠️ Selecciona un cliente', 'error'); return; }
+
+  // Recopilar líneas
+  const lineas = [];
+  for (let i = 1; i <= npLineasCount; i++) {
+    const clave = document.getElementById(`npClave_${i}`)?.value;
+    if (!clave) continue; // líneas sin producto se omiten
+    lineas.push({
+      ClaveProducto: clave,
+      Descripcion: document.getElementById(`npDesc_${i}`)?.value || '',
+      CantidadPedida_Pz: parseFloat(document.getElementById(`npPz_${i}`)?.value) || 0,
+      CantidadPedida_Kg: parseFloat(document.getElementById(`npKg_${i}`)?.value) || 0,
+      Observaciones: document.getElementById(`npObsLinea_${i}`)?.value || '',
+    });
+  }
+
+  if (lineas.length === 0) { showToast('⚠️ Agrega al menos un producto', 'error'); return; }
+
+  const btn = document.getElementById('npSubmitBtn');
+  btn.disabled = true;
+  btn.textContent = '⏳ Guardando...';
+
+  // Construir payload: una fila por línea
+  const filas = lineas.map(l => ({
+    accion: 'nuevoPedido',
+    'Pedido/RQF': folio,
+    FechaPedido: fechaPedido,
+    FechaCompromiso: fechaCompromiso,
+    Cliente: cliente,
+    Vendedor: vendedor,
+    ClaveProducto: l.ClaveProducto,
+    Descripcion: l.Descripcion,
+    CantidadPedida_Pz: l.CantidadPedida_Pz,
+    CantidadPedida_Kg: l.CantidadPedida_Kg,
+    EstadoPedido: estado,
+    Prioridad: prioridad,
+    Observaciones: l.Observaciones || obs,
+  }));
+
   try {
-    const table = await fetchSheet('Agenda_Pedidos');
-    const rows = tableToObjects(table);
-    renderPedidos(rows.slice(0, 15));
+    await fetch(APPS_SCRIPT_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ accion: 'nuevoPedidoMultiple', filas })
+    });
+    showToast(`✅ Pedido ${folio} guardado · ${lineas.length} productos`, 'success');
+    document.getElementById('nuevoPedidoModalOverlay').classList.remove('open');
+    setTimeout(() => loadAgenda(), 2000);
   } catch(e) {
-    document.getElementById('pedidosContainer').innerHTML = `<div class="empty-state">⚠️ Error al cargar pedidos.</div>`;
+    showToast('❌ Error al guardar pedido', 'error');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '💾 Guardar pedido';
   }
 }
 
-function updateKPIs() {
-  const emp = allProducts.filter(p => p.tipo === 'empacado');
-  const gran = allProducts.filter(p => p.tipo === 'granel');
-  const totalPz = emp.reduce((s,p) => s + p.stockPz, 0);
-  const totalKg = gran.reduce((s,p) => s + (p.stockKg || 0), 0);
-  const totalRes = emp.reduce((s,p) => s + p.reservado, 0);
-  const totalDisp = emp.reduce((s,p) => s + p.disponible, 0);
-  document.getElementById('kpiTotalPz').textContent = formatNum(totalPz);
-  document.getElementById('kpiTotalKg').textContent = formatNum(totalKg);
-  document.getElementById('kpiProductos').textContent = allProducts.length;
-  document.getElementById('invTotalPz').textContent = formatNum(totalPz);
-  document.getElementById('invTotalKg').textContent = formatNum(totalKg);
-  document.getElementById('invReservado').textContent = formatNum(totalRes);
-  document.getElementById('invDisponible').textContent = formatNum(totalDisp);
-  document.getElementById('invBadgeRes').textContent = totalRes > 0 ? formatNum(totalRes) + ' pz' : 'Sin reservas';
-
-  const criticos = allProducts.filter(p => getStatus(p) === 'critico' && (p.stockPz > 0 || p.stockKg > 0));
-  const alertsTitle = document.getElementById('alertsTitle');
-  const alertsContainer = document.getElementById('alertsContainer');
-  if (criticos.length > 0) {
-    alertsTitle.style.display = 'flex';
-    alertsContainer.innerHTML = criticos.slice(0, 3).map(p => `
-      <div class="alert-card critical">
-        <div class="alert-dot red"></div>
-        <div class="alert-body">
-          <div class="alert-title red">Stock crítico: ${p.clave}</div>
-          <div class="alert-sub">${p.nombre} · ${formatNum(p.stockPz)} pz disponibles</div>
-        </div>
-        <div class="alert-arrow">›</div>
-      </div>`).join('');
-  } else {
-    alertsTitle.style.display = 'none';
-    alertsContainer.innerHTML = '';
-  }
-}
-
+// ==========================================
+//  INVENTARIO
+// ==========================================
 function getStatus(p) {
   const stock = p.tipo === 'empacado' ? p.stockPz : (p.stockKg || p.stockPz);
   if (stock === 0) return 'zero';
@@ -799,7 +1490,7 @@ function getStatus(p) {
 
 function setFilter(f, el) {
   currentFilter = f;
-  document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('#page-inventario .filter-tab').forEach(t => t.classList.remove('active'));
   el.classList.add('active');
   renderProducts();
 }
@@ -816,7 +1507,6 @@ function renderProducts() {
 
   const container = document.getElementById('productsContainer');
   if (!filtered.length) { container.innerHTML = '<div class="empty-state">No se encontraron productos</div>'; return; }
-
   container.innerHTML = filtered.map(p => {
     const status = getStatus(p);
     const isGranel = p.tipo === 'granel';
@@ -829,10 +1519,7 @@ function renderProducts() {
     const [chipClass, fillClass, label] = statusMap[status];
     return `<div class="product-card" onclick="openProdDetalle('${p.clave}')">
       <div class="product-header">
-        <div>
-          <div class="product-name">${p.nombre}</div>
-          <div class="product-code">${p.clave}${p.gramaje ? ' · '+p.gramaje : ''} · ${isGranel?'Granel':'PT'}</div>
-        </div>
+        <div><div class="product-name">${p.nombre}</div><div class="product-code">${p.clave}${p.gramaje ? ' · '+p.gramaje : ''} · ${isGranel?'Granel':'PT'}</div></div>
         <div class="status-chip ${chipClass}"><div class="chip-dot"></div>${label}</div>
       </div>
       <div class="progress-bar"><div class="progress-fill ${fillClass}" style="width:${pct}%"></div></div>
@@ -846,8 +1533,46 @@ function renderProducts() {
   }).join('');
 }
 
+function updateKPIs() {
+  const emp = allProducts.filter(p => p.tipo === 'empacado');
+  const gran = allProducts.filter(p => p.tipo === 'granel');
+  const totalPz = emp.reduce((s,p) => s + p.stockPz, 0);
+  const totalKg = gran.reduce((s,p) => s + (p.stockKg || 0), 0);
+  const totalRes = emp.reduce((s,p) => s + p.reservado, 0);
+  const totalDisp = emp.reduce((s,p) => s + p.disponible, 0);
+  document.getElementById('kpiTotalPz').textContent = formatNum(totalPz);
+  document.getElementById('kpiTotalKg').textContent = formatNum(totalKg);
+  document.getElementById('kpiProductos').textContent = allProducts.length;
+  document.getElementById('invTotalPz').textContent = formatNum(totalPz);
+  document.getElementById('invTotalKg').textContent = formatNum(totalKg);
+  document.getElementById('invReservado').textContent = formatNum(totalRes);
+  document.getElementById('invDisponible').textContent = formatNum(totalDisp);
+  document.getElementById('invBadgeRes').textContent = totalRes > 0 ? formatNum(totalRes)+' pz' : 'Sin reservas';
+
+  const criticos = allProducts.filter(p => getStatus(p) === 'critico');
+  const alertsTitle = document.getElementById('alertsTitle');
+  const alertsContainer = document.getElementById('alertsContainer');
+  if (criticos.length > 0) {
+    alertsTitle.style.display = 'flex';
+    alertsContainer.innerHTML = criticos.slice(0, 3).map(p => `
+      <div class="alert-card critical">
+        <div class="alert-dot red"></div>
+        <div class="alert-body">
+          <div class="alert-title red">Stock crítico: ${p.clave}</div>
+          <div class="alert-sub">${p.nombre} · ${formatNum(p.stockPz)} pz disponibles</div>
+        </div>
+      </div>`).join('');
+  } else {
+    alertsTitle.style.display = 'none';
+    alertsContainer.innerHTML = '';
+  }
+}
+
+// ==========================================
+//  MOVIMIENTOS
+// ==========================================
 const ENTRADAS = ['Entrada compra','Entrada devolución','Ajuste positivo','Entrada producción'];
-const SALIDAS = ['Salida venta','Salida a producción','Consumo tolva','Ajuste negativo','Merma','Desecho'];
+const SALIDAS = ['Salida venta','Salida a producción','Consumo tolva','Ajuste negativo','Merma','Desecho','Salida venta/despacho'];
 
 function renderMovimientos() {
   const hoy = new Date();
@@ -859,11 +1584,10 @@ function renderMovimientos() {
   document.getElementById('movSalidas').textContent = '-' + salidas;
   document.getElementById('movTotal').textContent = todayMovs.length;
 
-  const iconMap = {'Entrada compra':['🌾','icon-green'],'Salida venta':['🚀','icon-purple'],'Entrada producción':['📦','icon-teal'],'Salida a producción':['🏭','icon-orange'],'Ajuste positivo':['✅','icon-blue'],'Ajuste negativo':['📉','icon-orange'],'Consumo tolva':['⚙️','icon-orange']};
+  const iconMap = {'Entrada compra':['🌾','icon-green'],'Salida venta':['🚀','icon-purple'],'Salida venta/despacho':['🚀','icon-purple'],'Entrada producción':['📦','icon-teal'],'Salida a producción':['🏭','icon-orange'],'Ajuste positivo':['✅','icon-blue'],'Ajuste negativo':['📉','icon-orange'],'Consumo tolva':['⚙️','icon-orange']};
 
   const container = document.getElementById('movContainer');
   if (!allMovimientos.length) { container.innerHTML = '<div class="empty-state">No hay movimientos disponibles</div>'; return; }
-
   container.innerHTML = allMovimientos.slice(0, 25).map((m, idx) => {
     const tipo = m['TipoMov'] || '';
     const folio = m['FolioMov'] || m['DocumentoRef'] || '—';
@@ -884,266 +1608,36 @@ function renderMovimientos() {
         <div class="mov-folio">${folio}</div>
         <div class="mov-detail ${cancelado?'cancelled':''}">${cancelado?'CANCELADO · ':''}${tipo} · ${clave}${captura?' · '+captura:''}</div>
       </div>
-      <div class="mov-amount">
-        <div class="mov-qty ${qtyClass}">${cancelado?'0 pz':prefix+qty}</div>
-      </div>
+      <div class="mov-amount"><div class="mov-qty ${qtyClass}">${cancelado?'0 pz':prefix+qty}</div></div>
     </div>`;
   }).join('');
 }
 
-function renderPedidos(rows) {
-  const container = document.getElementById('pedidosContainer');
-  if (!rows.length) { container.innerHTML = '<div class="empty-state">No hay pedidos recientes</div>'; return; }
-  const pedidosMap = {};
-  rows.forEach(r => {
-    const id = r['PedidoRQF'] || Object.values(r)[0];
-    if (!id) return;
-    if (!pedidosMap[id]) pedidosMap[id] = { id, cliente: r['Cliente']||'', estado: r['Estado']||'Pendiente', productos: 0 };
-    pedidosMap[id].productos++;
-  });
-  const pedidos = Object.values(pedidosMap).slice(0, 8);
-  const estMap = {'Pendiente':'ps-pending','EnProduccion':'ps-pending','Completo':'ps-done','Despachado':'ps-done','Cancelado':'ps-delayed'};
-  container.innerHTML = pedidos.map(p => `
-    <div class="pedido-item">
-      <div class="pedido-icon icon-green">📋</div>
-      <div class="pedido-body">
-        <div class="pedido-id">${p.id}</div>
-        <div class="pedido-detail">${p.cliente} · ${p.productos} producto(s)</div>
-      </div>
-      <div class="pedido-status ${estMap[p.estado]||'ps-pending'}">${p.estado==='EnProduccion'?'En producción':p.estado}</div>
-    </div>`).join('');
-}
-
-function formatNum(n) {
-  if (n === null || n === undefined || n === '') return '—';
-  return Number(n).toLocaleString('es-MX', {maximumFractionDigits: 1});
-}
-
-function updateSyncTime() {
-  if (!lastSync) return;
-  const t = lastSync.toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'});
-  const txt = `Última sincronización: ${t}`;
-  document.getElementById('lastSyncHome').textContent = txt;
-  const el = document.getElementById('lastSyncInv');
-  if (el) el.textContent = txt;
-}
-
-function updateDate() {
-  const now = new Date();
-  const dias = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
-  const meses = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
-  const hora = now.getHours();
-  const saludo = hora < 12 ? 'Buenos días' : hora < 18 ? 'Buenas tardes' : 'Buenas noches';
-  document.querySelector('.welcome-greeting').textContent = saludo + ',';
-  document.getElementById('welcomeDate').textContent = `${dias[now.getDay()]} ${now.getDate()} ${meses[now.getMonth()]} ${now.getFullYear()} · Actualizado ahora`;
-}
-
-async function syncData() {
-  document.getElementById('productsContainer').innerHTML = '<div class="loading-state"><div class="loading-spinner"></div>Sincronizando...</div>';
-  await Promise.all([loadInventario(), loadMovimientos(), loadPedidos(), loadProveedores(), loadClientes()]);
-}
-
-function navTo(page) {
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-  document.getElementById('page-' + page).classList.add('active');
-  document.getElementById('nav-' + page).classList.add('active');
-  window.scrollTo(0, 0);
-  // Mostrar FAB solo en movimientos
-  const fab = document.getElementById('movFab');
-  fab.classList.toggle('visible', page === 'movimientos');
-}
-
-// ---- MODAL ----
-let selectedTipo = '';
-let selectedProducto = null;
-let APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwMNbHZeQUPxnrYNN6T3J_Fi758FkwzdEMYA9jNYvrYlXzTHQpDNnpk9OtsalGaIXGHIA/exec';
-
+// ==========================================
+//  MODAL MOVIMIENTO (original)
+// ==========================================
 function openModal() {
   resetForm();
   generarFolio();
-  const hoy = new Date();
-  document.getElementById('fFecha').value = hoy.toISOString().split('T')[0];
+  document.getElementById('fFecha').value = new Date().toISOString().split('T')[0];
   document.getElementById('modalOverlay').classList.add('open');
-  
 }
-
-function closeProdDet(e) {
-  if (e.target === document.getElementById('prodDetModalOverlay')) {
-    document.getElementById('prodDetModalOverlay').classList.remove('open');
-    un
-  }
-}
-
-function openProdDetalle(clave) {
-  const p = allProducts.find(p => p.clave === clave);
-  if (!p) return;
-  const isGranel = p.tipo === 'granel';
-  const stock = isGranel ? (p.stockKg || 0) : p.stockPz;
-  const reservado = isGranel ? (p.reservadoKg || 0) : p.reservado;
-  const disponible = isGranel ? (p.disponibleKg || 0) : p.disponible;
-  const porProducir = p.porProducir || 0;
-  const unidad = isGranel ? 'kg' : 'pz';
-
-  const movs = allMovimientos.filter(m => (m['ClaveProducto'] || '') === clave).slice(0, 10);
-  const iconMap = {'Entrada compra':'🌾','Salida venta/despacho':'🚀','Ajuste positivo':'✅','Ajuste negativo':'📉','Entrada producción':'📦','Salida a producción':'⚙️'};
-
-  const movHTML = movs.length ? movs.map(m => {
-    const tipo = m['TipoMov'] || '—';
-    const esEntrada = ENTRADAS.includes(tipo);
-    const cantPz = parseFloat(m['CantidadPz'] || 0);
-    const cantKg = parseFloat(m['CantidadKg'] || 0);
-    const qty = cantKg > 0 ? formatNum(cantKg)+' kg' : formatNum(cantPz)+' pz';
-    const icon = iconMap[tipo] || '📋';
-    const fv = m['FechaMov'];
-    let fechaStr = '—';
-    if (fv && typeof fv === 'string' && fv.startsWith('Date(')) {
-      const parts = fv.replace('Date(','').replace(')','').split(',').map(Number);
-      fechaStr = String(parts[2]).padStart(2,'0')+'/'+String(parts[1]+1).padStart(2,'0')+'/'+parts[0];
-    }
-    return `<div class="prod-det-mov">
-      <div class="prod-det-mov-icon ${esEntrada?'icon-green':'icon-orange'}">${icon}</div>
-      <div class="prod-det-mov-body">
-        <div class="prod-det-mov-tipo">${tipo}</div>
-        <div class="prod-det-mov-fecha">${fechaStr} · ${m['FolioMov'] || '—'}</div>
-      </div>
-      <div class="prod-det-mov-qty ${esEntrada?'pos':'neg'}">${esEntrada?'+':'-'}${qty}</div>
-    </div>`;
-  }).join('') : '<div class="empty-state" style="padding:20px">Sin movimientos registrados</div>';
-
-  document.getElementById('prodDetModalBody').innerHTML = `
-    <div class="det-header">
-      <div class="det-folio">${p.clave}</div>
-      <div class="det-tipo">${p.nombre}</div>
-      <div class="det-fecha">${isGranel ? '⚖️ Granel' : '📦 PT'}${p.gramaje ? ' · '+p.gramaje : ''}</div>
-    </div>
-    <div class="prod-det-kpis">
-      <div class="prod-det-kpi"><div class="prod-det-kpi-val">${formatNum(stock)}</div><div class="prod-det-kpi-lab">Stock ${unidad}</div></div>
-      <div class="prod-det-kpi"><div class="prod-det-kpi-val orange">${formatNum(reservado)}</div><div class="prod-det-kpi-lab">Reservado</div></div>
-      <div class="prod-det-kpi"><div class="prod-det-kpi-val green">${formatNum(disponible)}</div><div class="prod-det-kpi-lab">Disponible</div></div>
-      <div class="prod-det-kpi"><div class="prod-det-kpi-val blue">${formatNum(porProducir)}</div><div class="prod-det-kpi-lab">Por producir</div></div>
-    </div>
-    <div class="section-title" style="margin-top:4px">Últimos movimientos</div>
-    <div style="display:flex;flex-direction:column;gap:8px">${movHTML}</div>`;
-
-  document.getElementById('prodDetModalOverlay').classList.add('open');
-  
-}
-
-let scrollY = 0;
-function lockScroll() {
-  scrollY = window.scrollY;
-  document.body.classList.add('modal-open');
-  document.body.style.top = `-${scrollY}px`;
-}
-function unlockScroll() {
-  document.body.classList.remove('modal-open');
-  document.body.style.top = '';
-  window.scrollTo(0, scrollY);
-}
-
-function closeModal() {
-  document.getElementById('modalOverlay').classList.remove('open');
-  un
-}
-
-function closeModalOutside(e) {
-  if (e.target === document.getElementById('modalOverlay')) closeModal();
-}
-
-function closeDetModal(e) {
-  if (e.target === document.getElementById('detModalOverlay')) {
-    document.getElementById('detModalOverlay').classList.remove('open');
-    un
-  }
-}
-
-function openDetalle(idx) {
-  const m = allMovimientos[idx];
-  if (!m) return;
-  const tipo = m['TipoMov'] || '—';
-  const folio = m['FolioMov'] || m['DocumentoRef'] || '—';
-  const clave = m['ClaveProducto'] || '—';
-  const desc = m['Descripcion'] || '—';
-  const origen = m['UbicacionOrigen'] || '—';
-  const destino = m['UbicacionDestino'] || '—';
-  const cantPz = parseFloat(m['CantidadPz'] || 0);
-  const cantKg = parseFloat(m['CantidadKg'] || 0);
-  const docRef = m['DocumentoRef'] || '—';
-  const estado = m['Estado'] || '—';
-  const obs = m['Observaciones'] || '—';
-  const captura = m['Captura'] || '—';
-  const proveedor = m['Proveedor'] || '—';
-  const cliente = m['Cliente'] || '—';
-  const lote = m['LoteCaducidad'] || '—';
-  const autoriza = m['Autoriza'] || '—';
-  const folioQR = m['Folio_QR'] || '—';
-  const esOk = estado === 'OK';
-
-  // Formatear fecha desde objeto Date de gviz
-  let fechaStr = '—';
-  const fv = m['FechaMov'];
-  if (fv && typeof fv === 'string' && fv.startsWith('Date(')) {
-    const parts = fv.replace('Date(','').replace(')','').split(',').map(Number);
-    fechaStr = `${String(parts[2]).padStart(2,'0')}/${String(parts[1]+1).padStart(2,'0')}/${parts[0]}`;
-  }
-
-  document.getElementById('detModalBody').innerHTML = `
-    <div class="det-header">
-      <div class="det-folio">${folio}</div>
-      <div class="det-tipo">${tipo}</div>
-      <div class="det-fecha">📅 ${fechaStr}</div>
-    </div>
-    <div class="det-section">
-      <div class="det-row"><div class="det-label">Producto</div><div class="det-value">${clave}</div></div>
-      <div class="det-row"><div class="det-label">Descripción</div><div class="det-value" style="font-size:13px;font-weight:500">${desc}</div></div>
-      <div class="det-row"><div class="det-label">Origen</div><div class="det-value">${origen}</div></div>
-      <div class="det-row"><div class="det-label">Destino</div><div class="det-value">${destino}</div></div>
-      <div class="det-row"><div class="det-label">Documento</div><div class="det-value">${docRef}</div></div>
-      ${proveedor !== '—' ? `<div class="det-row"><div class="det-label">Proveedor</div><div class="det-value">${proveedor}</div></div>` : ''}
-      ${cliente !== '—' ? `<div class="det-row"><div class="det-label">Cliente</div><div class="det-value">${cliente}</div></div>` : ''}
-      ${lote !== '—' ? `<div class="det-row"><div class="det-label">Lote / Caducidad</div><div class="det-value">${lote}</div></div>` : ''}
-      <div class="det-row"><div class="det-label">Estado</div><div class="det-badge ${esOk?'det-ok':'det-cancel'}">${estado}</div></div>
-      <div class="det-row"><div class="det-label">Captura</div><div class="det-value">${captura}</div></div>
-      ${lote !== '—' ? `<div class="det-row"><div class="det-label">Lote / Caducidad</div><div class="det-value">${lote}</div></div>` : ''}
-      ${autoriza !== '—' ? `<div class="det-row"><div class="det-label">Autoriza</div><div class="det-value">${autoriza}</div></div>` : ''}
-      ${folioQR !== '—' ? `<div class="det-row"><div class="det-label">Folio QR</div><div class="det-value" style="font-family:'DM Mono',monospace;font-size:12px">${folioQR}</div></div>` : ''}
-      ${obs !== '—' ? `<div class="det-row"><div class="det-label">Observaciones</div><div class="det-value" style="font-size:13px;font-weight:400">${obs}</div></div>` : ''}
-    </div>
-    <div class="det-qty-grid">
-      <div class="det-qty-card"><div class="det-qty-val">${formatNum(cantPz)}</div><div class="det-qty-lab">Piezas</div></div>
-      <div class="det-qty-card"><div class="det-qty-val">${formatNum(cantKg)}</div><div class="det-qty-lab">Kilogramos</div></div>
-      ${esOk ? `<button onclick="cancelarMovimiento('${folio}')" style="background:white;color:#E53935;border:1.5px solid #E53935;border-radius:14px;padding:14px;font-size:15px;font-weight:600;width:100%;cursor:pointer;font-family:inherit;margin-top:8px;">❌ Cancelar movimiento</button>` : ''}
-    </div>`;
-  document.getElementById('detModalOverlay').classList.add('open');
-  
-}
+function closeModal() { document.getElementById('modalOverlay').classList.remove('open'); }
+function closeModalOutside(e) { if (e.target === document.getElementById('modalOverlay')) closeModal(); }
 
 function resetForm() {
-  selectedTipo = '';
-  selectedProducto = null;
+  selectedTipo = ''; selectedProducto = null;
   document.querySelectorAll('.type-btn').forEach(b => b.classList.remove('selected'));
-  document.getElementById('fTipoMov').value = '';
-  document.getElementById('fProductoSearch').value = '';
-  document.getElementById('fProductoSuggestions').style.display = 'none';
-  document.getElementById('fProductoSelected').style.display = 'none';
-  document.getElementById('fClaveProducto').value = '';
-  document.getElementById('fDescripcion').value = '';
-  document.getElementById('fCantPz').value = '';
-  document.getElementById('fCantKg').value = '';
+  ['fTipoMov','fProductoSearch','fClaveProducto','fDescripcion','fCantPz','fCantKg','fDocRef','fProveedorSearch','fProveedor','fClienteSearch','fCliente','fLote','fObs'].forEach(id => {
+    const el = document.getElementById(id); if (el) { el.value = ''; el.classList.remove('error'); }
+  });
   document.getElementById('fOrigen').value = '';
   document.getElementById('fDestino').value = '';
-  document.getElementById('fDocRef').value = '';
-  document.getElementById('fProveedorSearch').value = '';
-  document.getElementById('fProveedor').value = '';
-  document.getElementById('fProveedorSug').style.display = 'none';
-  document.getElementById('fClienteSearch').value = '';
-  document.getElementById('fCliente').value = '';
-  document.getElementById('fClienteSug').style.display = 'none';
-  document.getElementById('fLote').value = '';
   document.getElementById('fEstado').value = 'OK';
-  document.getElementById('fObs').value = '';
-  ['fCantPz','fCantKg','fOrigen','fDestino','fDocRef'].forEach(id => document.getElementById(id).classList.remove('error'));
+  document.getElementById('fProductoSuggestions').style.display = 'none';
+  document.getElementById('fProductoSelected').style.display = 'none';
+  document.getElementById('fProveedorSug').style.display = 'none';
+  document.getElementById('fClienteSug').style.display = 'none';
 }
 
 function selectTipo(tipo, el) {
@@ -1151,29 +1645,17 @@ function selectTipo(tipo, el) {
   document.getElementById('fTipoMov').value = tipo;
   document.querySelectorAll('.type-btn').forEach(b => b.classList.remove('selected'));
   el.classList.add('selected');
-  // Pre-llenar ubicaciones según tipo
-  if (tipo.includes('Entrada compra')) {
-    document.getElementById('fOrigen').value = 'Proveedor';
-    document.getElementById('fDestino').value = 'BN';
-  } else if (tipo.includes('Salida venta')) {
-    document.getElementById('fOrigen').value = 'BN';
-    document.getElementById('fDestino').value = 'Cliente';
-  } else if (tipo.includes('Salida a producción')) {
-    document.getElementById('fOrigen').value = 'BN';
-    document.getElementById('fDestino').value = 'T1';
-  } else if (tipo.includes('Entrada producción')) {
-    document.getElementById('fOrigen').value = 'T1';
-    document.getElementById('fDestino').value = 'BN';
-  }
+  if (tipo.includes('Entrada compra')) { document.getElementById('fOrigen').value='Proveedor'; document.getElementById('fDestino').value='BN'; }
+  else if (tipo.includes('Salida venta')) { document.getElementById('fOrigen').value='BN'; document.getElementById('fDestino').value='Cliente'; }
+  else if (tipo.includes('Salida a producción')) { document.getElementById('fOrigen').value='BN'; document.getElementById('fDestino').value='T1'; }
+  else if (tipo.includes('Entrada producción')) { document.getElementById('fOrigen').value='T1'; document.getElementById('fDestino').value='BN'; }
 }
 
 function searchProductos() {
   const q = document.getElementById('fProductoSearch').value.toLowerCase().trim();
   const sugBox = document.getElementById('fProductoSuggestions');
   if (q.length < 2) { sugBox.style.display = 'none'; return; }
-  const matches = allProducts.filter(p =>
-    p.clave.toLowerCase().includes(q) || p.nombre.toLowerCase().includes(q)
-  ).slice(0, 6);
+  const matches = allProducts.filter(p => p.clave.toLowerCase().includes(q) || p.nombre.toLowerCase().includes(q)).slice(0, 6);
   if (!matches.length) { sugBox.style.display = 'none'; return; }
   sugBox.innerHTML = matches.map(p => `
     <div class="suggestion-item" onclick="selectProducto('${p.clave}','${p.nombre.replace(/'/g,"\\'")}')">
@@ -1202,118 +1684,204 @@ function clearProducto() {
 }
 
 async function generarFolio() {
-  // Genera folio local basado en último folio visible
-  const last = allMovimientos.map(m => {
-    const f = String(m['FolioMov'] || '');
-    const num = parseInt(f.replace(/\D/g,'')) || 0;
-    return num;
-  });
+  const last = allMovimientos.map(m => parseInt(String(m['FolioMov']||'').replace(/\D/g,''))||0);
   const maxNum = last.length ? Math.max(...last) : 0;
   const siguiente = String(maxNum + 1).padStart(5, '0');
   document.getElementById('folioPreview').textContent = `Mov_${siguiente}`;
   return `Mov_${siguiente}`;
 }
 
-function showToast(msg, type='') {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.className = 'toast show ' + (type==='success'?'success':type==='error'?'error-toast':'');
-  setTimeout(() => t.className = 'toast', 2800);
-}
-
 async function submitMovimiento() {
-  // Validación
-  const errors = [];
   if (!selectedTipo) { showToast('⚠️ Selecciona el tipo de movimiento', 'error'); return; }
   if (!document.getElementById('fClaveProducto').value) { showToast('⚠️ Selecciona un producto', 'error'); return; }
-
   const cantPz = document.getElementById('fCantPz').value;
   const cantKg = document.getElementById('fCantKg').value;
   const origen = document.getElementById('fOrigen').value;
   const destino = document.getElementById('fDestino').value;
   const docRef = document.getElementById('fDocRef').value.trim();
-
   let hasError = false;
-  if (!cantPz && !cantKg) {
-    document.getElementById('fCantPz').classList.add('error');
-    document.getElementById('fCantKg').classList.add('error');
-    hasError = true;
-  }
-  if (!origen) { document.getElementById('fOrigen').classList.add('error'); hasError = true; }
-  if (!destino) { document.getElementById('fDestino').classList.add('error'); hasError = true; }
-  if (!docRef) { document.getElementById('fDocRef').classList.add('error'); hasError = true; }
+  if (!cantPz && !cantKg) { ['fCantPz','fCantKg'].forEach(id => document.getElementById(id).classList.add('error')); hasError=true; }
+  if (!origen) { document.getElementById('fOrigen').classList.add('error'); hasError=true; }
+  if (!destino) { document.getElementById('fDestino').classList.add('error'); hasError=true; }
+  if (!docRef) { document.getElementById('fDocRef').classList.add('error'); hasError=true; }
   if (hasError) { showToast('⚠️ Completa los campos obligatorios', 'error'); return; }
-
   const folio = document.getElementById('folioPreview').textContent;
-  const fecha = document.getElementById('fFecha').value;
-  const obs = document.getElementById('fObs').value;
-
   const payload = {
-    movId: generateMovId(),
-    FechaMov: fecha,
-    TipoMov: selectedTipo,
-    FolioMov: folio,
-    DocumentoRef: docRef,
+    movId: generateMovId(), FechaMov: document.getElementById('fFecha').value,
+    TipoMov: selectedTipo, FolioMov: folio, DocumentoRef: docRef,
     ClaveProducto: document.getElementById('fClaveProducto').value,
     Descripcion: document.getElementById('fDescripcion').value,
-    UbicacionOrigen: origen,
-    UbicacionDestino: destino,
-    CantidadPz: parseFloat(cantPz) || 0,
-    CantidadKg: parseFloat(cantKg) || 0,
+    UbicacionOrigen: origen, UbicacionDestino: destino,
+    CantidadPz: parseFloat(cantPz)||0, CantidadKg: parseFloat(cantKg)||0,
     Proveedor: document.getElementById('fProveedor').value,
     Cliente: document.getElementById('fCliente').value,
     LoteCaducidad: document.getElementById('fLote').value,
-    Captura: 'U01',
-    Estado: document.getElementById('fEstado').value,
-    Observaciones: obs,
-    Folio_QR: folio
+    Captura: 'U01', Estado: document.getElementById('fEstado').value,
+    Observaciones: document.getElementById('fObs').value, Folio_QR: folio
   };
-
   const btn = document.getElementById('fSubmitBtn');
-  btn.disabled = true;
-  btn.textContent = '⏳ Guardando...';
-
-  if (!APPS_SCRIPT_URL) {
-    // Sin URL configurado — mostrar datos para revisión
-    console.log('Payload listo:', payload);
-    showToast('⚙️ Configura el URL del Apps Script para guardar en Sheets', 'error');
-    btn.disabled = false;
-    btn.innerHTML = '💾 Guardar movimiento';
-    return;
-  }
-
+  btn.disabled = true; btn.textContent = '⏳ Guardando...';
   try {
-    await fetch(APPS_SCRIPT_URL, {
-      method: 'POST',
-      mode: 'no-cors',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
-    });
+    await fetch(APPS_SCRIPT_URL, { method:'POST', mode:'no-cors', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) });
     showToast('✅ Movimiento guardado: ' + folio, 'success');
     closeModal();
     setTimeout(() => syncData(), 1500);
   } catch(e) {
     showToast('❌ Error al guardar. Revisa conexión.', 'error');
-  } finally {
-    btn.disabled = false;
-    btn.innerHTML = '💾 Guardar movimiento';
-  }
+  } finally { btn.disabled=false; btn.innerHTML='💾 Guardar movimiento'; }
 }
+
 async function cancelarMovimiento(folio) {
-  if (!confirm('¿Cancelar ' + folio + '? Ya no afectará el stock.')) return;
+  if (!confirm('¿Cancelar ' + folio + '?')) return;
   try {
-    await fetch(APPS_SCRIPT_URL, {
-      method: 'POST', mode: 'no-cors',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ accion: 'cancelar', FolioMov: folio })
-    });
+    await fetch(APPS_SCRIPT_URL, { method:'POST', mode:'no-cors', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ accion:'cancelar', FolioMov: folio }) });
     document.getElementById('detModalOverlay').classList.remove('open');
     showToast('✅ ' + folio + ' cancelado', 'success');
     setTimeout(() => syncData(), 1500);
-  } catch(e) {
-    showToast('❌ Error al cancelar.', 'error');
-  }
+  } catch(e) { showToast('❌ Error al cancelar.', 'error'); }
 }
+
+// ==========================================
+//  DETALLE MOVIMIENTO & PRODUCTO
+// ==========================================
+function openDetalle(idx) {
+  const m = allMovimientos[idx];
+  if (!m) return;
+  const tipo = m['TipoMov']||'—', folio = m['FolioMov']||m['DocumentoRef']||'—';
+  const clave = m['ClaveProducto']||'—', estado = m['Estado']||'—';
+  const cantPz = parseFloat(m['CantidadPz']||0), cantKg = parseFloat(m['CantidadKg']||0);
+  const esOk = estado==='OK';
+  let fechaStr = '—';
+  const fv = m['FechaMov'];
+  if (fv && typeof fv==='string' && fv.startsWith('Date(')) {
+    const parts = fv.replace('Date(','').replace(')','').split(',').map(Number);
+    fechaStr = `${String(parts[2]).padStart(2,'0')}/${String(parts[1]+1).padStart(2,'0')}/${parts[0]}`;
+  }
+  document.getElementById('detModalBody').innerHTML = `
+    <div class="det-header"><div class="det-folio">${folio}</div><div class="det-tipo">${tipo}</div><div class="det-fecha">📅 ${fechaStr}</div></div>
+    <div class="det-section">
+      <div class="det-row"><div class="det-label">Producto</div><div class="det-value">${clave}</div></div>
+      <div class="det-row"><div class="det-label">Origen</div><div class="det-value">${m['UbicacionOrigen']||'—'}</div></div>
+      <div class="det-row"><div class="det-label">Destino</div><div class="det-value">${m['UbicacionDestino']||'—'}</div></div>
+      <div class="det-row"><div class="det-label">Documento</div><div class="det-value">${m['DocumentoRef']||'—'}</div></div>
+      <div class="det-row"><div class="det-label">Estado</div><div class="det-badge ${esOk?'det-ok':'det-cancel'}">${estado}</div></div>
+    </div>
+    <div class="det-qty-grid">
+      <div class="det-qty-card"><div class="det-qty-val">${formatNum(cantPz)}</div><div class="det-qty-lab">Piezas</div></div>
+      <div class="det-qty-card"><div class="det-qty-val">${formatNum(cantKg)}</div><div class="det-qty-lab">Kilogramos</div></div>
+    </div>
+    ${esOk ? `<button onclick="cancelarMovimiento('${folio}')" style="background:white;color:#E53935;border:1.5px solid #E53935;border-radius:14px;padding:14px;font-size:15px;font-weight:600;width:100%;cursor:pointer;font-family:inherit;margin-top:8px;">❌ Cancelar movimiento</button>` : ''}`;
+  document.getElementById('detModalOverlay').classList.add('open');
+}
+
+function closeDetModal(e) { if (e.target===document.getElementById('detModalOverlay')) document.getElementById('detModalOverlay').classList.remove('open'); }
+
+function openProdDetalle(clave) {
+  const p = allProducts.find(p => p.clave === clave);
+  if (!p) return;
+  const isGranel = p.tipo==='granel';
+  const stock = isGranel?(p.stockKg||0):p.stockPz;
+  const reservado = isGranel?(p.reservadoKg||0):p.reservado;
+  const disponible = isGranel?(p.disponibleKg||0):p.disponible;
+  const unidad = isGranel?'kg':'pz';
+  const movs = allMovimientos.filter(m=>(m['ClaveProducto']||')===clave').slice(0,8);
+  const iconMap = {'Entrada compra':'🌾','Salida venta/despacho':'🚀','Ajuste positivo':'✅','Ajuste negativo':'📉','Entrada producción':'📦','Salida a producción':'⚙️'};
+  const movHTML = movs.length ? movs.map(m => {
+    const tipo=m['TipoMov']||'—', esEntrada=ENTRADAS.includes(tipo);
+    const cantPz=parseFloat(m['CantidadPz']||0), cantKg=parseFloat(m['CantidadKg']||0);
+    const qty = cantKg>0?formatNum(cantKg)+' kg':formatNum(cantPz)+' pz';
+    const icon = iconMap[tipo]||'📋';
+    let fechaStr='—'; const fv=m['FechaMov'];
+    if (fv&&typeof fv==='string'&&fv.startsWith('Date(')) { const parts=fv.replace('Date(','').replace(')','').split(',').map(Number); fechaStr=`${String(parts[2]).padStart(2,'0')}/${String(parts[1]+1).padStart(2,'0')}/${parts[0]}`; }
+    return `<div class="prod-det-mov"><div class="prod-det-mov-icon ${esEntrada?'icon-green':'icon-orange'}">${icon}</div><div class="prod-det-mov-body"><div class="prod-det-mov-tipo">${tipo}</div><div class="prod-det-mov-fecha">${fechaStr}</div></div><div class="prod-det-mov-qty ${esEntrada?'pos':'neg'}">${esEntrada?'+':'-'}${qty}</div></div>`;
+  }).join('') : '<div class="empty-state" style="padding:20px">Sin movimientos</div>';
+  document.getElementById('prodDetModalBody').innerHTML = `
+    <div class="det-header"><div class="det-folio">${p.clave}</div><div class="det-tipo">${p.nombre}</div><div class="det-fecha">${isGranel?'⚖️ Granel':'📦 PT'}${p.gramaje?' · '+p.gramaje:''}</div></div>
+    <div class="prod-det-kpis">
+      <div class="prod-det-kpi"><div class="prod-det-kpi-val">${formatNum(stock)}</div><div class="prod-det-kpi-lab">Stock ${unidad}</div></div>
+      <div class="prod-det-kpi"><div class="prod-det-kpi-val orange">${formatNum(reservado)}</div><div class="prod-det-kpi-lab">Reservado</div></div>
+      <div class="prod-det-kpi"><div class="prod-det-kpi-val green">${formatNum(disponible)}</div><div class="prod-det-kpi-lab">Disponible</div></div>
+      <div class="prod-det-kpi"><div class="prod-det-kpi-val blue">${formatNum(p.porProducir||0)}</div><div class="prod-det-kpi-lab">Por producir</div></div>
+    </div>
+    <div class="section-title" style="margin-top:4px">Últimos movimientos</div>
+    <div style="display:flex;flex-direction:column;gap:8px">${movHTML}</div>`;
+  document.getElementById('prodDetModalOverlay').classList.add('open');
+}
+
+function closeProdDet(e) { if (e.target===document.getElementById('prodDetModalOverlay')) document.getElementById('prodDetModalOverlay').classList.remove('open'); }
+
+// ==========================================
+//  CATALOG SEARCH
+// ==========================================
+function searchCatalog(inputId, hiddenId, list, sugId) {
+  const q = document.getElementById(inputId).value.toLowerCase().trim();
+  const sugBox = document.getElementById(sugId);
+  document.getElementById(hiddenId).value = '';
+  if (q.length < 1) { sugBox.style.display='none'; return; }
+  const matches = list.filter(i => i.toLowerCase().includes(q)).slice(0,7);
+  if (!matches.length) { sugBox.style.display='none'; return; }
+  sugBox.innerHTML = matches.map(i => {
+    const safe = i.replace(/"/g,'&quot;');
+    return `<div class="suggestion-item" onclick="selectCatalogItem(this,'${hiddenId}','${inputId}','${sugId}')" data-value="${safe}">${i}</div>`;
+  }).join('');
+  sugBox.className = 'product-suggestion';
+  sugBox.style.display = 'block';
+}
+
+function selectCatalogItem(el, hiddenId, inputId, sugId) {
+  const value = el.getAttribute('data-value');
+  document.getElementById(hiddenId).value = value;
+  document.getElementById(inputId).value = value;
+  document.getElementById(sugId).style.display = 'none';
+}
+
+// ==========================================
+//  NAVIGATION
+// ==========================================
+function navTo(page) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-' + page)?.classList.add('active');
+  document.getElementById('nav-' + page)?.classList.add('active');
+  window.scrollTo(0, 0);
+
+  // FABs
+  document.getElementById('movFab').classList.toggle('visible', page === 'movimientos');
+  const agFab = document.getElementById('agendaFab');
+  agFab.style.display = page === 'agenda' ? 'flex' : 'none';
+}
+
+// ==========================================
+//  SYNC
+// ==========================================
+async function syncData() {
+  document.getElementById('productsContainer').innerHTML = '<div class="loading-state"><div class="loading-spinner"></div>Sincronizando...</div>';
+  document.getElementById('agendaContainer').innerHTML = '<div class="loading-state"><div class="loading-spinner"></div>Cargando pedidos...</div>';
+  await Promise.all([loadInventario(), loadMovimientos(), loadAgenda(), loadProveedores(), loadClientes()]);
+}
+
+function updateSyncTime() {
+  if (!lastSync) return;
+  const t = lastSync.toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'});
+  const txt = `Última sincronización: ${t}`;
+  ['lastSyncHome','lastSyncInv','lastSyncAgenda'].forEach(id => {
+    const el = document.getElementById(id); if (el) el.textContent = txt;
+  });
+}
+
+function updateDate() {
+  const now = new Date();
+  const dias = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
+  const meses = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+  const hora = now.getHours();
+  const saludo = hora<12?'Buenos días':hora<18?'Buenas tardes':'Buenas noches';
+  document.querySelector('.welcome-greeting').textContent = saludo + ',';
+  document.getElementById('welcomeDate').textContent = `${dias[now.getDay()]} ${now.getDate()} ${meses[now.getMonth()]} · Actualizado ahora`;
+}
+
+// ==========================================
+//  INIT
+// ==========================================
 updateDate();
 syncData();
 </script>
