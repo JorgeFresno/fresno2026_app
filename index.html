@@ -1154,7 +1154,11 @@ function renderAgenda() {
 
   container.innerHTML = lista.map(ped => {
     const lineasHTML = ped.lineas.slice(0, 4).map(l => {
-      const qty = l.cantKg > 0 ? `${formatNum(l.cantKg)} kg` : `${formatNum(l.cantPz)} pz`;
+      // Empacado: solo pz — Granel: pz + kg
+      const esGranelLinea = l.cantKg > 0;
+      const qty = esGranelLinea
+        ? `${formatNum(l.cantPz > 0 ? l.cantPz : '')} ${l.cantPz > 0 ? 'pz · ' : ''}${formatNum(l.cantKg)} kg`
+        : `${formatNum(l.cantPz)} pz`;
       const semClass = getSemaforoClass(l);
       return `<div class="pedido-linea">
         <div class="pedido-linea-semaforo ${semClass}"></div>
@@ -1229,18 +1233,31 @@ function openPedidoDetalle(folio) {
         ${dispBadge}
       </div>
       <div class="linea-det-stocks">
+        ${pedKg > 0 ? `
         <div class="linea-det-stat">
-          <div class="linea-det-val">${pedPz > 0 ? formatNum(pedPz)+' pz' : formatNum(pedKg)+' kg'}</div>
+          <div class="linea-det-val">${formatNum(pedPz)} pz</div>
+          <div class="linea-det-lab">Ped. Pz</div>
+        </div>
+        <div class="linea-det-stat">
+          <div class="linea-det-val">${formatNum(pedKg)} kg</div>
+          <div class="linea-det-lab">Ped. Kg</div>
+        </div>
+        <div class="linea-det-stat">
+          <div class="linea-det-val ${faltanteKg > 0 ? 'red' : 'green'}">${formatNum(faltKg)} kg</div>
+          <div class="linea-det-lab">Faltante Kg</div>
+        </div>` : `
+        <div class="linea-det-stat">
+          <div class="linea-det-val">${formatNum(pedPz)} pz</div>
           <div class="linea-det-lab">Pedido</div>
         </div>
         <div class="linea-det-stat">
-          <div class="linea-det-val green">${pedPz > 0 ? formatNum(dispPz)+' pz' : formatNum(dispKg)+' kg'}</div>
+          <div class="linea-det-val green">${formatNum(dispPz)} pz</div>
           <div class="linea-det-lab">Disponible</div>
         </div>
         <div class="linea-det-stat">
-          <div class="linea-det-val ${(pedPz > 0 ? faltPz : faltKg) > 0 ? 'red' : 'green'}">${pedPz > 0 ? formatNum(faltPz)+' pz' : formatNum(faltKg)+' kg'}</div>
+          <div class="linea-det-val ${faltPz > 0 ? 'red' : 'green'}">${formatNum(faltPz)} pz</div>
           <div class="linea-det-lab">Faltante</div>
-        </div>
+        </div>`}
       </div>
       ${l.observaciones ? `<div style="font-size:11px;color:var(--text-muted);margin-top:8px;">📝 ${l.observaciones}</div>` : ''}
     </div>`;
@@ -1321,7 +1338,7 @@ async function cambiarEstadoPedido(folio, nuevoEstado) {
     await fetch(APPS_SCRIPT_URL, {
       method: 'POST',
       mode: 'no-cors',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'text/plain' },
       body: JSON.stringify({
         accion: 'cambiarEstadoPedido',
         PedidoRQF: folio,
@@ -1356,7 +1373,7 @@ async function despacharPedido(folio) {
     await fetch(APPS_SCRIPT_URL, {
       method: 'POST',
       mode: 'no-cors',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'text/plain' },
       body: JSON.stringify({
         accion: 'despacharPedido',
         PedidoRQF: folio
@@ -1436,15 +1453,19 @@ function addLineaNuevoPedido() {
       <input type="hidden" id="npClave_${idx}">
       <input type="hidden" id="npDesc_${idx}">
     </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
-      <div class="form-group">
-        <div class="form-label" style="font-size:10px;">Cant. Pz</div>
-        <input class="form-input-sm" id="npPz_${idx}" type="number" min="0" placeholder="0">
+    <!-- Campos de cantidad — se muestran al seleccionar producto -->
+    <div id="npCantFields_${idx}" style="display:none;">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;" id="npCantGrid_${idx}">
+        <div class="form-group" id="npPzGroup_${idx}">
+          <div class="form-label" style="font-size:10px;" id="npPzLabel_${idx}">Cant. Pz</div>
+          <input class="form-input-sm" id="npPz_${idx}" type="number" min="0" placeholder="0">
+        </div>
+        <div class="form-group" id="npKgGroup_${idx}" style="display:none;">
+          <div class="form-label" style="font-size:10px;">Cant. Kg</div>
+          <input class="form-input-sm" id="npKg_${idx}" type="number" min="0" step="0.01" placeholder="0.00">
+        </div>
       </div>
-      <div class="form-group">
-        <div class="form-label" style="font-size:10px;">Cant. Kg</div>
-        <input class="form-input-sm" id="npKg_${idx}" type="number" min="0" step="0.01" placeholder="0.00">
-      </div>
+      <div id="npTipoBadge_${idx}" style="margin-top:6px;"></div>
     </div>
     <div class="form-group" style="margin-top:8px;">
       <input class="form-input-sm" id="npObsLinea_${idx}" type="text" placeholder="Observaciones (opcional)">
@@ -1481,12 +1502,53 @@ function selectLineaProducto(idx, clave, nombre) {
   document.getElementById(`npSearch_${idx}`).value = '';
   document.getElementById(`npSug_${idx}`).style.display = 'none';
   document.getElementById(`npSel_${idx}`).style.display = 'block';
+
+  // Auto-detectar tipo desde inventario
+  const prod = allProducts.find(p => p.clave === clave);
+  const esGranel = prod ? prod.tipo === 'granel' : false;
+  const cantFields = document.getElementById(`npCantFields_${idx}`);
+  const kgGroup    = document.getElementById(`npKgGroup_${idx}`);
+  const pzLabel    = document.getElementById(`npPzLabel_${idx}`);
+  const tipoBadge  = document.getElementById(`npTipoBadge_${idx}`);
+  const cantGrid   = document.getElementById(`npCantGrid_${idx}`);
+
+  // Mostrar sección de cantidades
+  cantFields.style.display = 'block';
+
+  if (esGranel) {
+    // Granel: mostrar PZ + KG (dos columnas)
+    kgGroup.style.display = 'block';
+    cantGrid.style.gridTemplateColumns = '1fr 1fr';
+    pzLabel.textContent = 'Cant. Pz';
+    tipoBadge.innerHTML = '<span style="font-size:10px;background:#E0F2F1;color:#00695C;border-radius:6px;padding:3px 8px;font-weight:600;">⚖️ Granel — ingresa pz y kg</span>';
+    // Limpiar campos
+    document.getElementById(`npPz_${idx}`).value = '';
+    document.getElementById(`npKg_${idx}`).value = '';
+  } else {
+    // Empacado PT: solo PZ (una columna)
+    kgGroup.style.display = 'none';
+    cantGrid.style.gridTemplateColumns = '1fr';
+    pzLabel.textContent = 'Cant. Pz';
+    tipoBadge.innerHTML = '<span style="font-size:10px;background:#EAF4E3;color:#2D5A1B;border-radius:6px;padding:3px 8px;font-weight:600;">📦 Empacado PT — solo piezas</span>';
+    // Limpiar
+    document.getElementById(`npPz_${idx}`).value = '';
+    document.getElementById(`npKg_${idx}`).value = '0';
+  }
 }
 
 function clearLineaProducto(idx) {
   document.getElementById(`npClave_${idx}`).value = '';
   document.getElementById(`npDesc_${idx}`).value = '';
   document.getElementById(`npSel_${idx}`).style.display = 'none';
+  // Ocultar campos de cantidad hasta que se elija otro producto
+  const cantFields = document.getElementById(`npCantFields_${idx}`);
+  if (cantFields) cantFields.style.display = 'none';
+  const tipoBadge = document.getElementById(`npTipoBadge_${idx}`);
+  if (tipoBadge) tipoBadge.innerHTML = '';
+  const pz = document.getElementById(`npPz_${idx}`);
+  const kg = document.getElementById(`npKg_${idx}`);
+  if (pz) pz.value = '';
+  if (kg) kg.value = '';
 }
 
 async function submitNuevoPedido() {
@@ -1543,7 +1605,7 @@ async function submitNuevoPedido() {
     await fetch(APPS_SCRIPT_URL, {
       method: 'POST',
       mode: 'no-cors',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'text/plain' },
       body: JSON.stringify({ accion: 'nuevoPedidoMultiple', filas })
     });
     showToast(`✅ Pedido ${folio} guardado · ${lineas.length} productos`, 'success');
@@ -1804,7 +1866,7 @@ async function submitMovimiento() {
   const btn = document.getElementById('fSubmitBtn');
   btn.disabled = true; btn.textContent = '⏳ Guardando...';
   try {
-    await fetch(APPS_SCRIPT_URL, { method:'POST', mode:'no-cors', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) });
+    await fetch(APPS_SCRIPT_URL, { method:'POST', mode:'no-cors', headers:{'Content-Type':'text/plain'}, body: JSON.stringify(payload) });
     showToast('✅ Movimiento guardado: ' + folio, 'success');
     closeModal();
     setTimeout(() => syncData(), 1500);
@@ -1816,7 +1878,7 @@ async function submitMovimiento() {
 async function cancelarMovimiento(folio) {
   if (!confirm('¿Cancelar ' + folio + '?')) return;
   try {
-    await fetch(APPS_SCRIPT_URL, { method:'POST', mode:'no-cors', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ accion:'cancelar', FolioMov: folio }) });
+    await fetch(APPS_SCRIPT_URL, { method:'POST', mode:'no-cors', headers:{'Content-Type':'text/plain'}, body: JSON.stringify({ accion:'cancelar', FolioMov: folio }) });
     document.getElementById('detModalOverlay').classList.remove('open');
     showToast('✅ ' + folio + ' cancelado', 'success');
     setTimeout(() => syncData(), 1500);
@@ -1983,14 +2045,19 @@ function generarTicket(folio) {
 
   // Líneas de productos
   const productosHTML = ped.lineas.map((l, i) => {
-    const tienePz = l.cantPz > 0;
-    const tieneKg = l.cantKg > 0;
+    const esGranelTicket = l.cantKg > 0;
     return `<div class="ticket-producto">
       <div class="ticket-prod-clave">${l.clave}</div>
       <div class="ticket-prod-desc">${l.descripcion || l.clave}</div>
       <div class="ticket-prod-qty">
-        ${tienePz ? `<div class="ticket-prod-qty-item"><div class="ticket-prod-qty-val">${formatNum(l.cantPz)}</div><div class="ticket-prod-qty-lab">Piezas</div></div>` : ''}
-        ${tieneKg ? `<div class="ticket-prod-qty-item"><div class="ticket-prod-qty-val">${formatNum(l.cantKg)}</div><div class="ticket-prod-qty-lab">Kg</div></div>` : ''}
+        <div class="ticket-prod-qty-item">
+          <div class="ticket-prod-qty-val">${formatNum(l.cantPz)}</div>
+          <div class="ticket-prod-qty-lab">Piezas</div>
+        </div>
+        ${esGranelTicket ? `<div class="ticket-prod-qty-item">
+          <div class="ticket-prod-qty-val">${formatNum(l.cantKg)}</div>
+          <div class="ticket-prod-qty-lab">Kg</div>
+        </div>` : ''}
       </div>
     </div>`;
   }).join('');
