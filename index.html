@@ -1095,6 +1095,7 @@ function openDetalle(idx) {
     <div class="det-qty-grid">
       <div class="det-qty-card"><div class="det-qty-val">${formatNum(cantPz)}</div><div class="det-qty-lab">Piezas</div></div>
       <div class="det-qty-card"><div class="det-qty-val">${formatNum(cantKg)}</div><div class="det-qty-lab">Kilogramos</div></div>
+      ${esOk ? `<button onclick="cancelarMovimiento('${folio}')" style="background:white;color:#E53935;border:1.5px solid #E53935;border-radius:14px;padding:14px;font-size:15px;font-weight:600;width:100%;cursor:pointer;font-family:inherit;margin-top:8px;">❌ Cancelar movimiento</button>` : ''}
     </div>`;
   document.getElementById('detModalOverlay').classList.add('open');
   
@@ -1280,7 +1281,21 @@ async function submitMovimiento() {
     btn.innerHTML = '💾 Guardar movimiento';
   }
 }
-
+async function cancelarMovimiento(folio) {
+  if (!confirm('¿Cancelar ' + folio + '? Ya no afectará el stock.')) return;
+  try {
+    await fetch(APPS_SCRIPT_URL, {
+      method: 'POST', mode: 'no-cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ accion: 'cancelar', FolioMov: folio })
+    });
+    document.getElementById('detModalOverlay').classList.remove('open');
+    showToast('✅ ' + folio + ' cancelado', 'success');
+    setTimeout(() => syncData(), 1500);
+  } catch(e) {
+    showToast('❌ Error al cancelar.', 'error');
+  }
+}
 updateDate();
 syncData();
 </script>
