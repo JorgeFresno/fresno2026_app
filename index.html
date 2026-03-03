@@ -9,6 +9,7 @@
 <meta name="apple-mobile-web-app-title" content="El Fresno">
 <meta name="theme-color" content="#2D5A1B">
 <link rel="apple-touch-icon" href="logo.png">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
   :root {
@@ -365,6 +366,65 @@
 
   /* DIVIDER */
   .modal-section-title { font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.07em; padding: 4px 0 0; border-top: 1px solid var(--border); }
+
+  /* ============================================
+     TICKET DE DESPACHO — ESTILOS
+     ============================================ */
+  #ticketOverlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 400; display: none; align-items: center; justify-content: center; padding: 20px; }
+  #ticketOverlay.open { display: flex; animation: fadeOverlay 0.2s ease; }
+  #ticketWrapper { background: white; border-radius: 16px; width: 100%; max-width: 360px; overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,0.4); animation: slideUp 0.25s ease; display: flex; flex-direction: column; max-height: 90vh; }
+  .ticket-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 14px 16px; background: white; border-top: 1px solid var(--border); flex-shrink: 0; }
+  .ticket-btn-print { background: var(--green-dark); color: white; border: none; border-radius: 12px; padding: 14px; font-size: 14px; font-weight: 700; cursor: pointer; font-family: 'DM Sans', sans-serif; display: flex; align-items: center; justify-content: center; gap: 6px; }
+  .ticket-btn-close { background: white; color: var(--text-primary); border: 1.5px solid var(--border); border-radius: 12px; padding: 14px; font-size: 14px; font-weight: 600; cursor: pointer; font-family: 'DM Sans', sans-serif; display: flex; align-items: center; justify-content: center; gap: 6px; }
+  #ticketContent { overflow-y: auto; flex: 1; }
+  .ticket { font-family: 'DM Mono', monospace; font-size: 12px; color: #1A1A1A; background: white; padding: 20px 16px; width: 100%; }
+  .ticket-header { text-align: center; margin-bottom: 12px; padding-bottom: 12px; border-bottom: 2px dashed #CCC; }
+  .ticket-logo { font-size: 28px; margin-bottom: 4px; }
+  .ticket-empresa { font-size: 15px; font-weight: 700; font-family: 'DM Sans', sans-serif; color: var(--green-dark); letter-spacing: 0.05em; }
+  .ticket-rfc { font-size: 10px; color: #888; margin-top: 2px; font-family: 'DM Sans', sans-serif; }
+  .ticket-tipo { font-size: 11px; font-weight: 700; background: var(--green-dark); color: white; border-radius: 6px; padding: 4px 12px; display: inline-block; margin-top: 8px; font-family: 'DM Sans', sans-serif; letter-spacing: 0.08em; }
+  .ticket-folio-section { text-align: center; padding: 10px 0; border-bottom: 1px dashed #CCC; margin-bottom: 10px; }
+  .ticket-folio { font-size: 20px; font-weight: 700; color: var(--green-dark); letter-spacing: 0.05em; }
+  .ticket-fecha { font-size: 10px; color: #888; margin-top: 3px; font-family: 'DM Sans', sans-serif; }
+  .ticket-info { margin-bottom: 10px; padding-bottom: 10px; border-bottom: 1px dashed #CCC; }
+  .ticket-info-row { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 5px; gap: 8px; }
+  .ticket-info-label { font-size: 10px; color: #888; font-family: 'DM Sans', sans-serif; text-transform: uppercase; letter-spacing: 0.05em; white-space: nowrap; flex-shrink: 0; }
+  .ticket-info-value { font-size: 12px; font-weight: 600; font-family: 'DM Sans', sans-serif; text-align: right; }
+  .ticket-productos-title { font-size: 10px; color: #888; font-family: 'DM Sans', sans-serif; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 8px; }
+  .ticket-productos { margin-bottom: 10px; padding-bottom: 10px; border-bottom: 1px dashed #CCC; display: flex; flex-direction: column; gap: 8px; }
+  .ticket-producto { border-bottom: 1px solid #F0F0F0; padding-bottom: 7px; }
+  .ticket-producto:last-child { border-bottom: none; padding-bottom: 0; }
+  .ticket-prod-clave { font-size: 11px; font-weight: 700; color: var(--green-dark); }
+  .ticket-prod-desc { font-size: 11px; font-family: 'DM Sans', sans-serif; color: #333; margin-top: 1px; line-height: 1.3; }
+  .ticket-prod-qty { display: flex; justify-content: flex-end; gap: 12px; margin-top: 5px; }
+  .ticket-prod-qty-item { text-align: right; }
+  .ticket-prod-qty-val { font-size: 13px; font-weight: 700; color: var(--green-dark); }
+  .ticket-prod-qty-lab { font-size: 9px; color: #AAA; font-family: 'DM Sans', sans-serif; text-transform: uppercase; }
+  .ticket-totales { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px dashed #CCC; }
+  .ticket-total-item { background: #F8F8F8; border-radius: 8px; padding: 8px 10px; text-align: center; }
+  .ticket-total-val { font-size: 16px; font-weight: 700; color: var(--green-dark); }
+  .ticket-total-lab { font-size: 9px; color: #888; font-family: 'DM Sans', sans-serif; text-transform: uppercase; margin-top: 2px; }
+  .ticket-firmas { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px dashed #CCC; }
+  .ticket-firma { text-align: center; }
+  .ticket-firma-linea { height: 1px; background: #333; margin-bottom: 4px; margin-top: 32px; }
+  .ticket-firma-label { font-size: 9px; color: #888; font-family: 'DM Sans', sans-serif; text-transform: uppercase; letter-spacing: 0.05em; }
+  .ticket-footer { text-align: center; }
+  .ticket-footer-msg { font-size: 10px; color: #AAA; font-family: 'DM Sans', sans-serif; line-height: 1.5; }
+  .ticket-folio-bottom { font-size: 9px; color: #CCC; margin-top: 6px; }
+  .ticket-qr-section { text-align: center; margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px dashed #CCC; }
+  .ticket-qr-label { font-size: 9px; color: #AAA; font-family: 'DM Sans', sans-serif; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 8px; }
+  .ticket-qr-img { width: 110px; height: 110px; margin: 0 auto; display: block; border: 3px solid #F0F0F0; border-radius: 8px; padding: 4px; }
+  .ticket-qr-data { font-size: 9px; color: #CCC; margin-top: 4px; word-break: break-all; }
+
+  @media print {
+    body > *:not(#ticketOverlay) { display: none !important; }
+    #ticketOverlay { position: static !important; background: none !important; padding: 0 !important; display: block !important; }
+    #ticketWrapper { box-shadow: none !important; border-radius: 0 !important; max-height: none !important; }
+    .ticket-actions { display: none !important; }
+    #ticketContent { overflow: visible !important; }
+    .ticket { padding: 8px !important; }
+  }
+
 </style>
 </head>
 <body>
@@ -746,6 +806,24 @@
       <button class="modal-close" onclick="document.getElementById('detModalOverlay').classList.remove('open')">✕</button>
     </div>
     <div class="modal-body" id="detModalBody"></div>
+  </div>
+</div>
+
+
+<!-- ====================================================
+     TICKET DE DESPACHO
+     ==================================================== -->
+<div id="ticketOverlay" onclick="closeTicketOutside(event)">
+  <div id="ticketWrapper">
+    <div id="ticketContent">
+      <div class="ticket" id="ticketPrint">
+        <!-- Se genera dinámicamente -->
+      </div>
+    </div>
+    <div class="ticket-actions">
+      <button class="ticket-btn-print" onclick="imprimirTicket()">🖨️ Imprimir / PDF</button>
+      <button class="ticket-btn-close" onclick="cerrarTicket()">✕ Cerrar</button>
+    </div>
   </div>
 </div>
 
@@ -1299,6 +1377,10 @@ async function despacharPedido(folio) {
     updateAgendaKPIs();
     showToast('🚀 Pedido ' + folio + ' despachado', 'success');
     setTimeout(() => loadAgenda(), 2000);
+
+    // Abrir ticket automáticamente
+    setTimeout(() => generarTicket(folio), 400);
+
   } catch(e) {
     showToast('❌ Error al despachar', 'error');
   }
@@ -1877,6 +1959,153 @@ function updateDate() {
   const saludo = hora<12?'Buenos días':hora<18?'Buenas tardes':'Buenas noches';
   document.querySelector('.welcome-greeting').textContent = saludo + ',';
   document.getElementById('welcomeDate').textContent = `${dias[now.getDay()]} ${now.getDate()} ${meses[now.getMonth()]} · Actualizado ahora`;
+}
+
+
+// ==========================================
+//  TICKET DE DESPACHO
+// ==========================================
+function generarTicket(folio) {
+  const ped = pedidosAgrupados[folio];
+  if (!ped) return;
+
+  const ahora = new Date();
+  const fechaDespacho = ahora.toLocaleDateString('es-MX', {
+    day: '2-digit', month: '2-digit', year: 'numeric'
+  });
+  const horaDespacho = ahora.toLocaleTimeString('es-MX', {
+    hour: '2-digit', minute: '2-digit'
+  });
+
+  // Totales
+  const totalPz = ped.lineas.reduce((s, l) => s + (l.cantPz || 0), 0);
+  const totalKg = ped.lineas.reduce((s, l) => s + (l.cantKg || 0), 0);
+
+  // Líneas de productos
+  const productosHTML = ped.lineas.map((l, i) => {
+    const tienePz = l.cantPz > 0;
+    const tieneKg = l.cantKg > 0;
+    return `<div class="ticket-producto">
+      <div class="ticket-prod-clave">${l.clave}</div>
+      <div class="ticket-prod-desc">${l.descripcion || l.clave}</div>
+      <div class="ticket-prod-qty">
+        ${tienePz ? `<div class="ticket-prod-qty-item"><div class="ticket-prod-qty-val">${formatNum(l.cantPz)}</div><div class="ticket-prod-qty-lab">Piezas</div></div>` : ''}
+        ${tieneKg ? `<div class="ticket-prod-qty-item"><div class="ticket-prod-qty-val">${formatNum(l.cantKg)}</div><div class="ticket-prod-qty-lab">Kg</div></div>` : ''}
+      </div>
+    </div>`;
+  }).join('');
+
+  document.getElementById('ticketPrint').innerHTML = `
+    <div class="ticket-header">
+      <div class="ticket-logo">🌿</div>
+      <div class="ticket-empresa">EMPACADORA EL FRESNO</div>
+      <div class="ticket-rfc">S.A. DE C.V. · Desde 1982</div>
+      <div class="ticket-tipo">COMPROBANTE DE DESPACHO</div>
+    </div>
+
+    <div class="ticket-folio-section">
+      <div class="ticket-folio">${folio}</div>
+      <div class="ticket-fecha">📅 ${fechaDespacho} · ${horaDespacho} hrs</div>
+    </div>
+
+    <div class="ticket-info">
+      <div class="ticket-info-row">
+        <div class="ticket-info-label">Cliente</div>
+        <div class="ticket-info-value">${ped.cliente || '—'}</div>
+      </div>
+      ${ped.vendedor ? `<div class="ticket-info-row">
+        <div class="ticket-info-label">Vendedor</div>
+        <div class="ticket-info-value">${ped.vendedor}</div>
+      </div>` : ''}
+      ${ped.fechaCompromiso ? `<div class="ticket-info-row">
+        <div class="ticket-info-label">F. Compromiso</div>
+        <div class="ticket-info-value">${formatDate(ped.fechaCompromiso)}</div>
+      </div>` : ''}
+      <div class="ticket-info-row">
+        <div class="ticket-info-label">Despachado por</div>
+        <div class="ticket-info-value">Jorge Dávalos</div>
+      </div>
+    </div>
+
+    <div class="ticket-productos-title">── Productos despachados (${ped.lineas.length}) ──</div>
+    <div class="ticket-productos">
+      ${productosHTML}
+    </div>
+
+    <div class="ticket-totales">
+      ${totalPz > 0 ? `<div class="ticket-total-item"><div class="ticket-total-val">${formatNum(totalPz)}</div><div class="ticket-total-lab">Total Piezas</div></div>` : ''}
+      ${totalKg > 0 ? `<div class="ticket-total-item"><div class="ticket-total-val">${formatNum(totalKg)}</div><div class="ticket-total-lab">Total Kg</div></div>` : ''}
+      ${totalPz === 0 && totalKg === 0 ? `<div class="ticket-total-item" style="grid-column:1/-1"><div class="ticket-total-val">${ped.lineas.length}</div><div class="ticket-total-lab">Productos</div></div>` : ''}
+    </div>
+
+    <div class="ticket-firmas">
+      <div class="ticket-firma">
+        <div class="ticket-firma-linea"></div>
+        <div class="ticket-firma-label">Entregó</div>
+      </div>
+      <div class="ticket-firma">
+        <div class="ticket-firma-linea"></div>
+        <div class="ticket-firma-label">Recibió</div>
+      </div>
+    </div>
+
+    <div class="ticket-qr-section">
+      <div class="ticket-qr-label">── Escanea para consultar pedido ──</div>
+      <div id="ticketQRCode" style="display:flex;justify-content:center;"></div>
+      <div class="ticket-qr-data">${folio} · ${ped.cliente}</div>
+    </div>
+
+    <div class="ticket-footer">
+      <div class="ticket-footer-msg">Conserve este comprobante<br>para cualquier aclaración</div>
+      <div class="ticket-folio-bottom">${folio} · ${fechaDespacho} ${horaDespacho}</div>
+    </div>
+  `;
+
+  // Generar QR — encode datos del pedido
+  setTimeout(() => {
+    const qrContainer = document.getElementById('ticketQRCode');
+    if (!qrContainer) return;
+    qrContainer.innerHTML = '';
+    // El QR codifica un JSON con los datos clave del pedido
+    const qrData = JSON.stringify({
+      ped: folio,
+      cli: ped.cliente,
+      fecha: fechaDespacho,
+      prods: ped.lineas.length,
+      app: 'elfresno'
+    });
+    try {
+      new QRCode(qrContainer, {
+        text: qrData,
+        width: 110,
+        height: 110,
+        colorDark: '#2D5A1B',
+        colorLight: '#FFFFFF',
+        correctLevel: QRCode.CorrectLevel.M
+      });
+      // Dar estilo al canvas/img generado
+      setTimeout(() => {
+        const img = qrContainer.querySelector('img, canvas');
+        if (img) { img.style.borderRadius = '6px'; img.style.border = '3px solid #EAF4E3'; }
+      }, 100);
+    } catch(e) {
+      qrContainer.innerHTML = '<div style="font-size:10px;color:#AAA;padding:10px;">QR no disponible</div>';
+    }
+  }, 200);
+
+  document.getElementById('ticketOverlay').classList.add('open');
+}
+
+function cerrarTicket() {
+  document.getElementById('ticketOverlay').classList.remove('open');
+}
+
+function closeTicketOutside(e) {
+  if (e.target === document.getElementById('ticketOverlay')) cerrarTicket();
+}
+
+function imprimirTicket() {
+  window.print();
 }
 
 // ==========================================
