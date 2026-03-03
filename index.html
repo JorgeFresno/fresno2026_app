@@ -528,7 +528,25 @@
   </div>
 </div>
 
-<!-- SCANNER -->
+<!-- AGENDA PEDIDOS -->
+<div class="page" id="page-agenda">
+  <div class="content">
+    <div class="inv-summary" style="grid-template-columns:repeat(3,1fr)">
+      <div class="inv-kpi-card"><div class="inv-kpi-icon">📋</div><div class="inv-kpi-value" id="agendaTotal">—</div><div class="inv-kpi-label">Pedidos activos</div></div>
+      <div class="inv-kpi-card"><div class="inv-kpi-icon">⚠️</div><div class="inv-kpi-value" id="agendaUrgentes">—</div><div class="inv-kpi-label">Urgentes hoy</div></div>
+      <div class="inv-kpi-card"><div class="inv-kpi-icon">✅</div><div class="inv-kpi-value" id="agendaDespachados">—</div><div class="inv-kpi-label">Despachados</div></div>
+    </div>
+    <div class="filter-tabs">
+      <div class="filter-tab active" onclick="setAgendaFilter('todos',this)">Todos</div>
+      <div class="filter-tab" onclick="setAgendaFilter('Pendiente',this)">⏳ Pendiente</div>
+      <div class="filter-tab" onclick="setAgendaFilter('EnProduccion',this)">🏭 En producción</div>
+      <div class="filter-tab" onclick="setAgendaFilter('Completo',this)">✅ Completo</div>
+      <div class="filter-tab" onclick="setAgendaFilter('Despachado',this)">🚀 Despachado</div>
+    </div>
+    <div class="search-bar">🔍 <input id="agendaSearch" type="text" placeholder="Buscar pedido o cliente..." oninput="renderAgenda()" style="border:none;outline:none;flex:1;font-family:inherit;font-size:14px;background:transparent;"></div>
+    <div id="agendaContainer"><div class="loading-state"><div class="loading-spinner"></div>Cargando pedidos...</div></div>
+  </div>
+</div><!-- SCANNER -->
 <div class="page" id="page-scanner">
   <div class="content">
     <div class="scanner-area">
@@ -558,7 +576,7 @@
 
 <nav class="bottom-nav">
   <div class="nav-item active" id="nav-inicio" onclick="navTo('inicio')"><div class="nav-icon">🏠</div><div class="nav-label">Inicio</div></div>
-  <div class="nav-item" id="nav-scanner" onclick="navTo('scanner')"><div class="nav-icon">📱</div><div class="nav-label">Escanear</div></div>
+  <div class="nav-item" id="nav-agenda" onclick="navTo('agenda')"><div class="nav-icon">📋</div><div class="nav-label">Agenda</div></div>
   <div class="nav-item" id="nav-inventario" onclick="navTo('inventario')"><div class="nav-icon">📦</div><div class="nav-label">Inventario</div></div>
   <div class="nav-item" id="nav-movimientos" onclick="navTo('movimientos')"><div class="nav-icon">📋</div><div class="nav-label">Movimientos</div></div>
   <div class="nav-item" id="nav-mas" onclick="navTo('mas')"><div class="nav-icon">⋯</div><div class="nav-label">Más</div></div>
