@@ -1333,7 +1333,7 @@ function closeNuevoPedidoModal(e) {
 }
 
 function addLineaNuevoPedido() {
-  if (npLineasCount >= 8) { showToast('Máximo 8 productos por pedido', 'error'); return; }
+  if (npLineasCount >= 20) { showToast('Máximo 20 productos por pedido', 'error'); return; }
   npLineasCount++;
   const idx = npLineasCount;
   const div = document.createElement('div');
