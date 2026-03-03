@@ -1784,7 +1784,7 @@ function openProdDetalle(clave) {
   const reservado = isGranel?(p.reservadoKg||0):p.reservado;
   const disponible = isGranel?(p.disponibleKg||0):p.disponible;
   const unidad = isGranel?'kg':'pz';
-  const movs = allMovimientos.filter(m=>(m['ClaveProducto']||')===clave').slice(0,8);
+  const movs = allMovimientos.filter(m=>(m['ClaveProducto']||'')===clave).slice(0,8);
   const iconMap = {'Entrada compra':'🌾','Salida venta/despacho':'🚀','Ajuste positivo':'✅','Ajuste negativo':'📉','Entrada producción':'📦','Salida a producción':'⚙️'};
   const movHTML = movs.length ? movs.map(m => {
     const tipo=m['TipoMov']||'—', esEntrada=ENTRADAS.includes(tipo);
