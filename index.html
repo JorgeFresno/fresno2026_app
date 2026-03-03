@@ -1142,7 +1142,7 @@ function updateDate() {
 
 async function syncData() {
   document.getElementById('productsContainer').innerHTML = '<div class="loading-state"><div class="loading-spinner"></div>Sincronizando...</div>';
-  await Promise.all([loadInventario(), loadMovimientos(), loadPedidos(), loadProveedores(), loadClientes()]);
+  await Promise.all([loadInventario(), loadMovimientos(), loadPedidos(), loadProveedores(), loadClientes(), loadAgenda()]);
 }
 
 function navTo(page) {
