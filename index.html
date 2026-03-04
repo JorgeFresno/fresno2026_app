@@ -2166,7 +2166,7 @@ function generarTicketMovimiento(idx) {
     if (qrDiv && typeof QRCode !== 'undefined') {
       qrDiv.innerHTML = '';
       new QRCode(qrDiv, {
-        text: JSON.stringify({ folio, tipo, clave, cantPz, cantKg, fecha: fechaStr, app: 'elfresno' }),
+        text: 'https://jorgefresno.github.io/fresno2026_app/?mov=' + encodeURIComponent(folio),
         width: 80, height: 80,
         colorDark: '#2D5A1B', colorLight: '#ffffff'
       });
@@ -2281,14 +2281,8 @@ function generarTicket(folio) {
     const qrContainer = document.getElementById('ticketQRCode');
     if (!qrContainer) return;
     qrContainer.innerHTML = '';
-    // El QR codifica un JSON con los datos clave del pedido
-    const qrData = JSON.stringify({
-      ped: folio,
-      cli: ped.cliente,
-      fecha: fechaDespacho,
-      prods: ped.lineas.length,
-      app: 'elfresno'
-    });
+    // QR contiene URL directa para abrir pedido en la app
+    const qrData = 'https://jorgefresno.github.io/fresno2026_app/?pedido=' + encodeURIComponent(folio);
     try {
       new QRCode(qrContainer, {
         text: qrData,
@@ -2324,10 +2318,39 @@ function imprimirTicket() {
 }
 
 // ==========================================
-//  INIT
+//  INIT — manejo de URL params (QR scanner)
 // ==========================================
 updateDate();
-syncData();
+syncData().then(() => {
+  // Detectar si se abrió desde un QR
+  const params = new URLSearchParams(window.location.search);
+  const pedidoQR = params.get('pedido');
+  const movQR    = params.get('mov');
+
+  if (pedidoQR) {
+    // Navegar a agenda y abrir el pedido
+    navTo('agenda');
+    setTimeout(() => {
+      const folio = decodeURIComponent(pedidoQR);
+      if (pedidosAgrupados[folio]) {
+        openPedidoDetalle(folio);
+      } else {
+        showToast('📋 Pedido: ' + folio, 'success');
+      }
+    }, 1000);
+  } else if (movQR) {
+    // Navegar a movimientos y buscar el folio
+    navTo('movimientos');
+    const folio = decodeURIComponent(movQR);
+    setTimeout(() => {
+      const input = document.getElementById('movSearchInput');
+      if (input) { input.value = folio; renderMovimientos(); }
+      // Abrir detalle si existe
+      const idx = allMovimientos.findIndex(m => (m['FolioMov']||'') === folio);
+      if (idx >= 0) setTimeout(() => openDetalle(idx), 500);
+    }, 1000);
+  }
+});
 </script>
 </body>
 </html>
