@@ -1180,7 +1180,8 @@ function renderAgenda() {
 
     const fechaComp = formatDate(ped.fechaCompromiso);
 
-    return `<div class="pedido-card" onclick="openPedidoDetalle('${ped.folio}')">
+    const folioEsc = encodeURIComponent(ped.folio);
+    return `<div class="pedido-card" onclick="openPedidoDetalle(decodeURIComponent('${folioEsc}'))">
       <div class="pedido-card-header">
         <div class="pedido-card-left">
           <div class="pedido-folio">${ped.folio}</div>
