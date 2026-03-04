@@ -10,6 +10,7 @@
 <meta name="theme-color" content="#2D5A1B">
 <link rel="apple-touch-icon" href="logo.png">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jsQR/1.4.0/jsQR.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
   :root {
@@ -616,14 +617,22 @@
 <!-- ======== SCANNER ======== -->
 <div class="page" id="page-scanner">
   <div class="content">
-    <div class="scanner-area">
-      <div class="corner-box"><span></span></div>
-      <div class="scan-line"></div>
-      <div class="scanner-hint">Mantén estable · Auto-detección</div>
+    <div id="scannerArea" class="scanner-area">
+      <video id="scannerVideo" style="width:100%;height:100%;object-fit:cover;border-radius:20px;display:none;"></video>
+      <canvas id="scannerCanvas" style="display:none;"></canvas>
+      <div id="scannerOverlay">
+        <div class="corner-box"><span></span></div>
+        <div class="scan-line" id="scanLine"></div>
+        <div class="scanner-hint" id="scannerHint">Toca "Activar cámara" para escanear</div>
+      </div>
+    </div>
+    <div id="scanResult" style="display:none;background:#E8F5E9;border-radius:14px;padding:14px;margin-bottom:10px;text-align:center;">
+      <div style="font-weight:700;font-size:15px;color:#2D5A1B;" id="scanResultText"></div>
+      <button id="scanResultBtn" style="margin-top:8px;background:#2D5A1B;color:white;border:none;border-radius:10px;padding:10px 20px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;"></button>
     </div>
     <div style="display:flex;flex-direction:column;gap:10px;">
-      <button class="scan-btn">📷 Activar cámara</button>
-      <button class="scan-btn-secondary">📁 Seleccionar pedido manualmente</button>
+      <button class="scan-btn" id="btnActivarCamara" onclick="activarScanner()">📷 Activar cámara</button>
+      <button class="scan-btn-secondary" id="btnDetenerCamara" style="display:none;" onclick="detenerScanner()">⏹ Detener cámara</button>
     </div>
   </div>
 </div>
@@ -2098,6 +2107,8 @@ function selectCatalogItem(el, hiddenId, inputId, sugId) {
 //  NAVIGATION
 // ==========================================
 function navTo(page) {
+  // Detener scanner si se sale de esa sección
+  if (page !== 'scanner' && scannerActivo) detenerScanner();
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   document.getElementById('page-' + page)?.classList.add('active');
@@ -2392,6 +2403,144 @@ function imprimirTicket() {
 // ==========================================
 //  INIT — manejo de URL params (QR scanner)
 // ==========================================
+// ==========================================
+//  QR SCANNER
+// ==========================================
+let scannerStream = null;
+let scannerInterval = null;
+let scannerActivo = false;
+
+async function activarScanner() {
+  try {
+    const video = document.getElementById('scannerVideo');
+    const hint  = document.getElementById('scannerHint');
+    const line  = document.getElementById('scanLine');
+
+    // Solicitar cámara trasera
+    scannerStream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 }, height: { ideal: 720 } }
+    });
+
+    video.srcObject = scannerStream;
+    video.style.display = 'block';
+    await video.play();
+
+    document.getElementById('btnActivarCamara').style.display = 'none';
+    document.getElementById('btnDetenerCamara').style.display = 'flex';
+    document.getElementById('scanResult').style.display = 'none';
+    hint.textContent = '📷 Apunta al código QR';
+    line.style.display = 'block';
+    scannerActivo = true;
+
+    // Escanear frame cada 500ms
+    scannerInterval = setInterval(() => escanearFrame(video), 500);
+
+  } catch(err) {
+    showToast('❌ No se pudo acceder a la cámara', 'error');
+    console.error('Scanner error:', err);
+  }
+}
+
+function detenerScanner() {
+  if (scannerStream) {
+    scannerStream.getTracks().forEach(t => t.stop());
+    scannerStream = null;
+  }
+  if (scannerInterval) { clearInterval(scannerInterval); scannerInterval = null; }
+  scannerActivo = false;
+
+  const video = document.getElementById('scannerVideo');
+  video.style.display = 'none';
+  video.srcObject = null;
+
+  document.getElementById('btnActivarCamara').style.display = 'flex';
+  document.getElementById('btnDetenerCamara').style.display = 'none';
+  document.getElementById('scannerHint').textContent = 'Toca "Activar cámara" para escanear';
+  document.getElementById('scanLine').style.display = 'none';
+}
+
+function escanearFrame(video) {
+  if (!scannerActivo || video.readyState !== video.HAVE_ENOUGH_DATA) return;
+
+  // Usar BarcodeDetector si está disponible (Chrome/Android)
+  if ('BarcodeDetector' in window) {
+    const detector = new BarcodeDetector({ formats: ['qr_code'] });
+    detector.detect(video).then(barcodes => {
+      if (barcodes.length > 0) procesarQR(barcodes[0].rawValue);
+    }).catch(() => {});
+    return;
+  }
+
+  // Fallback: canvas + jsQR
+  const canvas  = document.getElementById('scannerCanvas');
+  const ctx     = canvas.getContext('2d');
+  canvas.width  = video.videoWidth;
+  canvas.height = video.videoHeight;
+  ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+  const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+  if (typeof jsQR !== 'undefined') {
+    const code = jsQR(imageData.data, imageData.width, imageData.height, { inversionAttempts: 'dontInvert' });
+    if (code) procesarQR(code.data);
+  }
+}
+
+function procesarQR(texto) {
+  if (!scannerActivo) return;
+  detenerScanner();
+
+  const BASE = 'https://jorgefresno.github.io/fresno2026_app/';
+  const resultDiv = document.getElementById('scanResult');
+  const resultText = document.getElementById('scanResultText');
+  const resultBtn  = document.getElementById('scanResultBtn');
+
+  // Detectar si es URL de El Fresno
+  if (texto.startsWith(BASE)) {
+    const url    = new URL(texto);
+    const pedido = url.searchParams.get('pedido');
+    const mov    = url.searchParams.get('mov');
+
+    if (pedido) {
+      const folio = decodeURIComponent(pedido);
+      resultText.textContent = '📋 Pedido: ' + folio;
+      resultBtn.textContent  = 'Ver pedido';
+      resultBtn.onclick = () => {
+        resultDiv.style.display = 'none';
+        navTo('agenda');
+        setTimeout(() => {
+          if (pedidosAgrupados[folio]) openPedidoDetalle(folio);
+          else showToast('Pedido: ' + folio, 'success');
+        }, 500);
+      };
+    } else if (mov) {
+      const folio = decodeURIComponent(mov);
+      resultText.textContent = '📦 Movimiento: ' + folio;
+      resultBtn.textContent  = 'Ver movimiento';
+      resultBtn.onclick = () => {
+        resultDiv.style.display = 'none';
+        navTo('movimientos');
+        setTimeout(() => {
+          const input = document.getElementById('movSearchInput');
+          if (input) { input.value = folio; renderMovimientos(); }
+          const idx = allMovimientos.findIndex(m => (m['FolioMov']||'') === folio);
+          if (idx >= 0) setTimeout(() => openDetalle(idx), 400);
+        }, 500);
+      };
+    }
+    resultDiv.style.display = 'block';
+
+  } else {
+    // QR con otro contenido
+    resultText.textContent = '🔍 ' + texto.substring(0, 60) + (texto.length > 60 ? '...' : '');
+    resultBtn.textContent  = 'Cerrar';
+    resultBtn.onclick = () => { resultDiv.style.display = 'none'; };
+    resultDiv.style.display = 'block';
+  }
+}
+
+// Detener cámara al salir de la sección scanner
+const _origNavTo = navTo;
+
 function qrBannerAccion() {
   if (window._qrAccion) window._qrAccion();
 }
