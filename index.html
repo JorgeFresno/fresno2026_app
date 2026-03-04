@@ -617,22 +617,36 @@
 <!-- ======== SCANNER ======== -->
 <div class="page" id="page-scanner">
   <div class="content">
-    <div id="scannerArea" class="scanner-area">
-      <video id="scannerVideo" style="width:100%;height:100%;object-fit:cover;border-radius:20px;display:none;"></video>
-      <canvas id="scannerCanvas" style="display:none;"></canvas>
-      <div id="scannerOverlay">
-        <div class="corner-box"><span></span></div>
-        <div class="scan-line" id="scanLine"></div>
-        <div class="scanner-hint" id="scannerHint">Toca "Activar cámara" para escanear</div>
+    <!-- Área visual del scanner -->
+    <div class="scanner-area" style="cursor:pointer;" onclick="document.getElementById('qrFileInput').click()">
+      <div class="corner-box"><span></span></div>
+      <div class="scan-line"></div>
+      <div class="scanner-hint">Toca para escanear QR</div>
+    </div>
+
+    <!-- Input oculto — en iOS abre cámara directamente -->
+    <input type="file" id="qrFileInput" accept="image/*" capture="environment"
+      style="display:none;" onchange="procesarImagenQR(this)">
+
+    <!-- Resultado -->
+    <div id="scanResult" style="display:none;background:#E8F5E9;border-radius:14px;padding:16px;margin-bottom:10px;text-align:center;">
+      <div style="font-size:22px;margin-bottom:6px;">✅</div>
+      <div style="font-weight:700;font-size:15px;color:#2D5A1B;margin-bottom:10px;" id="scanResultText"></div>
+      <button id="scanResultBtn" style="background:#2D5A1B;color:white;border:none;border-radius:10px;padding:12px 24px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;width:100%;"></button>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:10px;margin-top:4px;">
+      <button class="scan-btn" onclick="document.getElementById('qrFileInput').click()">📷 Escanear QR</button>
+      <button class="scan-btn-secondary" onclick="document.getElementById('qrFileInput').click()">🖼️ Seleccionar imagen</button>
+    </div>
+
+    <div style="margin-top:16px;background:#f9f9f9;border-radius:12px;padding:14px;">
+      <div style="font-size:12px;font-weight:700;color:#666;margin-bottom:8px;">💡 CÓMO USAR</div>
+      <div style="font-size:12px;color:#888;line-height:1.6;">
+        1. Toca <strong>Escanear QR</strong><br>
+        2. Apunta la cámara al código QR del ticket<br>
+        3. La app navega automáticamente al pedido o movimiento
       </div>
-    </div>
-    <div id="scanResult" style="display:none;background:#E8F5E9;border-radius:14px;padding:14px;margin-bottom:10px;text-align:center;">
-      <div style="font-weight:700;font-size:15px;color:#2D5A1B;" id="scanResultText"></div>
-      <button id="scanResultBtn" style="margin-top:8px;background:#2D5A1B;color:white;border:none;border-radius:10px;padding:10px 20px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;"></button>
-    </div>
-    <div style="display:flex;flex-direction:column;gap:10px;">
-      <button class="scan-btn" id="btnActivarCamara" onclick="activarScanner()">📷 Activar cámara</button>
-      <button class="scan-btn-secondary" id="btnDetenerCamara" style="display:none;" onclick="detenerScanner()">⏹ Detener cámara</button>
     </div>
   </div>
 </div>
@@ -2404,142 +2418,105 @@ function imprimirTicket() {
 //  INIT — manejo de URL params (QR scanner)
 // ==========================================
 // ==========================================
-//  QR SCANNER
+//  QR SCANNER — iOS optimizado con input file
 // ==========================================
-let scannerStream = null;
-let scannerInterval = null;
-let scannerActivo = false;
+let scannerActivo = false; // kept for navTo compatibility
 
-async function activarScanner() {
-  try {
-    const video = document.getElementById('scannerVideo');
-    const hint  = document.getElementById('scannerHint');
-    const line  = document.getElementById('scanLine');
+function detenerScanner() { scannerActivo = false; }
 
-    // Solicitar cámara trasera
-    scannerStream = await navigator.mediaDevices.getUserMedia({
-      video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 }, height: { ideal: 720 } }
-    });
+function procesarImagenQR(input) {
+  const file = input.files[0];
+  if (!file) return;
 
-    video.srcObject = scannerStream;
-    video.style.display = 'block';
-    await video.play();
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      canvas.width  = img.width;
+      canvas.height = img.height;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0);
+      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
 
-    document.getElementById('btnActivarCamara').style.display = 'none';
-    document.getElementById('btnDetenerCamara').style.display = 'flex';
-    document.getElementById('scanResult').style.display = 'none';
-    hint.textContent = '📷 Apunta al código QR';
-    line.style.display = 'block';
-    scannerActivo = true;
+      if (typeof jsQR === 'undefined') {
+        showToast('❌ Librería QR no disponible', 'error');
+        return;
+      }
 
-    // Escanear frame cada 500ms
-    scannerInterval = setInterval(() => escanearFrame(video), 500);
+      const code = jsQR(imageData.data, imageData.width, imageData.height, {
+        inversionAttempts: 'dontInvert'
+      });
 
-  } catch(err) {
-    showToast('❌ No se pudo acceder a la cámara', 'error');
-    console.error('Scanner error:', err);
-  }
-}
+      if (code) {
+        procesarQR(code.data);
+      } else {
+        showToast('❌ No se detectó QR — intenta de nuevo', 'error');
+      }
 
-function detenerScanner() {
-  if (scannerStream) {
-    scannerStream.getTracks().forEach(t => t.stop());
-    scannerStream = null;
-  }
-  if (scannerInterval) { clearInterval(scannerInterval); scannerInterval = null; }
-  scannerActivo = false;
-
-  const video = document.getElementById('scannerVideo');
-  video.style.display = 'none';
-  video.srcObject = null;
-
-  document.getElementById('btnActivarCamara').style.display = 'flex';
-  document.getElementById('btnDetenerCamara').style.display = 'none';
-  document.getElementById('scannerHint').textContent = 'Toca "Activar cámara" para escanear';
-  document.getElementById('scanLine').style.display = 'none';
-}
-
-function escanearFrame(video) {
-  if (!scannerActivo || video.readyState !== video.HAVE_ENOUGH_DATA) return;
-
-  // Usar BarcodeDetector si está disponible (Chrome/Android)
-  if ('BarcodeDetector' in window) {
-    const detector = new BarcodeDetector({ formats: ['qr_code'] });
-    detector.detect(video).then(barcodes => {
-      if (barcodes.length > 0) procesarQR(barcodes[0].rawValue);
-    }).catch(() => {});
-    return;
-  }
-
-  // Fallback: canvas + jsQR
-  const canvas  = document.getElementById('scannerCanvas');
-  const ctx     = canvas.getContext('2d');
-  canvas.width  = video.videoWidth;
-  canvas.height = video.videoHeight;
-  ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-  const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-  if (typeof jsQR !== 'undefined') {
-    const code = jsQR(imageData.data, imageData.width, imageData.height, { inversionAttempts: 'dontInvert' });
-    if (code) procesarQR(code.data);
-  }
+      // Reset input para poder escanear de nuevo
+      input.value = '';
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
 }
 
 function procesarQR(texto) {
-  if (!scannerActivo) return;
-  detenerScanner();
-
   const BASE = 'https://jorgefresno.github.io/fresno2026_app/';
-  const resultDiv = document.getElementById('scanResult');
+  const resultDiv  = document.getElementById('scanResult');
   const resultText = document.getElementById('scanResultText');
   const resultBtn  = document.getElementById('scanResultBtn');
 
-  // Detectar si es URL de El Fresno
+  if (!resultDiv) return;
+
   if (texto.startsWith(BASE)) {
-    const url    = new URL(texto);
-    const pedido = url.searchParams.get('pedido');
-    const mov    = url.searchParams.get('mov');
+    try {
+      const url    = new URL(texto);
+      const pedido = url.searchParams.get('pedido');
+      const mov    = url.searchParams.get('mov');
 
-    if (pedido) {
-      const folio = decodeURIComponent(pedido);
-      resultText.textContent = '📋 Pedido: ' + folio;
-      resultBtn.textContent  = 'Ver pedido';
-      resultBtn.onclick = () => {
-        resultDiv.style.display = 'none';
-        navTo('agenda');
-        setTimeout(() => {
-          if (pedidosAgrupados[folio]) openPedidoDetalle(folio);
-          else showToast('Pedido: ' + folio, 'success');
-        }, 500);
-      };
-    } else if (mov) {
-      const folio = decodeURIComponent(mov);
-      resultText.textContent = '📦 Movimiento: ' + folio;
-      resultBtn.textContent  = 'Ver movimiento';
-      resultBtn.onclick = () => {
-        resultDiv.style.display = 'none';
-        navTo('movimientos');
-        setTimeout(() => {
-          const input = document.getElementById('movSearchInput');
-          if (input) { input.value = folio; renderMovimientos(); }
-          const idx = allMovimientos.findIndex(m => (m['FolioMov']||'') === folio);
-          if (idx >= 0) setTimeout(() => openDetalle(idx), 400);
-        }, 500);
-      };
+      if (pedido) {
+        const folio = decodeURIComponent(pedido);
+        resultText.textContent = '📋 Pedido encontrado: ' + folio;
+        resultBtn.textContent  = '🚀 Abrir pedido';
+        resultBtn.onclick = () => {
+          resultDiv.style.display = 'none';
+          navTo('agenda');
+          setTimeout(() => {
+            if (pedidosAgrupados[folio]) openPedidoDetalle(folio);
+            else showToast('Pedido: ' + folio, 'success');
+          }, 600);
+        };
+      } else if (mov) {
+        const folio = decodeURIComponent(mov);
+        resultText.textContent = '📦 Movimiento encontrado: ' + folio;
+        resultBtn.textContent  = '🔍 Abrir movimiento';
+        resultBtn.onclick = () => {
+          resultDiv.style.display = 'none';
+          navTo('movimientos');
+          setTimeout(() => {
+            const inp = document.getElementById('movSearchInput');
+            if (inp) { inp.value = folio; renderMovimientos(); }
+            const idx = allMovimientos.findIndex(m => (m['FolioMov']||'') === folio);
+            if (idx >= 0) setTimeout(() => openDetalle(idx), 400);
+          }, 600);
+        };
+      }
+    } catch(e) {
+      resultText.textContent = '🔍 ' + texto.substring(0, 50);
+      resultBtn.textContent  = 'Cerrar';
+      resultBtn.onclick = () => { resultDiv.style.display = 'none'; };
     }
-    resultDiv.style.display = 'block';
-
   } else {
-    // QR con otro contenido
     resultText.textContent = '🔍 ' + texto.substring(0, 60) + (texto.length > 60 ? '...' : '');
     resultBtn.textContent  = 'Cerrar';
     resultBtn.onclick = () => { resultDiv.style.display = 'none'; };
-    resultDiv.style.display = 'block';
   }
-}
 
-// Detener cámara al salir de la sección scanner
-const _origNavTo = navTo;
+  resultDiv.style.display = 'block';
+  showToast('✅ QR detectado', 'success');
+}
 
 function qrBannerAccion() {
   if (window._qrAccion) window._qrAccion();
