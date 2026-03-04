@@ -1273,18 +1273,23 @@ function openPedidoDetalle(folio) {
     botonesHTML = `
       <button class="estado-btn btn-produccion" onclick="cambiarEstadoPedido('${folio}','EnProduccion')">🏭 Pasar a Producción</button>
       <button class="estado-btn btn-cancelar" onclick="cambiarEstadoPedido('${folio}','Cancelado')">❌ Cancelar pedido</button>
-      <button class="estado-btn btn-despachar" onclick="despacharPedido('${folio}')">🚀 Despachar pedido completo</button>`;
+      <button class="estado-btn btn-despachar" onclick="despacharPedido('${folio}')">🚀 Despachar pedido completo</button>
+      <button class="estado-btn" style="background:#E8F5E9;border-color:#2D5A1B;color:#2D5A1B;" onclick="generarTicket('${folio}')">🖨️ Ver ticket</button>`;
   } else if (estado === 'EnProduccion') {
     botonesHTML = `
       <button class="estado-btn btn-completo" onclick="cambiarEstadoPedido('${folio}','Completo')">✅ Marcar como Completo</button>
       <button class="estado-btn btn-cancelar" onclick="cambiarEstadoPedido('${folio}','Cancelado')">❌ Cancelar pedido</button>
-      <button class="estado-btn btn-despachar" onclick="despacharPedido('${folio}')">🚀 Despachar pedido completo</button>`;
+      <button class="estado-btn btn-despachar" onclick="despacharPedido('${folio}')">🚀 Despachar pedido completo</button>
+      <button class="estado-btn" style="background:#E8F5E9;border-color:#2D5A1B;color:#2D5A1B;" onclick="generarTicket('${folio}')">🖨️ Ver ticket</button>`;
   } else if (estado === 'Completo') {
     botonesHTML = `
       <button class="estado-btn btn-cancelar" onclick="cambiarEstadoPedido('${folio}','Cancelado')">❌ Cancelar pedido</button>
-      <button class="estado-btn btn-despachar" onclick="despacharPedido('${folio}')">🚀 Despachar pedido completo</button>`;
+      <button class="estado-btn btn-despachar" onclick="despacharPedido('${folio}')">🚀 Despachar pedido completo</button>
+      <button class="estado-btn" style="background:#E8F5E9;border-color:#2D5A1B;color:#2D5A1B;" onclick="generarTicket('${folio}')">🖨️ Ver ticket</button>`;
   } else if (estado === 'Despachado') {
-    botonesHTML = `<div style="text-align:center;color:var(--text-muted);font-size:13px;padding:8px;">🚀 Este pedido ya fue despachado</div>`;
+    botonesHTML = `
+      <div style="text-align:center;color:var(--text-muted);font-size:13px;padding:4px 0 8px;">🚀 Este pedido ya fue despachado</div>
+      <button class="estado-btn btn-despachar" style="background:#F3E5F5;border-color:#6A1B9A;color:#6A1B9A;" onclick="generarTicket('${folio}')">🖨️ Reimprimir ticket</button>`;
   } else if (estado === 'Cancelado') {
     botonesHTML = `<div style="text-align:center;color:var(--red);font-size:13px;padding:8px;">❌ Pedido cancelado</div>`;
   }
@@ -1937,6 +1942,7 @@ function openDetalle(idx) {
       <div class="det-qty-card"><div class="det-qty-val">${formatNum(cantPz)}</div><div class="det-qty-lab">Piezas</div></div>
       <div class="det-qty-card"><div class="det-qty-val">${formatNum(cantKg)}</div><div class="det-qty-lab">Kilogramos</div></div>
     </div>
+    <button onclick="generarTicketMovimiento(${idx})" style="background:#E8F5E9;color:#2D5A1B;border:1.5px solid #2D5A1B;border-radius:14px;padding:14px;font-size:15px;font-weight:600;width:100%;cursor:pointer;font-family:inherit;margin-top:8px;">🖨️ Imprimir comprobante</button>
     ${esOk ? `<button onclick="cancelarMovimiento('${folio}')" style="background:white;color:#E53935;border:1.5px solid #E53935;border-radius:14px;padding:14px;font-size:15px;font-weight:600;width:100%;cursor:pointer;font-family:inherit;margin-top:8px;">❌ Cancelar movimiento</button>` : ''}`;
   document.getElementById('detModalOverlay').classList.add('open');
 }
@@ -2050,6 +2056,111 @@ function updateDate() {
 // ==========================================
 //  TICKET DE DESPACHO
 // ==========================================
+function generarTicketMovimiento(idx) {
+  const m = allMovimientos[idx];
+  if (!m) return;
+
+  const folio    = m['FolioMov'] || m['DocumentoRef'] || '—';
+  const tipo     = m['TipoMov'] || '—';
+  const clave    = m['ClaveProducto'] || '—';
+  const desc     = m['Descripcion'] || clave;
+  const cantPz   = parseFloat(m['CantidadPz'] || 0);
+  const cantKg   = parseFloat(m['CantidadKg'] || 0);
+  const origen   = m['UbicacionOrigen'] || '—';
+  const destino  = m['UbicacionDestino'] || '—';
+  const captura  = m['Captura'] || '—';
+  const cliente  = m['Cliente'] || m['Proveedor'] || '';
+  const docRef   = m['DocumentoRef'] || '—';
+  const obs      = m['Observaciones'] || '';
+  const estado   = m['Estado'] || '—';
+
+  // Formatear fecha
+  let fechaStr = '—';
+  const fv = m['FechaMov'];
+  if (fv && typeof fv === 'string' && fv.startsWith('Date(')) {
+    const parts = fv.replace('Date(','').replace(')','').split(',').map(Number);
+    fechaStr = String(parts[2]).padStart(2,'0') + '/' + String(parts[1]+1).padStart(2,'0') + '/' + parts[0];
+  } else if (fv) {
+    fechaStr = fv;
+  }
+
+  const now = new Date();
+  const horaStr = now.toLocaleTimeString('es-MX', {hour:'2-digit', minute:'2-digit'});
+  const esEntrada = ['Entrada compra','Entrada producción','Ajuste positivo'].includes(tipo);
+  const tipoIcon = esEntrada ? '📥' : '📤';
+
+  const ticketHTML = `
+    <div style="text-align:center;margin-bottom:12px;">
+      <div style="font-size:22px;">🌿</div>
+      <div style="font-weight:800;font-size:13px;letter-spacing:0.5px;">EMPACADORA EL FRESNO S.A. DE C.V.</div>
+      <div style="font-size:10px;color:#666;">Desde 1982</div>
+      <div style="font-size:11px;font-weight:700;letter-spacing:1px;margin-top:4px;border-top:1px dashed #ccc;padding-top:6px;">COMPROBANTE DE MOVIMIENTO</div>
+    </div>
+
+    <div style="text-align:center;margin:10px 0;">
+      <div style="font-size:11px;color:#666;">Folio</div>
+      <div style="font-size:22px;font-weight:900;color:#2D5A1B;letter-spacing:1px;">${folio}</div>
+      <div style="font-size:11px;color:#888;">${fechaStr} · ${horaStr}</div>
+    </div>
+
+    <div style="border-top:1px dashed #ccc;border-bottom:1px dashed #ccc;padding:8px 0;margin:8px 0;">
+      <table style="width:100%;font-size:11px;border-collapse:collapse;">
+        <tr><td style="color:#666;padding:2px 0;">Tipo</td><td style="text-align:right;font-weight:600;">${tipoIcon} ${tipo}</td></tr>
+        ${cliente ? `<tr><td style="color:#666;padding:2px 0;">Cliente/Prov.</td><td style="text-align:right;font-weight:600;">${cliente}</td></tr>` : ''}
+        <tr><td style="color:#666;padding:2px 0;">Documento</td><td style="text-align:right;font-weight:600;">${docRef}</td></tr>
+        <tr><td style="color:#666;padding:2px 0;">Captura</td><td style="text-align:right;font-weight:600;">${captura}</td></tr>
+        <tr><td style="color:#666;padding:2px 0;">Estado</td><td style="text-align:right;font-weight:600;">${estado}</td></tr>
+      </table>
+    </div>
+
+    <div style="margin:8px 0;">
+      <div style="font-size:10px;color:#666;font-weight:700;text-transform:uppercase;margin-bottom:4px;">Producto</div>
+      <div style="font-weight:700;font-size:13px;">${clave}</div>
+      <div style="font-size:11px;color:#444;">${desc}</div>
+      <div style="display:flex;gap:8px;margin-top:6px;">
+        ${cantPz > 0 ? `<div style="flex:1;background:#f5f5f5;border-radius:8px;padding:6px;text-align:center;"><div style="font-size:14px;font-weight:800;">${cantPz.toLocaleString('es-MX')}</div><div style="font-size:9px;color:#666;">PIEZAS</div></div>` : ''}
+        ${cantKg > 0 ? `<div style="flex:1;background:#f5f5f5;border-radius:8px;padding:6px;text-align:center;"><div style="font-size:14px;font-weight:800;">${cantKg.toLocaleString('es-MX')}</div><div style="font-size:9px;color:#666;">KG</div></div>` : ''}
+      </div>
+    </div>
+
+    <div style="margin:6px 0;font-size:11px;">
+      <span style="color:#666;">Origen:</span> <strong>${origen}</strong>
+      &nbsp;→&nbsp;
+      <span style="color:#666;">Destino:</span> <strong>${destino}</strong>
+    </div>
+
+    ${obs ? `<div style="font-size:10px;color:#666;border-top:1px dashed #ccc;margin-top:6px;padding-top:6px;">📝 ${obs}</div>` : ''}
+
+    <div style="margin-top:12px;" id="qrMovimiento"></div>
+
+    <div style="text-align:center;font-size:9px;color:#999;border-top:1px dashed #ccc;margin-top:12px;padding-top:6px;">
+      Conserve este comprobante para cualquier aclaración
+    </div>
+
+    <div style="display:flex;gap:8px;margin-top:12px;">
+      <button onclick="window.print()" style="flex:1;background:#2D5A1B;color:white;border:none;border-radius:10px;padding:12px;font-size:14px;font-weight:700;cursor:pointer;">🖨️ Imprimir</button>
+      <button onclick="cerrarTicket()" style="flex:1;background:#f5f5f5;color:#333;border:none;border-radius:10px;padding:12px;font-size:14px;font-weight:700;cursor:pointer;">✕ Cerrar</button>
+    </div>
+  `;
+
+  document.getElementById('ticketContent').innerHTML = ticketHTML;
+  document.getElementById('ticketOverlay').classList.add('open');
+
+  // Generar QR con datos del movimiento
+  setTimeout(() => {
+    const qrDiv = document.getElementById('qrMovimiento');
+    if (qrDiv && typeof QRCode !== 'undefined') {
+      qrDiv.innerHTML = '';
+      new QRCode(qrDiv, {
+        text: JSON.stringify({ folio, tipo, clave, cantPz, cantKg, fecha: fechaStr, app: 'elfresno' }),
+        width: 80, height: 80,
+        colorDark: '#2D5A1B', colorLight: '#ffffff'
+      });
+      qrDiv.style.textAlign = 'center';
+    }
+  }, 200);
+}
+
 function generarTicket(folio) {
   const ped = pedidosAgrupados[folio];
   if (!ped) return;
