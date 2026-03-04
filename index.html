@@ -533,6 +533,7 @@
       <div class="mov-divider"></div>
       <div><div class="mov-stat-value" id="movTotal">—</div><div class="mov-stat-label">Total movs.</div></div>
     </div>
+    <div class="search-bar" style="margin-bottom:12px;">🔍 <input id="movSearchInput" type="text" placeholder="Buscar folio, tipo, producto, cliente..." oninput="renderMovimientos()" autocomplete="off" style="background:none;border:none;outline:none;width:90%;font-size:14px;font-family:'DM Sans',sans-serif;"></div>
     <div class="section-title">Historial reciente</div>
     <div id="movContainer"><div class="loading-state"><div class="loading-spinner"></div>Cargando movimientos...</div></div>
   </div>
@@ -1041,7 +1042,7 @@ function agruparPedidos() {
         fechaPedido: row['FechaPedido'] || '',
         fechaCompromiso: row['FechaCompromiso'] || '',
         diasRestantes: parseFloat(row['DiasRestantes'] || 0),
-        estado: row['EstadoPedido'] || row['Estado'] || 'Pendiente',
+        estado: String(row['EstadoPedido'] || row['Estado'] || 'Pendiente').trim(),
         prioridad: row['Prioridad'] || '',
         lineas: []
       };
@@ -1394,7 +1395,9 @@ async function despacharPedido(folio) {
     renderAgenda();
     updateAgendaKPIs();
     showToast('🚀 Pedido ' + folio + ' despachado', 'success');
-    setTimeout(() => loadAgenda(), 2000);
+    
+    // Recargar agenda desde Sheets para reflejar el verde
+    setTimeout(() => { loadAgenda(); }, 3000);
 
     // Abrir ticket automáticamente
     setTimeout(() => generarTicket(folio), 400);
@@ -1733,7 +1736,26 @@ function renderMovimientos() {
 
   const container = document.getElementById('movContainer');
   if (!allMovimientos.length) { container.innerHTML = '<div class="empty-state">No hay movimientos disponibles</div>'; return; }
-  container.innerHTML = allMovimientos.slice(0, 25).map((m, idx) => {
+
+  // Filtro por búsqueda
+  const movSearch = (document.getElementById('movSearchInput')?.value || '').toLowerCase().trim();
+  let movsFiltrados = allMovimientos;
+  if (movSearch) {
+    movsFiltrados = allMovimientos.filter(m => {
+      const folio   = String(m['FolioMov']    || m['DocumentoRef'] || '').toLowerCase();
+      const tipo    = String(m['TipoMov']     || '').toLowerCase();
+      const clave   = String(m['ClaveProducto'] || '').toLowerCase();
+      const cliente = String(m['Cliente']     || m['Proveedor'] || '').toLowerCase();
+      const fecha   = String(m['FechaMov']    || '').toLowerCase();
+      return folio.includes(movSearch) || tipo.includes(movSearch) ||
+             clave.includes(movSearch) || cliente.includes(movSearch) ||
+             fecha.includes(movSearch);
+    });
+  }
+
+  if (!movsFiltrados.length) { container.innerHTML = '<div class="empty-state">🔍 Sin resultados para "' + movSearch + '"</div>'; return; }
+  container.innerHTML = movsFiltrados.slice(0, 50).map((m, _idx) => {
+    const idx = allMovimientos.indexOf(m);
     const tipo = m['TipoMov'] || '';
     const folio = m['FolioMov'] || m['DocumentoRef'] || '—';
     const clave = m['ClaveProducto'] || '';
