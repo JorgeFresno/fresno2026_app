@@ -1274,22 +1274,22 @@ function openPedidoDetalle(folio) {
       <button class="estado-btn btn-produccion" onclick="cambiarEstadoPedido('${folio}','EnProduccion')">🏭 Pasar a Producción</button>
       <button class="estado-btn btn-cancelar" onclick="cambiarEstadoPedido('${folio}','Cancelado')">❌ Cancelar pedido</button>
       <button class="estado-btn btn-despachar" onclick="despacharPedido('${folio}')">🚀 Despachar pedido completo</button>
-      <button class="estado-btn" style="background:#E8F5E9;border-color:#2D5A1B;color:#2D5A1B;" onclick="document.getElementById('pedDetModalOverlay').classList.remove('open');setTimeout(()=>generarTicket('${folio}'),150)">🖨️ Ver ticket</button>`;
+      <button class="estado-btn" style="background:#E8F5E9;border-color:#2D5A1B;color:#2D5A1B;" onclick="abrirTicketDesdePedido('${folio}')">🖨️ Ver ticket</button>`;
   } else if (estado === 'EnProduccion') {
     botonesHTML = `
       <button class="estado-btn btn-completo" onclick="cambiarEstadoPedido('${folio}','Completo')">✅ Marcar como Completo</button>
       <button class="estado-btn btn-cancelar" onclick="cambiarEstadoPedido('${folio}','Cancelado')">❌ Cancelar pedido</button>
       <button class="estado-btn btn-despachar" onclick="despacharPedido('${folio}')">🚀 Despachar pedido completo</button>
-      <button class="estado-btn" style="background:#E8F5E9;border-color:#2D5A1B;color:#2D5A1B;" onclick="document.getElementById('pedDetModalOverlay').classList.remove('open');setTimeout(()=>generarTicket('${folio}'),150)">🖨️ Ver ticket</button>`;
+      <button class="estado-btn" style="background:#E8F5E9;border-color:#2D5A1B;color:#2D5A1B;" onclick="abrirTicketDesdePedido('${folio}')">🖨️ Ver ticket</button>`;
   } else if (estado === 'Completo') {
     botonesHTML = `
       <button class="estado-btn btn-cancelar" onclick="cambiarEstadoPedido('${folio}','Cancelado')">❌ Cancelar pedido</button>
       <button class="estado-btn btn-despachar" onclick="despacharPedido('${folio}')">🚀 Despachar pedido completo</button>
-      <button class="estado-btn" style="background:#E8F5E9;border-color:#2D5A1B;color:#2D5A1B;" onclick="document.getElementById('pedDetModalOverlay').classList.remove('open');setTimeout(()=>generarTicket('${folio}'),150)">🖨️ Ver ticket</button>`;
+      <button class="estado-btn" style="background:#E8F5E9;border-color:#2D5A1B;color:#2D5A1B;" onclick="abrirTicketDesdePedido('${folio}')">🖨️ Ver ticket</button>`;
   } else if (estado === 'Despachado') {
     botonesHTML = `
       <div style="text-align:center;color:var(--text-muted);font-size:13px;padding:4px 0 8px;">🚀 Este pedido ya fue despachado</div>
-      <button class="estado-btn btn-despachar" style="background:#F3E5F5;border-color:#6A1B9A;color:#6A1B9A;" onclick="document.getElementById('pedDetModalOverlay').classList.remove('open');setTimeout(()=>generarTicket('${folio}'),150)">🖨️ Reimprimir ticket</button>`;
+      <button class="estado-btn btn-despachar" style="background:#F3E5F5;border-color:#6A1B9A;color:#6A1B9A;" onclick="abrirTicketDesdePedido('${folio}')">🖨️ Reimprimir ticket</button>`;
   } else if (estado === 'Cancelado') {
     botonesHTML = `<div style="text-align:center;color:var(--red);font-size:13px;padding:8px;">❌ Pedido cancelado</div>`;
   }
@@ -1320,6 +1320,20 @@ function openPedidoDetalle(folio) {
   `;
 
   document.getElementById('pedDetModalOverlay').classList.add('open');
+}
+
+function abrirTicketDesdePedido(folio) {
+  // Cerrar modal pedido primero, luego abrir ticket
+  const modal = document.getElementById('pedDetModalOverlay');
+  modal.classList.remove('open');
+  // Esperar a que termine la animación de cierre antes de abrir ticket
+  const abrir = () => {
+    generarTicket(folio);
+    modal.removeEventListener('transitionend', abrir);
+  };
+  modal.addEventListener('transitionend', abrir, { once: true });
+  // Fallback por si transitionend no dispara en móvil
+  setTimeout(() => generarTicket(folio), 400);
 }
 
 function closePedDetModal(e) {
