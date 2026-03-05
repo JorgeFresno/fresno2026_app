@@ -518,6 +518,7 @@
   .user-badge-rol { font-size: 10px; color: rgba(255,255,255,0.6); }
 
   @media print {
+    .no-print { display: none !important; }
     @page {
       margin: 6mm;
       size: 80mm auto;
@@ -2417,55 +2418,58 @@ function generarTicketMovimiento(idx) {
   const esEntrada = ['Entrada compra','Entrada producción','Ajuste positivo'].includes(tipo);
   const tipoIcon = esEntrada ? '📥' : '📤';
 
+  const clienteNombre   = m['Cliente'] || '';
+  const proveedorNombre = m['Proveedor'] || '';
+
   const ticketHTML = `
-    <div style="text-align:center;margin-bottom:12px;">
-      <div style="font-size:22px;">🌿</div>
-      <div style="font-weight:800;font-size:13px;letter-spacing:0.5px;">EMPACADORA EL FRESNO S.A. DE C.V.</div>
-      <div style="font-size:10px;color:#666;">Desde 1982</div>
-      <div style="font-size:11px;font-weight:700;letter-spacing:1px;margin-top:4px;border-top:1px dashed #ccc;padding-top:6px;">COMPROBANTE DE MOVIMIENTO</div>
+    <div style="text-align:center;margin-bottom:8px;">
+      <div style="font-weight:800;font-size:12px;letter-spacing:0.5px;">EMPACADORA EL FRESNO S.A. DE C.V.</div>
+      <div style="font-size:9px;color:#666;">Desde 1982</div>
+      <div style="font-size:10px;font-weight:700;letter-spacing:1px;margin-top:3px;border-top:1px dashed #ccc;padding-top:4px;">COMPROBANTE DE MOVIMIENTO</div>
     </div>
 
-    <div style="text-align:center;margin:10px 0;">
-      <div style="font-size:11px;color:#666;">Folio</div>
-      <div style="font-size:22px;font-weight:900;color:#2D5A1B;letter-spacing:1px;">${folio}</div>
-      <div style="font-size:11px;color:#888;">${fechaStr} · ${horaStr}</div>
+    <div style="text-align:center;margin:6px 0;">
+      <div style="font-size:10px;color:#666;">Folio</div>
+      <div style="font-size:20px;font-weight:900;color:#2D5A1B;letter-spacing:1px;">${folio}</div>
+      <div style="font-size:10px;color:#888;">${fechaStr} · ${horaStr}</div>
     </div>
 
-    <div style="border-top:1px dashed #ccc;border-bottom:1px dashed #ccc;padding:8px 0;margin:8px 0;">
-      <table style="width:100%;font-size:11px;border-collapse:collapse;">
-        <tr><td style="color:#666;padding:2px 0;">Tipo</td><td style="text-align:right;font-weight:600;">${tipoIcon} ${tipo}</td></tr>
-        ${cliente ? `<tr><td style="color:#666;padding:2px 0;">Cliente/Prov.</td><td style="text-align:right;font-weight:600;">${cliente}</td></tr>` : ''}
-        <tr><td style="color:#666;padding:2px 0;">Documento</td><td style="text-align:right;font-weight:600;">${docRef}</td></tr>
-        <tr><td style="color:#666;padding:2px 0;">Captura</td><td style="text-align:right;font-weight:600;">${captura}</td></tr>
-        <tr><td style="color:#666;padding:2px 0;">Estado</td><td style="text-align:right;font-weight:600;">${estado}</td></tr>
+    <div style="border-top:1px dashed #ccc;border-bottom:1px dashed #ccc;padding:5px 0;margin:5px 0;">
+      <table style="width:100%;font-size:10px;border-collapse:collapse;">
+        <tr><td style="color:#666;padding:1px 0;width:40%;">Tipo</td><td style="text-align:right;font-weight:600;">${tipoIcon} ${tipo}</td></tr>
+        ${clienteNombre ? `<tr><td style="color:#666;padding:1px 0;">Cliente</td><td style="text-align:right;font-weight:600;">${clienteNombre}</td></tr>` : ''}
+        ${proveedorNombre ? `<tr><td style="color:#666;padding:1px 0;">Proveedor</td><td style="text-align:right;font-weight:600;">${proveedorNombre}</td></tr>` : ''}
+        ${docRef !== '—' ? `<tr><td style="color:#666;padding:1px 0;">Documento</td><td style="text-align:right;font-weight:600;">${docRef}</td></tr>` : ''}
+        <tr><td style="color:#666;padding:1px 0;">Captura</td><td style="text-align:right;font-weight:600;">${captura}</td></tr>
+        <tr><td style="color:#666;padding:1px 0;">Estado</td><td style="text-align:right;font-weight:600;">${estado}</td></tr>
       </table>
     </div>
 
-    <div style="margin:8px 0;">
-      <div style="font-size:10px;color:#666;font-weight:700;text-transform:uppercase;margin-bottom:4px;">Producto</div>
-      <div style="font-weight:700;font-size:13px;">${clave}</div>
-      <div style="font-size:11px;color:#444;">${desc}</div>
-      <div style="display:flex;gap:8px;margin-top:6px;">
-        ${cantPz > 0 ? `<div style="flex:1;background:#f5f5f5;border-radius:8px;padding:6px;text-align:center;"><div style="font-size:14px;font-weight:800;">${cantPz.toLocaleString('es-MX')}</div><div style="font-size:9px;color:#666;">PIEZAS</div></div>` : ''}
-        ${cantKg > 0 ? `<div style="flex:1;background:#f5f5f5;border-radius:8px;padding:6px;text-align:center;"><div style="font-size:14px;font-weight:800;">${cantKg.toLocaleString('es-MX')}</div><div style="font-size:9px;color:#666;">KG</div></div>` : ''}
+    <div style="margin:5px 0;">
+      <div style="font-size:9px;color:#666;font-weight:700;text-transform:uppercase;margin-bottom:2px;">Producto</div>
+      <div style="font-weight:700;font-size:12px;">${clave}</div>
+      <div style="font-size:10px;color:#444;">${desc}</div>
+      <div style="display:flex;gap:6px;margin-top:4px;">
+        ${cantPz > 0 ? `<div style="flex:1;background:#f5f5f5;border-radius:6px;padding:4px;text-align:center;"><div style="font-size:13px;font-weight:800;">${cantPz.toLocaleString('es-MX')}</div><div style="font-size:8px;color:#666;">PIEZAS</div></div>` : ''}
+        ${cantKg > 0 ? `<div style="flex:1;background:#f5f5f5;border-radius:6px;padding:4px;text-align:center;"><div style="font-size:13px;font-weight:800;">${cantKg.toLocaleString('es-MX')}</div><div style="font-size:8px;color:#666;">KG</div></div>` : ''}
       </div>
     </div>
 
-    <div style="margin:6px 0;font-size:11px;">
+    <div style="font-size:10px;margin:4px 0;">
       <span style="color:#666;">Origen:</span> <strong>${origen}</strong>
       &nbsp;→&nbsp;
       <span style="color:#666;">Destino:</span> <strong>${destino}</strong>
     </div>
 
-    ${obs ? `<div style="font-size:10px;color:#666;border-top:1px dashed #ccc;margin-top:6px;padding-top:6px;">📝 ${obs}</div>` : ''}
+    ${obs ? `<div style="font-size:9px;color:#666;border-top:1px dashed #ccc;margin-top:4px;padding-top:4px;">📝 ${obs}</div>` : ''}
 
-    <div style="margin-top:12px;" id="qrMovimiento"></div>
+    <div style="margin-top:8px;text-align:center;" id="qrMovimiento"></div>
 
-    <div style="text-align:center;font-size:9px;color:#999;border-top:1px dashed #ccc;margin-top:12px;padding-top:6px;">
+    <div style="text-align:center;font-size:8px;color:#999;border-top:1px dashed #ccc;margin-top:8px;padding-top:4px;">
       Conserve este comprobante para cualquier aclaración
     </div>
 
-    <div style="display:flex;gap:8px;margin-top:12px;">
+    <div class="no-print" style="display:flex;gap:8px;margin-top:10px;">
       <button onclick="window.print()" style="flex:1;background:#2D5A1B;color:white;border:none;border-radius:10px;padding:12px;font-size:14px;font-weight:700;cursor:pointer;">🖨️ Imprimir</button>
       <button onclick="cerrarTicket()" style="flex:1;background:#f5f5f5;color:#333;border:none;border-radius:10px;padding:12px;font-size:14px;font-weight:700;cursor:pointer;">✕ Cerrar</button>
     </div>
@@ -3124,7 +3128,7 @@ function initProdForm() {
   }
   // Fallback si no cargó
   if (!todasUbics.length) {
-    todasUbics = ['BN','B2','T1','T2','T3','T4','T5','T6','T7','T8','T9','T10','T11','T12','T13','T14','TA8','TB11','POLIETILENOS','FUMIGACION'];
+    todasUbics = ['BN','B2','T1','T2','T3','T4','T5','T6','T7','T8','T9','T10','T11','T12','T13','T14','TA8','TB11','POLIETILENOS','FUMIGACION','ALMACENMAQUILA','ALMACEN_MERMA','Cliente','MesaDespensas'];
   }
 
   const selUbicO = document.getElementById('prodUbicOrigen');
