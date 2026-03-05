@@ -782,15 +782,16 @@
         <div class="prod-section-title">🌾 Granel origen</div>
         <div class="prod-field">
           <label class="prod-label">Producto granel</label>
-          <select class="prod-select" id="prodGranelOrigen" onchange="onGranelChange()">
+          <select class="prod-select" id="prodGranelOrigen" onchange="onGranelChange();onGranelUbicChange()">
             <option value="">— Seleccionar —</option>
           </select>
         </div>
         <div class="prod-field">
           <label class="prod-label">Tolva / Ubicación origen</label>
-          <select class="prod-select" id="prodUbicOrigen">
+          <select class="prod-select" id="prodUbicOrigen" onchange="onGranelUbicChange()">
             <option value="">— Seleccionar —</option>
           </select>
+          <div id="prodStockUbicBadge" style="display:none;border-radius:10px;padding:8px 12px;font-size:12px;font-weight:600;margin-top:6px;"></div>
         </div>
       </div>
 
@@ -2366,7 +2367,7 @@ function navTo(page) {
 async function syncData() {
   document.getElementById('productsContainer').innerHTML = '<div class="loading-state"><div class="loading-spinner"></div>Sincronizando...</div>';
   document.getElementById('agendaContainer').innerHTML = '<div class="loading-state"><div class="loading-spinner"></div>Cargando pedidos...</div>';
-  await Promise.all([loadInventario(), loadMovimientos(), loadAgenda(), loadProveedores(), loadClientes()]);
+  await Promise.all([loadInventario(), loadMovimientos(), loadAgenda(), loadProveedores(), loadClientes(), loadUbicaciones()]);
 }
 
 function updateSyncTime() {
@@ -2893,6 +2894,7 @@ function cerrarSesion() {
 //  PRODUCCIÓN
 // ==========================================
 let allProd = [];
+let allUbicaciones = [];
 let currentProdTab = 'nueva';
 
 function setProdTab(tab) {
@@ -2902,6 +2904,56 @@ function setProdTab(tab) {
   document.getElementById('prodPanelNueva').style.display = tab === 'nueva' ? '' : 'none';
   document.getElementById('prodPanelHist').style.display  = tab === 'historial' ? '' : 'none';
   if (tab === 'historial') loadProdHistorial();
+}
+
+async function loadUbicaciones() {
+  try {
+    const rows = await fetchSheet('Inventario_Ubicaciones');
+    // Rows have headers in row 4: ClaveProducto, Descripcion, UnidadBase, BN, B2, T1...
+    // fetchSheet already parses headers from row 4
+    allUbicaciones = rows.map(r => {
+      const ubics = {};
+      // All columns except ClaveProducto, Descripcion, UnidadBase, Total_ubicaciones, Es_Pieza
+      const skip = ['ClaveProducto','Descripcion','UnidadBase','Total_ubicaciones','Es_Pieza'];
+      Object.keys(r).forEach(k => {
+        if (!skip.includes(k)) ubics[k] = parseFloat(r[k] || 0);
+      });
+      return {
+        clave:       r['ClaveProducto'] || '',
+        descripcion: r['Descripcion']   || '',
+        unidad:      r['UnidadBase']    || '',
+        ubicaciones: ubics
+      };
+    }).filter(r => r.clave);
+  } catch(e) {
+    console.warn('No se pudo cargar Inventario_Ubicaciones', e);
+  }
+}
+
+function getStockEnUbicacion(clave, ubicacion) {
+  const prod = allUbicaciones.find(p => p.clave === clave);
+  if (!prod) return null;
+  return prod.ubicaciones[ubicacion] || 0;
+}
+
+function onGranelUbicChange() {
+  const clave  = document.getElementById('prodGranelOrigen').value;
+  const ubic   = document.getElementById('prodUbicOrigen').value;
+  const badge  = document.getElementById('prodStockUbicBadge');
+  if (!badge) return;
+  if (clave && ubic) {
+    const stock = getStockEnUbicacion(clave, ubic);
+    if (stock !== null) {
+      badge.textContent = '📦 Stock en ' + ubic + ': ' + stock.toLocaleString('es-MX') + ' kg';
+      badge.style.display = 'block';
+      badge.style.background = stock > 0 ? '#E8F5E9' : '#FDECEA';
+      badge.style.color = stock > 0 ? '#2D5A1B' : '#E53935';
+    } else {
+      badge.style.display = 'none';
+    }
+  } else {
+    badge.style.display = 'none';
+  }
 }
 
 function initProdForm() {
@@ -2921,7 +2973,7 @@ function initProdForm() {
   allProducts.filter(p => p.tipo === 'granel').forEach(p => {
     const opt = document.createElement('option');
     opt.value = p.clave;
-    opt.textContent = p.clave + ' — ' + p.descripcion + ' (' + formatNum(p.stockKg) + ' kg)';
+    opt.textContent = p.clave + ' — ' + p.nombre + ' (' + formatNum(p.stockKg || 0) + ' kg)';
     selGranel.appendChild(opt);
   });
 
@@ -2931,16 +2983,26 @@ function initProdForm() {
   allProducts.filter(p => p.tipo === 'empacado').forEach(p => {
     const opt = document.createElement('option');
     opt.value = p.clave;
-    opt.textContent = p.clave + ' — ' + p.descripcion;
+    opt.textContent = p.clave + ' — ' + p.nombre;
     selPT.appendChild(opt);
   });
 
-  // Poblar ubicaciones
-  const ubics = [...new Set(allProducts.flatMap(p => [p.ubicacion]).filter(Boolean))];
-  const tolvas = ['T1','T2','T3','T4','T5','T6','T7','T8','T9','T10','T11','T12','T13','T14','TA8','TB11','BN','B2'];
+  // Poblar ubicaciones dinámicamente desde allUbicaciones
+  // Obtener todas las ubicaciones que tienen al menos algún stock
+  let todasUbics = [];
+  if (allUbicaciones.length > 0) {
+    // Tomar las keys de ubicaciones del primer producto
+    const skipCols = ['ClaveProducto','Descripcion','UnidadBase','Total_ubicaciones','Es_Pieza'];
+    todasUbics = Object.keys(allUbicaciones[0].ubicaciones).filter(k => !skipCols.includes(k));
+  }
+  // Fallback si no cargó
+  if (!todasUbics.length) {
+    todasUbics = ['BN','B2','T1','T2','T3','T4','T5','T6','T7','T8','T9','T10','T11','T12','T13','T14','TA8','TB11','POLIETILENOS','FUMIGACION'];
+  }
+
   const selUbicO = document.getElementById('prodUbicOrigen');
   selUbicO.innerHTML = '<option value="">— Seleccionar tolva —</option>';
-  tolvas.forEach(u => {
+  todasUbics.forEach(u => {
     const opt = document.createElement('option');
     opt.value = u; opt.textContent = u;
     selUbicO.appendChild(opt);
@@ -2948,7 +3010,7 @@ function initProdForm() {
 
   const selUbicD = document.getElementById('prodUbicDestino');
   selUbicD.innerHTML = '';
-  tolvas.forEach(u => {
+  todasUbics.forEach(u => {
     const opt = document.createElement('option');
     opt.value = u; opt.textContent = u;
     if (u === 'BN') opt.selected = true;
@@ -3027,9 +3089,9 @@ async function guardarProduccion() {
         Fecha:            fechaFmt,
         Usuario:          currentUser?.id || 'U01',
         ClaveGranelOrigen:  granelClave,
-        ProductoGranelOrigen: granelProd?.descripcion || granelClave,
+        ProductoGranelOrigen: granelProd?.nombre || granelClave,
         ClaveProductoTerminado: ptClave,
-        ProductoTerminado: ptProd?.descripcion || ptClave,
+        ProductoTerminado: ptProd?.nombre || ptClave,
         Gramaje:          ptProd?.gramaje || '',
         LoteCaducidad:    lote,
         UbicacionOrigen:  ubicOrigen,
