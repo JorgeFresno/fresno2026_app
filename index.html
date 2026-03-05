@@ -633,7 +633,7 @@
     <div id="alertsContainer"></div>
     <div class="section-title">Acciones rápidas</div>
     <div class="action-card" onclick="navTo('agenda')"><div class="action-icon icon-teal">📋</div><div class="action-body"><div class="action-title">Agenda de Pedidos</div><div class="action-sub" id="agendaQuickSub">Ver y despachar pedidos</div></div><div class="action-arrow">›</div></div>
-    <div class="action-card" onclick="navTo('scanner')"><div class="action-icon icon-green">📱</div><div class="action-body"><div class="action-title">Escanear QR</div><div class="action-sub">Picking de pedidos con cámara</div></div><div class="action-arrow">›</div></div>
+    <div class="action-card" onclick="navTo('scanner')"><div class="action-icon icon-green">🔍</div><div class="action-body"><div class="action-title">Buscador universal</div><div class="action-sub">Pedidos, movimientos y productos</div></div><div class="action-arrow">›</div></div>
     <div class="action-card" onclick="navTo('inventario')"><div class="action-icon icon-blue">📦</div><div class="action-body"><div class="action-title">Inventario</div><div class="action-sub">Consultar stock en tiempo real</div></div><div class="action-arrow">›</div></div>
     <div class="action-card" onclick="navTo('movimientos')"><div class="action-icon icon-orange">📋</div><div class="action-body"><div class="action-title">Movimientos</div><div class="action-sub">Historial de capturas</div></div><div class="action-arrow">›</div></div>
     <div id="lastSyncHome" class="last-sync"></div>
@@ -716,36 +716,32 @@
 <!-- ======== SCANNER ======== -->
 <div class="page" id="page-scanner">
   <div class="content">
-    <!-- Área visual del scanner -->
-    <div class="scanner-area" style="cursor:pointer;" onclick="document.getElementById('qrFileInput').click()">
-      <div class="corner-box"><span></span></div>
-      <div class="scan-line"></div>
-      <div class="scanner-hint">Toca para escanear QR</div>
+    <!-- Buscador universal -->
+    <div style="position:relative;margin-bottom:16px;">
+      <input id="busquedaInput" type="text" placeholder="🔍  Buscar pedido, movimiento, producto..." 
+        oninput="busquedaUniversal()"
+        autocomplete="off" autocorrect="off" spellcheck="false"
+        style="width:100%;padding:14px 16px;border:2px solid var(--green-dark);border-radius:16px;font-size:15px;font-family:'DM Sans',sans-serif;outline:none;box-sizing:border-box;background:white;">
+      <button onclick="document.getElementById('busquedaInput').value='';busquedaUniversal()" 
+        style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;font-size:18px;cursor:pointer;color:#999;">✕</button>
     </div>
 
-    <!-- Input oculto — en iOS abre cámara directamente -->
-    <input type="file" id="qrFileInput" accept="image/*" capture="environment"
-      style="display:none;" onchange="procesarImagenQR(this)">
-
-    <!-- Resultado -->
-    <div id="scanResult" style="display:none;background:#E8F5E9;border-radius:14px;padding:16px;margin-bottom:10px;text-align:center;">
-      <div style="font-size:22px;margin-bottom:6px;">✅</div>
-      <div style="font-weight:700;font-size:15px;color:#2D5A1B;margin-bottom:10px;" id="scanResultText"></div>
-      <button id="scanResultBtn" style="background:#2D5A1B;color:white;border:none;border-radius:10px;padding:12px 24px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;width:100%;"></button>
-    </div>
-
-    <div style="display:flex;flex-direction:column;gap:10px;margin-top:4px;">
-      <button class="scan-btn" onclick="triggerScanner()">📷 Escanear QR</button>
-      <button class="scan-btn-secondary" onclick="triggerScanner()">🖼️ Seleccionar imagen</button>
-    </div>
-
-    <div style="margin-top:16px;background:#f9f9f9;border-radius:12px;padding:14px;">
-      <div style="font-size:12px;font-weight:700;color:#666;margin-bottom:8px;">💡 CÓMO USAR</div>
-      <div style="font-size:12px;color:#888;line-height:1.6;">
-        1. Toca <strong>Escanear QR</strong><br>
-        2. Apunta la cámara al código QR del ticket<br>
-        3. La app navega automáticamente al pedido o movimiento
+    <!-- Tip QR -->
+    <div style="background:#E8F5E9;border-radius:12px;padding:12px 14px;margin-bottom:16px;display:flex;align-items:center;gap:10px;">
+      <div style="font-size:24px;">📷</div>
+      <div>
+        <div style="font-size:12px;font-weight:700;color:#2D5A1B;">Escanear QR con iPhone</div>
+        <div style="font-size:11px;color:#555;margin-top:2px;">Abre la cámara nativa → apunta al QR del ticket → toca la notificación</div>
       </div>
+    </div>
+
+    <!-- Resultados -->
+    <div id="busquedaResultados">
+      <!-- Estado inicial -->
+      <div class="section-title">📋 Pedidos recientes</div>
+      <div id="busqPedidosRecientes"></div>
+      <div class="section-title" style="margin-top:12px;">📦 Movimientos recientes</div>
+      <div id="busqMovsRecientes"></div>
     </div>
   </div>
 </div>
@@ -2342,6 +2338,8 @@ function navTo(page) {
   if (page !== 'scanner' && scannerActivo) detenerScanner();
   // Init produccion form
   if (page === 'produccion') setTimeout(() => initProdForm(), 100);
+  // Init buscador
+  if (page === 'scanner') setTimeout(() => { renderBusquedaRecientes(); document.getElementById('busquedaInput')?.focus(); }, 100);
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   document.getElementById('page-' + page)?.classList.add('active');
@@ -2642,6 +2640,135 @@ function imprimirTicket() {
 let scannerActivo = false; // kept for navTo compatibility
 
 function detenerScanner() { scannerActivo = false; }
+
+// ==========================================
+//  BUSCADOR UNIVERSAL
+// ==========================================
+function busquedaUniversal() {
+  const q = (document.getElementById('busquedaInput')?.value || '').toLowerCase().trim();
+  const container = document.getElementById('busquedaResultados');
+
+  if (!q) {
+    // Mostrar recientes
+    renderBusquedaRecientes();
+    return;
+  }
+
+  // Buscar en pedidos
+  const pedidos = Object.values(pedidosAgrupados).filter(p =>
+    p.folio.toLowerCase().includes(q) ||
+    p.cliente.toLowerCase().includes(q) ||
+    p.lineas.some(l => l.clave.toLowerCase().includes(q) || l.descripcion.toLowerCase().includes(q))
+  ).slice(0, 5);
+
+  // Buscar en movimientos
+  const movs = allMovimientos.filter(m =>
+    String(m['FolioMov']||'').toLowerCase().includes(q) ||
+    String(m['TipoMov']||'').toLowerCase().includes(q) ||
+    String(m['ClaveProducto']||'').toLowerCase().includes(q) ||
+    String(m['Cliente']||m['Proveedor']||'').toLowerCase().includes(q)
+  ).slice(0, 5);
+
+  // Buscar en productos
+  const prods = allProducts.filter(p =>
+    p.clave.toLowerCase().includes(q) ||
+    p.nombre.toLowerCase().includes(q)
+  ).slice(0, 5);
+
+  let html = '';
+
+  if (pedidos.length) {
+    html += `<div class="section-title">📋 Pedidos (${pedidos.length})</div>`;
+    html += pedidos.map(p => `
+      <div class="prod-hist-item" onclick="navTo('agenda');setTimeout(()=>openPedidoDetalle('${encodeURIComponent(p.folio)}'),600)" style="cursor:pointer;">
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <div>
+            <div style="font-weight:700;color:var(--green-dark);">${p.folio}</div>
+            <div style="font-size:12px;color:#666;">${p.cliente} · ${p.lineas.length} productos</div>
+          </div>
+          <div>${getEstadoChip(p.estado)}</div>
+        </div>
+      </div>`).join('');
+  }
+
+  if (movs.length) {
+    html += `<div class="section-title" style="margin-top:12px;">📦 Movimientos (${movs.length})</div>`;
+    html += movs.map(m => {
+      const idx = allMovimientos.indexOf(m);
+      const folio = m['FolioMov'] || '—';
+      const tipo  = m['TipoMov'] || '—';
+      const clave = m['ClaveProducto'] || '';
+      return `<div class="prod-hist-item" onclick="navTo('movimientos');setTimeout(()=>openDetalle(${idx}),600)" style="cursor:pointer;">
+        <div style="font-weight:700;color:var(--green-dark);">${folio}</div>
+        <div style="font-size:12px;color:#666;">${tipo} · ${clave}</div>
+      </div>`;
+    }).join('');
+  }
+
+  if (prods.length) {
+    html += `<div class="section-title" style="margin-top:12px;">🌿 Productos (${prods.length})</div>`;
+    html += prods.map(p => `
+      <div class="prod-hist-item" onclick="navTo('inventario');setTimeout(()=>openProdDetalle('${p.clave}'),600)" style="cursor:pointer;">
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <div>
+            <div style="font-weight:700;">${p.clave}</div>
+            <div style="font-size:12px;color:#666;">${p.nombre}</div>
+          </div>
+          <div style="font-weight:700;color:var(--green-dark);">${p.tipo==='granel'?formatNum(p.stockKg)+' kg':formatNum(p.stockPz)+' pz'}</div>
+        </div>
+      </div>`).join('');
+  }
+
+  if (!html) {
+    html = `<div class="empty-state">🔍 Sin resultados para "<strong>${q}</strong>"</div>`;
+  }
+
+  container.innerHTML = html;
+}
+
+function renderBusquedaRecientes() {
+  const container = document.getElementById('busquedaResultados');
+  // Últimos 3 pedidos activos
+  const pedRecientes = Object.values(pedidosAgrupados)
+    .filter(p => !['Despachado','Cancelado'].includes(p.estado))
+    .slice(0, 3);
+  // Últimos 3 movimientos
+  const movRecientes = allMovimientos.slice(0, 3);
+
+  let html = '<div class="section-title">📋 Pedidos activos recientes</div>';
+  if (pedRecientes.length) {
+    html += pedRecientes.map(p => `
+      <div class="prod-hist-item" onclick="navTo('agenda');setTimeout(()=>openPedidoDetalle('${encodeURIComponent(p.folio)}'),600)" style="cursor:pointer;">
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <div>
+            <div style="font-weight:700;color:var(--green-dark);">${p.folio}</div>
+            <div style="font-size:12px;color:#666;">${p.cliente}</div>
+          </div>
+          <div>${getEstadoChip(p.estado)}</div>
+        </div>
+      </div>`).join('');
+  } else {
+    html += '<div class="empty-state" style="padding:12px;">Sin pedidos activos</div>';
+  }
+
+  html += '<div class="section-title" style="margin-top:12px;">📦 Últimos movimientos</div>';
+  if (movRecientes.length) {
+    html += movRecientes.map(m => {
+      const idx = allMovimientos.indexOf(m);
+      return `<div class="prod-hist-item" onclick="navTo('movimientos');setTimeout(()=>openDetalle(${idx}),600)" style="cursor:pointer;">
+        <div style="font-weight:700;">${m['FolioMov']||'—'}</div>
+        <div style="font-size:12px;color:#666;">${m['TipoMov']||'—'} · ${m['ClaveProducto']||''}</div>
+      </div>`;
+    }).join('');
+  } else {
+    html += '<div class="empty-state" style="padding:12px;">Sin movimientos</div>';
+  }
+
+  container.innerHTML = html;
+}
+
+// Init buscador al navegar a él
+const _origNavToBusq = navTo;
 
 function triggerScanner() {
   const input = document.getElementById('qrFileInput');
