@@ -90,7 +90,7 @@
   .icon-red { background: #FDECEA; }
   
   /* BOTTOM NAV */
-  .bottom-nav { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 430px; background: white; border-top: 1px solid var(--border); display: grid; grid-template-columns: repeat(5,1fr); padding: 8px 0 20px; z-index: 100; }
+  .bottom-nav { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 430px; background: white; border-top: 1px solid var(--border); display: grid; grid-template-columns: repeat(6,1fr); padding: 8px 0 20px; z-index: 100; }
   .nav-item { display: flex; flex-direction: column; align-items: center; gap: 3px; cursor: pointer; padding: 4px 0; position: relative; }
   .nav-icon { font-size: 22px; }
   .nav-label { font-size: 10px; font-weight: 500; color: var(--text-muted); }
@@ -448,6 +448,32 @@
     flex-shrink: 0;
   }
 
+  /* ── PRODUCCIÓN ── */
+  .prod-form-section { background: white; border-radius: 16px; padding: 16px; margin-bottom: 12px; border: 1px solid var(--border); }
+  .prod-section-title { font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 12px; }
+  .prod-field { margin-bottom: 12px; }
+  .prod-label { font-size: 12px; font-weight: 600; color: var(--text-secondary); margin-bottom: 5px; display: block; }
+  .prod-select, .prod-input {
+    width: 100%; padding: 12px 14px; border: 1.5px solid var(--border);
+    border-radius: 12px; font-size: 14px; font-family: 'DM Sans', sans-serif;
+    outline: none; background: white; box-sizing: border-box;
+    appearance: none; -webkit-appearance: none; color: var(--text-primary);
+  }
+  .prod-select:focus, .prod-input:focus { border-color: var(--green-dark); }
+  .prod-qty-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+  .prod-qty-card { background: #F8FDF5; border: 1.5px solid var(--border); border-radius: 12px; padding: 12px; }
+  .prod-qty-label { font-size: 10px; color: var(--text-muted); text-transform: uppercase; font-weight: 600; margin-bottom: 4px; }
+  .prod-qty-input { width: 100%; border: none; background: none; font-size: 20px; font-weight: 700; color: var(--green-dark); outline: none; font-family: 'DM Sans', sans-serif; box-sizing: border-box; }
+  .prod-folio-badge { background: #E8F5E9; border-radius: 10px; padding: 8px 14px; font-size: 13px; font-weight: 700; color: var(--green-dark); display: inline-block; margin-bottom: 12px; }
+  .prod-submit-btn { width: 100%; padding: 16px; background: linear-gradient(135deg, var(--green-dark), var(--green-mid)); color: white; border: none; border-radius: 14px; font-size: 16px; font-weight: 700; cursor: pointer; font-family: 'DM Sans', sans-serif; }
+  .prod-hist-item { background: white; border-radius: 14px; padding: 14px; margin-bottom: 8px; border: 1px solid var(--border); }
+  .prod-hist-folio { font-size: 13px; font-weight: 700; color: var(--green-dark); }
+  .prod-hist-detail { font-size: 12px; color: var(--text-secondary); margin-top: 3px; }
+  .prod-hist-qty { font-size: 13px; font-weight: 700; color: var(--text-primary); text-align: right; }
+  .prod-tabs { display: flex; gap: 8px; margin-bottom: 16px; }
+  .prod-tab { flex: 1; padding: 10px; border-radius: 12px; font-size: 13px; font-weight: 600; border: 1.5px solid var(--border); background: white; color: var(--text-secondary); cursor: pointer; text-align: center; font-family: 'DM Sans', sans-serif; }
+  .prod-tab.active { background: var(--green-dark); border-color: var(--green-dark); color: white; }
+
   /* ── LOGIN ── */
   #loginScreen {
     position: fixed; inset: 0; z-index: 9000;
@@ -594,7 +620,7 @@
   <div class="content">
     <div class="welcome-card">
       <div class="welcome-greeting">Buenos días,</div>
-      <div class="welcome-name">Jorge Dávalos</div>
+      <div class="welcome-name" id="welcomeName">—</div>
       <div class="welcome-status"><div class="status-dot"></div><span id="welcomeDate">Cargando...</span></div>
       <div class="welcome-divider"></div>
       <div class="welcome-kpis">
@@ -724,6 +750,119 @@
   </div>
 </div>
 
+<!-- ======== PRODUCCIÓN ======== -->
+<div class="page" id="page-produccion">
+  <div class="content">
+    <div class="prod-tabs">
+      <button class="prod-tab active" id="prodTabNueva" onclick="setProdTab('nueva')">🏭 Nueva orden</button>
+      <button class="prod-tab" id="prodTabHist" onclick="setProdTab('historial')">📋 Historial</button>
+    </div>
+
+    <!-- NUEVA ORDEN -->
+    <div id="prodPanelNueva">
+      <div class="prod-folio-badge" id="prodFolioBadge">⏳ Generando folio...</div>
+
+      <div class="prod-form-section">
+        <div class="prod-section-title">📅 Datos generales</div>
+        <div class="prod-field">
+          <label class="prod-label">Fecha</label>
+          <input class="prod-input" type="date" id="prodFecha">
+        </div>
+        <div class="prod-field">
+          <label class="prod-label">Personal</label>
+          <input class="prod-input" type="text" id="prodPersonal" placeholder="Ej: NAYELI, LAURA, LETICIA">
+        </div>
+        <div class="prod-field">
+          <label class="prod-label">Observaciones</label>
+          <input class="prod-input" type="text" id="prodObs" placeholder="Para bodega, Fresno Express...">
+        </div>
+      </div>
+
+      <div class="prod-form-section">
+        <div class="prod-section-title">🌾 Granel origen</div>
+        <div class="prod-field">
+          <label class="prod-label">Producto granel</label>
+          <select class="prod-select" id="prodGranelOrigen" onchange="onGranelChange()">
+            <option value="">— Seleccionar —</option>
+          </select>
+        </div>
+        <div class="prod-field">
+          <label class="prod-label">Tolva / Ubicación origen</label>
+          <select class="prod-select" id="prodUbicOrigen">
+            <option value="">— Seleccionar —</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="prod-form-section">
+        <div class="prod-section-title">📦 Producto terminado</div>
+        <div class="prod-field">
+          <label class="prod-label">Producto terminado</label>
+          <select class="prod-select" id="prodPTOrigen" onchange="onPTChange()">
+            <option value="">— Seleccionar —</option>
+          </select>
+        </div>
+        <div class="prod-field">
+          <label class="prod-label">Lote / Caducidad</label>
+          <input class="prod-input" type="text" id="prodLote" placeholder="Ej: 102FN1 JUN 27 130226">
+        </div>
+        <div class="prod-field">
+          <label class="prod-label">Ubicación destino</label>
+          <select class="prod-select" id="prodUbicDestino">
+            <option value="BN">BN — Bodega Nacional</option>
+          </select>
+        </div>
+        <div class="prod-field">
+          <label class="prod-label">Folio maquila</label>
+          <input class="prod-input" type="text" id="prodFolioMaquila" placeholder="Opcional">
+        </div>
+      </div>
+
+      <div class="prod-form-section">
+        <div class="prod-section-title">⚖️ Cantidades</div>
+        <div class="prod-qty-grid">
+          <div class="prod-qty-card">
+            <div class="prod-qty-label">Piezas producidas</div>
+            <input class="prod-qty-input" type="number" id="prodPiezas" placeholder="0" oninput="calcProd()">
+          </div>
+          <div class="prod-qty-card">
+            <div class="prod-qty-label">Paquetes</div>
+            <input class="prod-qty-input" type="number" id="prodPaquetes" placeholder="0">
+          </div>
+        </div>
+        <div class="prod-qty-grid">
+          <div class="prod-qty-card">
+            <div class="prod-qty-label">Tarimas</div>
+            <input class="prod-qty-input" type="number" id="prodTarimas" placeholder="0">
+          </div>
+          <div class="prod-qty-card">
+            <div class="prod-qty-label">Kg producidos</div>
+            <input class="prod-qty-input" type="number" id="prodKgProd" placeholder="0" oninput="calcProd()">
+          </div>
+        </div>
+        <div class="prod-qty-grid">
+          <div class="prod-qty-card" style="grid-column: 1/-1;">
+            <div class="prod-qty-label">Kg granel consumidos</div>
+            <input class="prod-qty-input" type="number" id="prodKgCons" placeholder="0">
+          </div>
+        </div>
+        <div id="prodGramajeBadge" style="display:none;background:#E8F5E9;border-radius:10px;padding:8px 12px;font-size:12px;color:#2D5A1B;font-weight:600;margin-top:4px;"></div>
+      </div>
+
+      <button class="prod-submit-btn" onclick="guardarProduccion()">
+        🏭 Registrar producción → Movimientos
+      </button>
+      <div style="height:20px;"></div>
+    </div>
+
+    <!-- HISTORIAL -->
+    <div id="prodPanelHist" style="display:none;">
+      <div class="search-bar" style="margin-bottom:12px;">🔍 <input id="prodSearchInput" type="text" placeholder="Buscar folio, producto..." oninput="renderProdHistorial()" autocomplete="off" style="background:none;border:none;outline:none;width:90%;font-size:14px;font-family:'DM Sans',sans-serif;"></div>
+      <div id="prodHistContainer"><div class="empty-state">Cargando...</div></div>
+    </div>
+  </div>
+</div>
+
 <!-- ======== MÁS ======== -->
 <div class="page" id="page-mas">
   <div class="content">
@@ -749,8 +888,9 @@
   <div class="nav-item active" id="nav-inicio" onclick="navTo('inicio')"><div class="nav-icon">🏠</div><div class="nav-label">Inicio</div></div>
   <div class="nav-item" id="nav-agenda" onclick="navTo('agenda')"><div class="nav-icon">📋</div><div class="nav-label">Agenda</div><div class="nav-badge" id="navBadgeAgenda" style="display:none">0</div></div>
   <div class="nav-item" id="nav-inventario" onclick="navTo('inventario')"><div class="nav-icon">📦</div><div class="nav-label">Inventario</div></div>
-  <div class="nav-item" id="nav-movimientos" onclick="navTo('movimientos')"><div class="nav-icon">📊</div><div class="nav-label">Movs.</div></div>
-  <div class="nav-item" id="nav-mas" onclick="navTo('mas')"><div class="nav-icon">⋯</div><div class="nav-label">Más</div></div>
+  <div class="nav-item" id="nav-movimientos" onclick="navTo('movimientos')" data-nav="movimientos"><div class="nav-icon">📊</div><div class="nav-label">Movs.</div></div>
+  <div class="nav-item" id="nav-produccion" onclick="navTo('produccion')" data-nav="produccion"><div class="nav-icon">🏭</div><div class="nav-label">Prod.</div></div>
+  <div class="nav-item" id="nav-mas" onclick="navTo('mas')" data-nav="mas"><div class="nav-icon">⋯</div><div class="nav-label">Más</div></div>
 </nav>
 
 <!-- ====================================================
@@ -2206,6 +2346,8 @@ function selectCatalogItem(el, hiddenId, inputId, sugId) {
 function navTo(page) {
   // Detener scanner si se sale de esa sección
   if (page !== 'scanner' && scannerActivo) detenerScanner();
+  // Init produccion form
+  if (page === 'produccion') setTimeout(() => initProdForm(), 100);
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   document.getElementById('page-' + page)?.classList.add('active');
@@ -2418,7 +2560,7 @@ function generarTicket(folio) {
       </div>` : ''}
       <div class="ticket-info-row">
         <div class="ticket-info-label">Despachado por</div>
-        <div class="ticket-info-value">Jorge Dávalos</div>
+        <div class="ticket-info-value" id="ticketCaptura">—</div>
       </div>
     </div>
 
@@ -2690,6 +2832,14 @@ function aplicarLogin() {
   if (masNombre) masNombre.textContent = currentUser.nombre;
   if (masRol)    masRol.textContent    = currentUser.rol;
 
+  // Nombre en saludo inicio
+  const welcomeName = document.getElementById('welcomeName');
+  if (welcomeName) welcomeName.textContent = currentUser.nombre;
+
+  // Nombre en ticket captura
+  const ticketCap = document.getElementById('ticketCaptura');
+  if (ticketCap) ticketCap.textContent = currentUser.nombre;
+
   // Aplicar permisos según rol
   aplicarPermisos();
 
@@ -2737,6 +2887,236 @@ function cerrarSesion() {
   document.getElementById('loginPass').value = '';
   document.getElementById('loginError').classList.remove('visible');
   document.getElementById('loginScreen').classList.remove('hidden');
+}
+
+// ==========================================
+//  PRODUCCIÓN
+// ==========================================
+let allProd = [];
+let currentProdTab = 'nueva';
+
+function setProdTab(tab) {
+  currentProdTab = tab;
+  document.getElementById('prodTabNueva').classList.toggle('active', tab === 'nueva');
+  document.getElementById('prodTabHist').classList.toggle('active', tab === 'historial');
+  document.getElementById('prodPanelNueva').style.display = tab === 'nueva' ? '' : 'none';
+  document.getElementById('prodPanelHist').style.display  = tab === 'historial' ? '' : 'none';
+  if (tab === 'historial') loadProdHistorial();
+}
+
+function initProdForm() {
+  // Fecha hoy
+  document.getElementById('prodFecha').value = new Date().toISOString().split('T')[0];
+
+  // Folio automático PROD-XXXXXX
+  const num = String(allProd.length + 1).padStart(6, '0');
+  document.getElementById('prodFolioBadge').textContent = '🏭 PROD-' + num;
+
+  // Personal del usuario actual
+  if (currentUser) document.getElementById('prodPersonal').value = currentUser.nombre;
+
+  // Poblar granel
+  const selGranel = document.getElementById('prodGranelOrigen');
+  selGranel.innerHTML = '<option value="">— Seleccionar granel —</option>';
+  allProducts.filter(p => p.tipo === 'granel').forEach(p => {
+    const opt = document.createElement('option');
+    opt.value = p.clave;
+    opt.textContent = p.clave + ' — ' + p.descripcion + ' (' + formatNum(p.stockKg) + ' kg)';
+    selGranel.appendChild(opt);
+  });
+
+  // Poblar PT
+  const selPT = document.getElementById('prodPTOrigen');
+  selPT.innerHTML = '<option value="">— Seleccionar PT —</option>';
+  allProducts.filter(p => p.tipo === 'empacado').forEach(p => {
+    const opt = document.createElement('option');
+    opt.value = p.clave;
+    opt.textContent = p.clave + ' — ' + p.descripcion;
+    selPT.appendChild(opt);
+  });
+
+  // Poblar ubicaciones
+  const ubics = [...new Set(allProducts.flatMap(p => [p.ubicacion]).filter(Boolean))];
+  const tolvas = ['T1','T2','T3','T4','T5','T6','T7','T8','T9','T10','T11','T12','T13','T14','TA8','TB11','BN','B2'];
+  const selUbicO = document.getElementById('prodUbicOrigen');
+  selUbicO.innerHTML = '<option value="">— Seleccionar tolva —</option>';
+  tolvas.forEach(u => {
+    const opt = document.createElement('option');
+    opt.value = u; opt.textContent = u;
+    selUbicO.appendChild(opt);
+  });
+
+  const selUbicD = document.getElementById('prodUbicDestino');
+  selUbicD.innerHTML = '';
+  tolvas.forEach(u => {
+    const opt = document.createElement('option');
+    opt.value = u; opt.textContent = u;
+    if (u === 'BN') opt.selected = true;
+    selUbicD.appendChild(opt);
+  });
+}
+
+function onGranelChange() {
+  // Nada por ahora, se puede agregar stock info
+}
+
+function onPTChange() {
+  const clave = document.getElementById('prodPTOrigen').value;
+  const prod  = allProducts.find(p => p.clave === clave);
+  if (!prod) return;
+  // Mostrar gramaje si disponible
+  const badge = document.getElementById('prodGramajeBadge');
+  if (prod.gramaje) {
+    badge.textContent = '⚖️ Gramaje: ' + prod.gramaje;
+    badge.style.display = 'block';
+  } else {
+    badge.style.display = 'none';
+  }
+}
+
+function calcProd() {
+  const piezas = parseFloat(document.getElementById('prodPiezas').value) || 0;
+  const kgProd = parseFloat(document.getElementById('prodKgProd').value) || 0;
+  // Si no hay kg consumidos, auto-calcular igual a kg producidos
+  const kgConsEl = document.getElementById('prodKgCons');
+  if (!kgConsEl.value && kgProd > 0) kgConsEl.value = kgProd;
+}
+
+async function guardarProduccion() {
+  const fecha       = document.getElementById('prodFecha').value;
+  const personal    = document.getElementById('prodPersonal').value.trim();
+  const obs         = document.getElementById('prodObs').value.trim();
+  const granelClave = document.getElementById('prodGranelOrigen').value;
+  const ubicOrigen  = document.getElementById('prodUbicOrigen').value;
+  const ptClave     = document.getElementById('prodPTOrigen').value;
+  const lote        = document.getElementById('prodLote').value.trim();
+  const ubicDest    = document.getElementById('prodUbicDestino').value;
+  const folioMaq    = document.getElementById('prodFolioMaquila').value.trim();
+  const piezas      = parseFloat(document.getElementById('prodPiezas').value) || 0;
+  const paquetes    = parseFloat(document.getElementById('prodPaquetes').value) || 0;
+  const tarimas     = parseFloat(document.getElementById('prodTarimas').value) || 0;
+  const kgProd      = parseFloat(document.getElementById('prodKgProd').value) || 0;
+  const kgCons      = parseFloat(document.getElementById('prodKgCons').value) || 0;
+
+  // Validaciones
+  if (!fecha)       { showToast('❌ Falta la fecha', 'error'); return; }
+  if (!granelClave) { showToast('❌ Selecciona el granel origen', 'error'); return; }
+  if (!ubicOrigen)  { showToast('❌ Selecciona la tolva origen', 'error'); return; }
+  if (!ptClave)     { showToast('❌ Selecciona el producto terminado', 'error'); return; }
+  if (piezas <= 0)  { showToast('❌ Captura las piezas producidas', 'error'); return; }
+  if (kgCons <= 0)  { showToast('❌ Captura los kg consumidos', 'error'); return; }
+
+  const granelProd  = allProducts.find(p => p.clave === granelClave);
+  const ptProd      = allProducts.find(p => p.clave === ptClave);
+  const folioNum    = String(allProd.length + 1).padStart(6, '0');
+  const idprod      = 'PROD-' + folioNum;
+
+  // Fecha formateada DD/MM/YYYY
+  const [y, m, d] = fecha.split('-');
+  const fechaFmt = d + '/' + m + '/' + y;
+
+  showToast('⏳ Registrando producción...', '');
+
+  try {
+    await fetch(APPS_SCRIPT_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'text/plain' },
+      body: JSON.stringify({
+        accion:           'guardarProduccion',
+        Fecha:            fechaFmt,
+        Usuario:          currentUser?.id || 'U01',
+        ClaveGranelOrigen:  granelClave,
+        ProductoGranelOrigen: granelProd?.descripcion || granelClave,
+        ClaveProductoTerminado: ptClave,
+        ProductoTerminado: ptProd?.descripcion || ptClave,
+        Gramaje:          ptProd?.gramaje || '',
+        LoteCaducidad:    lote,
+        UbicacionOrigen:  ubicOrigen,
+        UbicacionDestino: ubicDest,
+        Piezas:           piezas,
+        Paquetes:         paquetes,
+        Tarimas:          tarimas,
+        KgProducidos:     kgProd,
+        KgConsumidosGranel: kgCons,
+        FolioMaquila:     folioMaq,
+        Observaciones:    obs,
+        Estado:           'OK',
+        Personal:         personal,
+        IDPROD:           idprod
+      })
+    });
+
+    // Actualizar local
+    allProd.push({ idprod, fecha: fechaFmt, ptClave, granelClave, piezas, kgCons, ubicOrigen, ubicDest, personal });
+
+    showToast('✅ ' + idprod + ' registrado', 'success');
+
+    // Resetear form
+    document.getElementById('prodPiezas').value   = '';
+    document.getElementById('prodPaquetes').value = '';
+    document.getElementById('prodTarimas').value  = '';
+    document.getElementById('prodKgProd').value   = '';
+    document.getElementById('prodKgCons').value   = '';
+    document.getElementById('prodLote').value     = '';
+    document.getElementById('prodObs').value      = '';
+    document.getElementById('prodFolioMaquila').value = '';
+
+    // Actualizar folio
+    const newNum = String(allProd.length + 1).padStart(6, '0');
+    document.getElementById('prodFolioBadge').textContent = '🏭 PROD-' + newNum;
+
+    // Recargar datos
+    setTimeout(() => syncData(), 2000);
+
+  } catch(e) {
+    showToast('❌ Error al registrar', 'error');
+    console.error(e);
+  }
+}
+
+async function loadProdHistorial() {
+  const container = document.getElementById('prodHistContainer');
+  container.innerHTML = '<div class="loading-state"><div class="loading-spinner"></div>Cargando...</div>';
+  try {
+    const rows = await fetchSheet('Control_Produccion');
+    allProd = rows;
+    renderProdHistorial();
+  } catch(e) {
+    container.innerHTML = '<div class="empty-state">Error al cargar historial</div>';
+  }
+}
+
+function renderProdHistorial() {
+  const container = document.getElementById('prodHistContainer');
+  const search = (document.getElementById('prodSearchInput')?.value || '').toLowerCase();
+  let lista = [...allProd].reverse();
+  if (search) lista = lista.filter(r =>
+    String(r['IDPROD']||'').toLowerCase().includes(search) ||
+    String(r['ProductoTerminado']||'').toLowerCase().includes(search) ||
+    String(r['ProductoGranelOrigen']||'').toLowerCase().includes(search)
+  );
+  if (!lista.length) { container.innerHTML = '<div class="empty-state">Sin registros</div>'; return; }
+  container.innerHTML = lista.slice(0, 30).map(r => {
+    const estado = r['Estado'] || 'OK';
+    const color  = estado === 'CANCELADO' ? '#E53935' : '#2D5A1B';
+    return `<div class="prod-hist-item">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+        <div>
+          <div class="prod-hist-folio">${r['IDPROD']||'—'}</div>
+          <div class="prod-hist-detail">${r['ProductoTerminado']||'—'}</div>
+          <div class="prod-hist-detail" style="color:#999;">🌾 ${r['ProductoGranelOrigen']||'—'} · 📅 ${r['Fecha']||'—'}</div>
+          <div class="prod-hist-detail" style="color:#999;">👤 ${r['Personal']||'—'}</div>
+        </div>
+        <div style="text-align:right;">
+          <div style="font-weight:700;color:${color};">${Number(r['Piezas']||0).toLocaleString('es-MX')} pz</div>
+          <div style="font-size:11px;color:#999;">${Number(r['KgProducidos']||0).toLocaleString('es-MX')} kg prod</div>
+          <div style="font-size:11px;color:#999;">${Number(r['KgConsumidosGranel']||0).toLocaleString('es-MX')} kg cons</div>
+          <div style="font-size:11px;font-weight:600;color:${color};margin-top:2px;">${estado}</div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
 }
 
 function qrBannerAccion() {
