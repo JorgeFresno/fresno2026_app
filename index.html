@@ -735,8 +735,8 @@
     </div>
 
     <div style="display:flex;flex-direction:column;gap:10px;margin-top:4px;">
-      <button class="scan-btn" onclick="document.getElementById('qrFileInput').click()">📷 Escanear QR</button>
-      <button class="scan-btn-secondary" onclick="document.getElementById('qrFileInput').click()">🖼️ Seleccionar imagen</button>
+      <button class="scan-btn" onclick="triggerScanner()">📷 Escanear QR</button>
+      <button class="scan-btn-secondary" onclick="triggerScanner()">🖼️ Seleccionar imagen</button>
     </div>
 
     <div style="margin-top:16px;background:#f9f9f9;border-radius:12px;padding:14px;">
@@ -1642,17 +1642,10 @@ function openPedidoDetalle(folio) {
 }
 
 function abrirTicketDesdePedido(folio) {
-  // Cerrar modal pedido primero, luego abrir ticket
   const modal = document.getElementById('pedDetModalOverlay');
   modal.classList.remove('open');
-  // Esperar a que termine la animación de cierre antes de abrir ticket
-  const abrir = () => {
-    generarTicket(folio);
-    modal.removeEventListener('transitionend', abrir);
-  };
-  modal.addEventListener('transitionend', abrir, { once: true });
-  // Fallback por si transitionend no dispara en móvil
-  setTimeout(() => generarTicket(folio), 400);
+  // Un solo setTimeout, simple y confiable en iOS
+  setTimeout(() => generarTicket(folio), 350);
 }
 
 function closePedDetModal(e) {
@@ -2649,6 +2642,13 @@ function imprimirTicket() {
 let scannerActivo = false; // kept for navTo compatibility
 
 function detenerScanner() { scannerActivo = false; }
+
+function triggerScanner() {
+  const input = document.getElementById('qrFileInput');
+  if (!input) { showToast('❌ Error: input no encontrado', 'error'); return; }
+  input.value = ''; // reset para poder escanear mismo QR de nuevo
+  input.click();
+}
 
 function procesarImagenQR(input) {
   const file = input.files[0];
