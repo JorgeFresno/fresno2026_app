@@ -949,7 +949,11 @@
 <div class="page" id="page-mas">
   <div class="content">
     <div class="section-title">Más opciones</div>
-    <div class="action-card"><div class="action-icon icon-green">⚙️</div><div class="action-body"><div class="action-title">Configuración</div><div class="action-sub">Usuarios, permisos, catálogos</div></div><div class="action-arrow">›</div></div>
+    <div class="action-card" onclick="abrirCatalogos()"><div class="action-icon icon-green">⚙️</div><div class="action-body"><div class="action-title">Configuración</div><div class="action-sub">Usuarios, permisos, catálogos</div></div><div class="action-arrow">›</div></div>
+    <div class="action-card" onclick="abrirCatalogos('vendedores')"><div class="action-icon" style="background:#EAF5EA;">👤</div><div class="action-body"><div class="action-title">Catálogo Vendedores</div><div class="action-sub" id="catCountVendedores">Cargando...</div></div><div class="action-arrow">›</div></div>
+    <div class="action-card" onclick="abrirCatalogos('clientes')"><div class="action-icon" style="background:#E3F2FD;">🏢</div><div class="action-body"><div class="action-title">Catálogo Clientes</div><div class="action-sub" id="catCountClientes">Cargando...</div></div><div class="action-arrow">›</div></div>
+    <div class="action-card" onclick="abrirCatalogos('proveedores')"><div class="action-icon" style="background:#FFF8E1;">🚚</div><div class="action-body"><div class="action-title">Catálogo Proveedores</div><div class="action-sub" id="catCountProveedores">Cargando...</div></div><div class="action-arrow">›</div></div>
+    <div class="action-card" onclick="abrirCatalogos('productos')"><div class="action-icon" style="background:#F3E5F5;">📦</div><div class="action-body"><div class="action-title">Catálogo Productos</div><div class="action-sub" id="catCountProductos">Cargando...</div></div><div class="action-arrow">›</div></div>
     <div class="action-card"><div class="action-icon icon-blue">📊</div><div class="action-body"><div class="action-title">Reportes</div><div class="action-sub">Exportar y consultar datos</div></div><div class="action-arrow">›</div></div>
     <div class="action-card"><div class="action-icon icon-orange">🏭</div><div class="action-body"><div class="action-title">Control Producción</div><div class="action-sub">Movimiento siamés automático</div></div><div class="action-arrow">›</div></div>
     <div id="userInfoCard" style="background:#f9f9f9;border-radius:16px;padding:16px;margin-top:8px;">
@@ -962,6 +966,23 @@
       <div class="action-body"><div class="action-title" style="color:#E53935;">Cerrar sesión</div><div class="action-sub">Volver a la pantalla de inicio</div></div>
       <div class="action-arrow" style="color:#E53935;">›</div>
     </div>
+  </div>
+</div>
+
+<!-- MODAL CATÁLOGOS -->
+<div class="modal-overlay" id="catalogosModalOverlay">
+  <div class="modal-sheet" style="max-height:85vh;display:flex;flex-direction:column;">
+    <div class="modal-header" style="display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--border);flex-shrink:0;">
+      <div style="font-weight:700;font-size:16px;" id="catalogosModalTitle">Catálogo</div>
+      <button onclick="cerrarCatalogos()" style="background:none;border:none;font-size:22px;cursor:pointer;color:#888;">✕</button>
+    </div>
+    <!-- Search + Add -->
+    <div style="padding:12px 16px;border-bottom:1px solid var(--border);flex-shrink:0;display:flex;gap:8px;">
+      <input class="form-input" id="catSearch" placeholder="🔍 Buscar..." oninput="renderCatList()" style="flex:1;margin:0;">
+      <button onclick="agregarItemCatalogo()" style="background:var(--green-dark);color:white;border:none;border-radius:10px;padding:0 16px;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;">+ Agregar</button>
+    </div>
+    <!-- List -->
+    <div id="catListContainer" style="overflow-y:auto;flex:1;padding:8px 0;"></div>
   </div>
 </div>
 
@@ -1390,6 +1411,132 @@ async function loadMovimientos() {
   } catch(e) {
     document.getElementById('movContainer').innerHTML = `<div class="empty-state">⚠️ Error al cargar movimientos.</div>`;
   }
+}
+
+async function loadVendedoresSheet() {
+  try {
+    const table = await fetchSheet('Vendedores');
+    window._rawVendedores = tableToObjects(table);
+    buildCatalogos();
+  } catch(e) { console.log('loadVendedores:', e); }
+}
+async function loadClientesSheet() {
+  try {
+    const table = await fetchSheet('Clientes');
+    window._rawClientes = tableToObjects(table);
+    buildCatalogos();
+  } catch(e) { console.log('loadClientes:', e); }
+}
+async function loadProveedoresSheet() {
+  try {
+    const table = await fetchSheet('Proveedores');
+    window._rawProveedores = tableToObjects(table);
+    buildCatalogos();
+  } catch(e) { console.log('loadProveedores:', e); }
+}
+async function loadProductosSheet() {
+  try {
+    const table = await fetchSheet('Productos');
+    window._rawProductos = tableToObjects(table);
+    buildCatalogos();
+  } catch(e) { console.log('loadProductos:', e); }
+}
+
+// ═══════════════════════════════════════
+//  CATÁLOGOS
+// ═══════════════════════════════════════
+let catalogoActivo = 'vendedores'; // vendedores | clientes | proveedores | productos
+
+const CATALOGO_CONFIG = {
+  vendedores:  { label: 'Vendedores',  icon: '👤', sheet: 'Vendedores',  col: 'VENDEDORES', list: () => catVendedores  },
+  clientes:    { label: 'Clientes',    icon: '🏢', sheet: 'Clientes',    col: 'Cliente',    list: () => catClientes    },
+  proveedores: { label: 'Proveedores', icon: '🚚', sheet: 'Proveedores', col: 'Proveedor',  list: () => catProveedores },
+  productos:   { label: 'Productos',   icon: '📦', sheet: 'Productos',   col: 'ClaveProducto', list: () => catProductos.map(p => p.clave + ' — ' + p.nombre) },
+};
+
+function abrirCatalogos(tipo) {
+  catalogoActivo = tipo || 'vendedores';
+  const cfg = CATALOGO_CONFIG[catalogoActivo];
+  document.getElementById('catalogosModalTitle').textContent = cfg.icon + ' ' + cfg.label;
+  document.getElementById('catSearch').value = '';
+  renderCatList();
+  document.getElementById('catalogosModalOverlay').classList.add('open');
+}
+
+function cerrarCatalogos() {
+  document.getElementById('catalogosModalOverlay').classList.remove('open');
+}
+
+function renderCatList() {
+  const cfg  = CATALOGO_CONFIG[catalogoActivo];
+  const q    = document.getElementById('catSearch').value.toLowerCase().trim();
+  const list = cfg.list();
+  const items = typeof list[0] === 'string' ? list : list.map(p => p.clave + ' — ' + p.nombre);
+  const filtered = q ? items.filter(i => i.toLowerCase().includes(q)) : items;
+  const container = document.getElementById('catListContainer');
+  if (!filtered.length) {
+    container.innerHTML = '<div style="text-align:center;padding:32px;color:#aaa;font-size:13px;">Sin resultados</div>';
+    return;
+  }
+  container.innerHTML = filtered.map((item, i) => `
+    <div style="display:flex;align-items:center;padding:11px 16px;border-bottom:1px solid #f5f5f5;gap:10px;">
+      <div style="flex:1;font-size:13px;">${cfg.icon} ${item}</div>
+    </div>
+  `).join('');
+}
+
+async function agregarItemCatalogo() {
+  const cfg = CATALOGO_CONFIG[catalogoActivo];
+  let valor = '';
+  if (catalogoActivo === 'productos') {
+    const clave = prompt('Clave del producto (ej. AR1EF):');
+    if (!clave?.trim()) return;
+    const nombre = prompt('Nombre/Descripción:');
+    if (!nombre?.trim()) return;
+    const tipo = prompt('Tipo (Granel / PT / Maquila):') || 'PT';
+    const unidad = prompt('Unidad (kg / pz):') || 'pz';
+    valor = clave.trim().toUpperCase();
+    // Save to Sheets
+    await fetch(APPS_SCRIPT_URL, {
+      method: 'POST', mode: 'no-cors',
+      headers: { 'Content-Type': 'text/plain' },
+      body: JSON.stringify({
+        accion: 'agregarCatalogo',
+        hoja: cfg.sheet,
+        fila: [clave.trim().toUpperCase(), nombre.trim().toUpperCase(), unidad.trim(), tipo.trim(), 'OK', new Date().toLocaleDateString('es-MX')]
+      })
+    });
+    catProductos.push({ clave: clave.trim().toUpperCase(), nombre: nombre.trim().toUpperCase(), unidad, tipo });
+  } else {
+    valor = prompt(`Nombre del nuevo ${cfg.label.slice(0,-1)}:`);
+    if (!valor?.trim()) return;
+    valor = valor.trim().toUpperCase();
+    // Save to Sheets
+    await fetch(APPS_SCRIPT_URL, {
+      method: 'POST', mode: 'no-cors',
+      headers: { 'Content-Type': 'text/plain' },
+      body: JSON.stringify({
+        accion: 'agregarCatalogo',
+        hoja: cfg.sheet,
+        fila: [valor]
+      })
+    });
+    // Update local list
+    if (catalogoActivo === 'vendedores')  { catVendedores.push(valor);  VENDEDORES_LIST.push(valor); }
+    if (catalogoActivo === 'clientes')    catClientes.push(valor);
+    if (catalogoActivo === 'proveedores') catProveedores.push(valor);
+  }
+  showToast('✅ ' + valor + ' agregado — sincroniza para confirmar', 'success');
+  renderCatList();
+  actualizarContadoresCatalogos();
+}
+
+function actualizarContadoresCatalogos() {
+  const el = (id, txt) => { const e = document.getElementById(id); if(e) e.textContent = txt; };
+  el('catCountVendedores',  catVendedores.length  + ' vendedores');
+  el('catCountClientes',    catClientes.length    + ' clientes');
+  el('catCountProveedores', catProveedores.length + ' proveedores');
+  el('catCountProductos',   catProductos.length   + ' productos');
 }
 
 async function loadAgenda() {
@@ -1840,7 +1987,11 @@ async function despacharPedido(folio) {
     showToast('🚀 Pedido ' + folio + ' despachado', 'success');
     
     // Recargar agenda desde Sheets para reflejar el verde
-    setTimeout(() => { loadAgenda(); }, 3000);
+    setTimeout(() => { loadAgenda();
+  loadVendedoresSheet();
+  loadClientesSheet();
+  loadProveedoresSheet();
+  loadProductosSheet(); }, 3000);
 
     // Abrir ticket automáticamente
     setTimeout(() => generarTicket(folio), 400);
@@ -2493,6 +2644,51 @@ function navTo(page) {
 // ==========================================
 //  SYNC
 // ==========================================
+async function loadCatalogos() {
+  try {
+    const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json`;
+    const r = await fetch(url);
+    const txt = await r.text();
+    const json = JSON.parse(txt.match(/google\.visualization\.Query\.setResponse\(([\s\S]*)\)/)[1]);
+    // already loaded via main sync — catalogs built from allRawData
+  } catch(e) { console.log('Catálogos:', e); }
+}
+
+// Build catalogs from already-loaded sheet data
+function buildCatalogos() {
+  // Vendedores
+  if (window._rawVendedores) {
+    catVendedores = window._rawVendedores
+      .map(r => (r['VENDEDORES'] || r['Vendedor'] || r['vendedor'] || '').toString().trim())
+      .filter(v => v && v !== 'VENDEDORES');
+    if (catVendedores.length) {
+      // Sync to autocomplete list
+      VENDEDORES_LIST.length = 0;
+      catVendedores.forEach(v => VENDEDORES_LIST.push(v));
+    }
+  }
+  // Clientes
+  if (window._rawClientes) {
+    catClientes = window._rawClientes
+      .map(r => (r['Cliente'] || r['CLIENTE'] || '').toString().trim())
+      .filter(v => v && v !== 'Cliente');
+  }
+  // Proveedores
+  if (window._rawProveedores) {
+    catProveedores = window._rawProveedores
+      .map(r => (r['Proveedor'] || r['PROVEEDOR'] || '').toString().trim())
+      .filter(v => v && v !== 'Proveedor');
+  }
+  // Productos
+  if (window._rawProductos) {
+    catProductos = window._rawProductos
+      .map(r => ({ clave: r['ClaveProducto']||'', nombre: r['Descripcion']||'', unidad: r['Unidad_base']||'', tipo: r['Tipo_producto']||'' }))
+      .filter(p => p.clave);
+  }
+  console.log(`Catálogos: ${catVendedores.length} vendedores, ${catClientes.length} clientes, ${catProveedores.length} proveedores, ${catProductos.length} productos`);
+  actualizarContadoresCatalogos();
+}
+
 async function syncData() {
   document.getElementById('productsContainer').innerHTML = '<div class="loading-state"><div class="loading-spinner"></div>Sincronizando...</div>';
   document.getElementById('agendaContainer').innerHTML = '<div class="loading-state"><div class="loading-spinner"></div>Cargando pedidos...</div>';
@@ -2808,6 +3004,14 @@ function detenerScanner() { scannerActivo = false; }
 // ==========================================
 //  BUSCADOR UNIVERSAL
 // ==========================================
+// ── Catálogos dinámicos (se cargan desde Sheets al sincronizar) ──
+let catVendedores   = [];
+let catClientes     = [];
+let catProveedores  = [];
+let catProductos    = [];   // todos los productos (Productos)
+let catGranel       = [];   // Producto_Granel
+let catPT           = [];   // Producto_Terminado
+
 // Vendedores del sistema
 const VENDEDORES_LIST = [
   'ABRAHAM','ALEJANDRO MEJIA','ALFONSO RAMIREZ','ANGEL ALARCON',
