@@ -3136,23 +3136,23 @@ const _origSetFilter = typeof setFilter === 'function' ? setFilter : null;
 
 async function loadUbicaciones() {
   try {
-    const rows = await fetchSheet('Inventario_Ubicaciones');
-    // Rows have headers in row 4: ClaveProducto, Descripcion, UnidadBase, BN, B2, T1...
-    // fetchSheet already parses headers from row 4
+    const table = await fetchSheet('Inventario_Ubicaciones');
+    const fixed = fixFirstHeader(table, 'ClaveProducto');
+    const rows  = tableToObjects(fixed);
+    const skip  = ['ClaveProducto','Descripcion','UnidadBase','Total_ubicaciones','Es_Pieza',''];
     allUbicaciones = rows.map(r => {
       const ubics = {};
-      // All columns except ClaveProducto, Descripcion, UnidadBase, Total_ubicaciones, Es_Pieza
-      const skip = ['ClaveProducto','Descripcion','UnidadBase','Total_ubicaciones','Es_Pieza'];
       Object.keys(r).forEach(k => {
-        if (!skip.includes(k)) ubics[k] = parseFloat(r[k] || 0);
+        if (!skip.includes(k.trim())) ubics[k] = parseFloat(r[k] || 0);
       });
       return {
-        clave:       r['ClaveProducto'] || '',
-        descripcion: r['Descripcion']   || '',
-        unidad:      r['UnidadBase']    || '',
+        clave:       String(r['ClaveProducto'] || '').trim(),
+        descripcion: String(r['Descripcion']   || '').trim(),
+        unidad:      String(r['UnidadBase']    || '').trim(),
         ubicaciones: ubics
       };
     }).filter(r => r.clave);
+    console.log('Ubicaciones cargadas:', allUbicaciones.length);
   } catch(e) {
     console.warn('No se pudo cargar Inventario_Ubicaciones', e);
   }
