@@ -38,6 +38,64 @@
   }
   * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
   body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text-primary); max-width: 430px; margin: 0 auto; min-height: 100vh; overflow-x: hidden; }
+
+  /* ── DESKTOP LAYOUT ── */
+  @media (min-width: 900px) {
+    body { max-width: 100%; background: #EAEFE6; }
+
+    /* Sidebar nav */
+    .bottom-nav {
+      position: fixed; top: 0; left: 0; bottom: 0;
+      width: 200px; max-width: 200px;
+      display: flex; flex-direction: column;
+      grid-template-columns: none;
+      padding: 0; border-top: none;
+      border-right: 1px solid var(--border);
+      background: white; z-index: 100;
+      box-shadow: 2px 0 8px rgba(0,0,0,0.06);
+    }
+    .nav-item {
+      flex-direction: row; gap: 10px;
+      padding: 14px 20px; justify-content: flex-start;
+      border-radius: 0; width: 100%;
+    }
+    .nav-item.active { background: #F1F8EE; border-left: 3px solid var(--green-dark); }
+    .nav-icon { font-size: 20px; }
+    .nav-label { font-size: 13px; font-weight: 600; }
+    .nav-badge { position: static; margin-left: auto; }
+
+    /* Header above sidebar */
+    .nav-logo-desktop {
+      padding: 20px 16px 12px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 8px;
+    }
+
+    /* Main content area */
+    .app-container {
+      margin-left: 200px;
+      max-width: 680px;
+      min-height: 100vh;
+    }
+
+    /* Header */
+    .app-header {
+      position: sticky; top: 0; z-index: 90;
+      max-width: 680px; left: 200px;
+    }
+
+    /* Pages */
+    .page { padding-bottom: 40px; }
+    .content { max-width: 680px; }
+
+    /* Modals */
+    .modal-sheet { max-width: 560px; margin: auto; border-radius: 20px; }
+    .modal-overlay { align-items: center; padding: 20px; }
+
+    /* Ticket */
+    .ticket-overlay { align-items: center; }
+    .ticket-container { max-width: 340px; border-radius: 20px; margin: auto; }
+  }
   
   /* HEADER */
   .header { background: var(--green-dark); padding: 16px 20px 14px; position: sticky; top: 0; z-index: 100; }
@@ -561,6 +619,7 @@
 </style>
 </head>
 <body>
+<div class="app-container">
 
 <!-- LOGIN SCREEN -->
 <div id="loginScreen">
@@ -899,7 +958,12 @@
 </div>
 
 <!-- BOTTOM NAV -->
+</div><!-- end app-container -->
 <nav class="bottom-nav">
+  <div class="nav-logo-desktop" style="display:none;" id="navLogoDesktop">
+    <img src="logo.png" style="height:36px;object-fit:contain;" onerror="this.style.display='none'">
+    <div style="font-size:11px;color:#888;margin-top:4px;">Sistema de Gestión</div>
+  </div>
   <div class="nav-item active" id="nav-inicio" onclick="navTo('inicio')"><div class="nav-icon">🏠</div><div class="nav-label">Inicio</div></div>
   <div class="nav-item" id="nav-agenda" onclick="navTo('agenda')"><div class="nav-icon">📋</div><div class="nav-label">Agenda</div><div class="nav-badge" id="navBadgeAgenda" style="display:none">0</div></div>
   <div class="nav-item" id="nav-inventario" onclick="navTo('inventario')"><div class="nav-icon">📦</div><div class="nav-label">Inventario</div></div>
@@ -2427,6 +2491,29 @@ function updateSyncTime() {
   });
 }
 
+function initDesktopLayout() {
+  if (window.innerWidth >= 900) {
+    // Show logo in sidebar
+    const logo = document.getElementById('navLogoDesktop');
+    if (logo) logo.style.display = 'block';
+    // Add spacer at bottom of nav for remaining space
+    const nav = document.querySelector('.bottom-nav');
+    if (nav && !document.getElementById('navSpacer')) {
+      const spacer = document.createElement('div');
+      spacer.id = 'navSpacer';
+      spacer.style.cssText = 'flex:1;';
+      // Add logout button at bottom of sidebar
+      const logoutBtn = document.createElement('div');
+      logoutBtn.className = 'nav-item';
+      logoutBtn.style.cssText = 'border-top:1px solid var(--border);margin-top:auto;color:#E53935;';
+      logoutBtn.innerHTML = '<div class="nav-icon">🚪</div><div class="nav-label" style="color:#E53935;">Cerrar sesión</div>';
+      logoutBtn.onclick = cerrarSesion;
+      nav.appendChild(spacer);
+      nav.appendChild(logoutBtn);
+    }
+  }
+}
+
 function updateDate() {
   const now = new Date();
   const dias = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
@@ -3023,6 +3110,9 @@ function aplicarLogin() {
   // Nombre en saludo inicio
   const welcomeName = document.getElementById('welcomeName');
   if (welcomeName) welcomeName.textContent = currentUser.nombre;
+
+  // Init desktop layout
+  initDesktopLayout();
 
   // Nombre en ticket captura
   const ticketCap = document.getElementById('ticketCaptura');
