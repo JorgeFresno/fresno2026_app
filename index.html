@@ -3242,8 +3242,8 @@ function renderUbicaciones() {
   container.innerHTML = lista.slice(0, 60).map(p => {
     const ubicsConValor = ubicsConStock.filter(u => (p.ubicaciones[u] || 0) !== 0);
     if (!ubicsConValor.length && !filtroUbic && q === '') return '';
-    return `<div style="background:white;border-radius:12px;padding:12px;margin-bottom:8px;border:1px solid var(--border);">
-      <div style="font-weight:700;font-size:13px;color:var(--green-dark);">${p.clave}</div>
+    return `<div onclick="openProdDetalle('${p.clave}')" style="background:white;border-radius:12px;padding:12px;margin-bottom:8px;border:1px solid var(--border);cursor:pointer;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2px;"><div style="font-weight:700;font-size:13px;color:var(--green-dark);">${p.clave}</div><div style="font-size:11px;color:#aaa;">Ver detalle ›</div></div>
       <div style="font-size:11px;color:#666;margin-bottom:6px;">${p.descripcion}</div>
       <div style="display:flex;flex-wrap:wrap;gap:6px;">
         ${ubicsConValor.map(u => {
