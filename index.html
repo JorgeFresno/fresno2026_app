@@ -42,17 +42,17 @@
   /* ── DESKTOP LAYOUT ── */
   @media (min-width: 900px) {
     body {
-      max-width: 100%;
+      max-width: 100% !important;
+      margin: 0 !important;
       background: #E8EDE4;
-      padding-left: 220px;
-      box-sizing: border-box;
     }
 
     /* Sidebar nav */
     .bottom-nav {
       position: fixed !important;
       top: 0; left: 0; bottom: 0;
-      width: 220px; max-width: 220px;
+      width: 220px !important;
+      max-width: 220px !important;
       display: flex !important;
       flex-direction: column !important;
       grid-template-columns: unset !important;
@@ -76,15 +76,28 @@
       box-sizing: border-box;
     }
     .nav-item:hover { background: #F5FAF3; }
-    .nav-item.active {
-      background: #EBF5E6 !important;
-      border-left: 4px solid var(--green-dark);
-    }
+    .nav-item.active { background: #EBF5E6 !important; border-left: 4px solid var(--green-dark); }
     .nav-item.active .nav-label { color: var(--green-dark) !important; }
     .nav-icon { font-size: 18px !important; min-width: 22px; text-align: center; }
     .nav-label { font-size: 13px !important; font-weight: 600 !important; }
     .nav-badge { position: static !important; margin-left: auto !important; }
     .nav-logo-desktop { display: flex !important; }
+
+    /* Content area - pushed right of sidebar */
+    .header {
+      position: fixed !important;
+      top: 0; left: 220px; right: 0;
+      z-index: 150;
+      max-width: none !important;
+    }
+    .page {
+      margin-left: 220px;
+      margin-top: 70px;
+      min-height: 100vh;
+      background: white;
+      max-width: none !important;
+    }
+    .content { max-width: 720px; margin: 0 auto; }
 
     /* Modals centered */
     .modal-overlay { align-items: center; padding: 24px; }
@@ -3493,7 +3506,7 @@ async function guardarProduccion() {
   showToast('⏳ Registrando producción...', '');
 
   try {
-    await fetch(APPS_SCRIPT_URL, {
+    const resp = await fetch(APPS_SCRIPT_URL, {
       method: 'POST',
       mode: 'no-cors',
       headers: { 'Content-Type': 'text/plain' },
@@ -3522,10 +3535,24 @@ async function guardarProduccion() {
       })
     });
 
-    // Actualizar local
-    allProd.push({ idprod, fecha: fechaFmt, ptClave, granelClave, piezas, kgCons, ubicOrigen, ubicDest, personal });
+    // Con no-cors no podemos leer respuesta, pero si llegamos aquí sin excepción el POST se envió
+    allProd.push({
+      IDPROD: idprod,
+      Fecha: fechaFmt,
+      ClaveProductoTerminado: ptClave,
+      ProductoTerminado: ptProd?.nombre || ptClave,
+      ClaveGranelOrigen: granelClave,
+      ProductoGranelOrigen: granelProd?.nombre || granelClave,
+      Piezas: piezas,
+      KgProducidos: kgProd,
+      KgConsumidosGranel: kgCons,
+      UbicacionOrigen: ubicOrigen,
+      UbicacionDestino: ubicDest,
+      Personal: personal,
+      Estado: 'OK'
+    });
 
-    showToast('✅ ' + idprod + ' registrado', 'success');
+    showToast('✅ ' + idprod + ' enviado — verifica en Sheets', 'success');
 
     // Resetear form
     document.getElementById('prodPiezas').value   = '';
@@ -3559,11 +3586,13 @@ async function loadProdHistorial() {
   const container = document.getElementById('prodHistContainer');
   container.innerHTML = '<div class="loading-state"><div class="loading-spinner"></div>Cargando...</div>';
   try {
-    const rows = await fetchSheet('Control_Produccion');
-    allProd = rows;
+    const table = await fetchSheet('Control_Produccion');
+    const fixed = fixFirstHeader(table, 'Fecha');
+    allProd = tableToObjects(fixed);
     renderProdHistorial();
   } catch(e) {
-    container.innerHTML = '<div class="empty-state">Error al cargar historial</div>';
+    console.error('Error loadProdHistorial:', e);
+    container.innerHTML = '<div class="empty-state">Sin registros aún</div>';
   }
 }
 
