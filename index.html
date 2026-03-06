@@ -2809,7 +2809,18 @@ function detenerScanner() { scannerActivo = false; }
 //  BUSCADOR UNIVERSAL
 // ==========================================
 // Vendedores del sistema
-const VENDEDORES_LIST = ['Jorge Dávalos', 'Griselda Santoya', 'Gloria Vázquez', 'Daniel Hernández', 'Alfredo Dávalos', 'Ignacio Sámano', 'Emmanuel Ramírez'];
+const VENDEDORES_LIST = [
+  'ABRAHAM','ALEJANDRO MEJIA','ALFONSO RAMIREZ','ANGEL ALARCON',
+  'ARCADIO VALENCIA','ARTURO OLIVARES','CASA','DANIEL GODINEZ',
+  'DAVID CRUZ','EL VALENCIANO','EMMANUEL RAMIREZ','ENRIQUE CRUZ',
+  'FERNANDO LONGORIA','FRANCISCO MURGUIA','FRANCISCO RECHY',
+  'GERARDO GARCIA','IGNACIO ESTEVEZ','JOEL VAZQUEZ','JOSE RIOS',
+  'MAGDALENA AGUILAR G.','MARIBEL MENDOZA','OSCAR VEGA',
+  'PABLO RODOLFO PARDO','ROBERTO HERNANDEZ','ROCIO RIVERA',
+  'SEBASTIAN TORRES','SR. ALFREDO DAVALOS','SR. IGNACIO SAMANO',
+  'VALENCIANO','VICTORIA FLORES','VIRIDIANA URBANO','YAZMIN SERRANO',
+  'VENTA MOSTRADOR','MESA DESPENSAS','MIGUEL MORA','ALVARO TREJO'
+];
 
 function buscarVendedor() {
   const q = (document.getElementById('npVendedor')?.value || '').toLowerCase().trim();
