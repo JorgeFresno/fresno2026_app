@@ -1030,9 +1030,11 @@
         <input type="hidden" id="npCliente">
       </div>
 
-      <div class="form-group">
+      <div class="form-group" style="position:relative;">
         <div class="form-label">Vendedor</div>
-        <input class="form-input" id="npVendedor" type="text" placeholder="Nombre del vendedor">
+        <input class="form-input" id="npVendedor" type="text" placeholder="Selecciona o escribe vendedor..."
+          oninput="buscarVendedor()" onfocus="buscarVendedor()" autocomplete="off">
+        <div id="vendedorSuggestions" style="display:none;position:absolute;left:0;right:0;background:white;border:1.5px solid var(--green-dark);border-radius:12px;z-index:300;box-shadow:0 4px 16px rgba(0,0,0,0.12);overflow:hidden;margin-top:2px;"></div>
       </div>
 
       <div class="form-row">
@@ -1801,7 +1803,14 @@ async function cambiarEstadoPedido(folio, nuevoEstado) {
 }
 
 async function despacharPedido(folio) {
-  if (!confirm('¿Despachar TODOS los productos del pedido ' + folio + '?\n\nEsto marcará todas las líneas como Despachado en Google Sheets.')) return;
+  // Pedir lote y caducidad antes de despachar
+  const lote = prompt('📦 Lote / Caducidad para el despacho de ' + folio + ':\n(Ej: 102FN1 JUN 27)');
+  if (lote === null) return; // canceló
+  if (!lote.trim()) {
+    showToast('❌ El lote/caducidad es obligatorio para despachar', 'error');
+    return;
+  }
+  if (!confirm('¿Despachar TODOS los productos del pedido ' + folio + '?\nLote: ' + lote)) return;
 
   showToast('⏳ Despachando pedido...', '');
   try {
@@ -1811,7 +1820,8 @@ async function despacharPedido(folio) {
       headers: { 'Content-Type': 'text/plain' },
       body: JSON.stringify({
         accion: 'despacharPedido',
-        PedidoRQF: folio
+        PedidoRQF: folio,
+        LoteCaducidad: lote.trim()
       })
     });
 
@@ -1850,7 +1860,7 @@ function openNuevoPedidoModal() {
   document.getElementById('npClienteSearch').value = '';
   document.getElementById('npCliente').value = '';
   document.getElementById('npClienteSug').style.display = 'none';
-  document.getElementById('npVendedor').value = '';
+  document.getElementById('npVendedor').value = currentUser?.nombre || '';
   document.getElementById('npEstado').value = 'Pendiente';
   document.getElementById('npPrioridad').value = '';
   document.getElementById('npObs').value = '';
@@ -2798,6 +2808,39 @@ function detenerScanner() { scannerActivo = false; }
 // ==========================================
 //  BUSCADOR UNIVERSAL
 // ==========================================
+// Vendedores del sistema
+const VENDEDORES_LIST = ['Jorge Dávalos', 'Griselda Santoya', 'Gloria Vázquez', 'Daniel Hernández', 'Alfredo Dávalos', 'Ignacio Sámano', 'Emmanuel Ramírez'];
+
+function buscarVendedor() {
+  const q = (document.getElementById('npVendedor')?.value || '').toLowerCase().trim();
+  const sugg = document.getElementById('vendedorSuggestions');
+  if (!sugg) return;
+  const matches = q
+    ? VENDEDORES_LIST.filter(v => v.toLowerCase().includes(q))
+    : VENDEDORES_LIST;
+  if (!matches.length) { sugg.style.display = 'none'; return; }
+  sugg.innerHTML = matches.map(v =>
+    `<div onclick="selectVendedor('${v}')"
+      style="padding:11px 16px;cursor:pointer;font-size:13px;border-bottom:1px solid #f0f0f0;">
+      👤 ${v}
+    </div>`
+  ).join('');
+  sugg.style.display = 'block';
+}
+
+function selectVendedor(nombre) {
+  document.getElementById('npVendedor').value = nombre;
+  document.getElementById('vendedorSuggestions').style.display = 'none';
+}
+
+// Cerrar sugerencias vendedor al tocar fuera
+document.addEventListener('click', e => {
+  if (!e.target.closest('#vendedorSuggestions') && e.target.id !== 'npVendedor') {
+    const s = document.getElementById('vendedorSuggestions');
+    if (s) s.style.display = 'none';
+  }
+});
+
 function busquedaUniversal() {
   const q = (document.getElementById('busquedaInput')?.value || '').toLowerCase().trim();
   const container = document.getElementById('busquedaResultados');
