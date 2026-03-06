@@ -1594,7 +1594,24 @@ function openPedidoDetalle(folio) {
           <div class="linea-det-lab">Faltante</div>
         </div>`}
       </div>
-      ${l.observaciones ? `<div style="font-size:11px;color:var(--text-muted);margin-top:8px;">📝 ${l.observaciones}</div>` : ''}
+      ${l.observaciones ? `<div style="font-size:11px;color:var(--text-muted);margin-top:6px;">📝 ${l.observaciones}</div>` : ''}
+      ${(() => {
+        const ubicProd = allUbicaciones.find(u => u.clave === l.clave);
+        if (!ubicProd) return '';
+        const skip = ['Total_ubicaciones','Es_Pieza',''];
+        const conStock = Object.entries(ubicProd.ubicaciones)
+          .filter(([k, v]) => !skip.includes(k) && v > 0)
+          .sort((a, b) => b[1] - a[1]);
+        if (!conStock.length) return '<div style="font-size:11px;color:#E53935;margin-top:6px;">⚠️ Sin stock en ubicaciones</div>';
+        return '<div style="margin-top:8px;"><div style="font-size:10px;font-weight:700;color:#888;margin-bottom:4px;">📍 UBICACIONES</div>' +
+          '<div style="display:flex;flex-wrap:wrap;gap:5px;">' +
+          conStock.map(([ubic, val]) =>
+            `<div style="background:#E8F5E9;border-radius:8px;padding:4px 8px;font-size:11px;">
+              <span style="color:#555;font-weight:600;">${ubic}</span>
+              <span style="color:#2D5A1B;font-weight:800;margin-left:4px;">${val.toLocaleString('es-MX')} ${ubicProd.unidad||''}</span>
+            </div>`
+          ).join('') + '</div></div>';
+      })()}
     </div>`;
   }).join('');
 
