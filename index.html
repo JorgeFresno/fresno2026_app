@@ -802,11 +802,10 @@
           <div id="prodGranelSuggestions" style="display:none;position:absolute;left:0;right:0;background:white;border:1.5px solid var(--green-dark);border-radius:12px;z-index:200;max-height:180px;overflow-y:auto;box-shadow:0 4px 16px rgba(0,0,0,0.12);margin-top:2px;"></div>
         </div>
         <div class="prod-field">
-          <label class="prod-label">Tolva / Ubicación origen</label>
-          <select class="prod-select" id="prodUbicOrigen" onchange="onGranelUbicChange()">
+          <select id="prodUbicOrigen" style="display:none;">
             <option value="">— Seleccionar —</option>
           </select>
-          <div id="prodStockUbicBadge" style="display:none;border-radius:10px;padding:8px 12px;font-size:12px;font-weight:600;margin-top:6px;"></div>
+          <div id="prodStockUbicBadge" style="display:none;border-radius:12px;padding:10px 12px;margin-top:6px;"></div>
         </div>
       </div>
 
@@ -3187,22 +3186,55 @@ function getStockEnUbicacion(clave, ubicacion) {
 }
 
 function onGranelUbicChange() {
-  const clave  = document.getElementById('prodGranelOrigen').value;
-  const ubic   = document.getElementById('prodUbicOrigen').value;
-  const badge  = document.getElementById('prodStockUbicBadge');
+  const clave = document.getElementById('prodGranelOrigen').value;
+  const badge = document.getElementById('prodStockUbicBadge');
   if (!badge) return;
-  if (clave && ubic) {
-    const stock = getStockEnUbicacion(clave, ubic);
-    if (stock !== null) {
-      badge.textContent = '📦 Stock en ' + ubic + ': ' + stock.toLocaleString('es-MX') + ' kg';
-      badge.style.display = 'block';
-      badge.style.background = stock > 0 ? '#E8F5E9' : '#FDECEA';
-      badge.style.color = stock > 0 ? '#2D5A1B' : '#E53935';
-    } else {
-      badge.style.display = 'none';
-    }
-  } else {
-    badge.style.display = 'none';
+  if (!clave) { badge.style.display = 'none'; return; }
+
+  const ubicProd = allUbicaciones.find(u => u.clave === clave);
+  if (!ubicProd) { badge.style.display = 'none'; return; }
+
+  const skip = ['Total_ubicaciones','Es_Pieza',''];
+  const conStock = Object.entries(ubicProd.ubicaciones)
+    .filter(([k, v]) => !skip.includes(k) && v > 0)
+    .sort((a, b) => b[1] - a[1]);
+
+  if (!conStock.length) {
+    badge.innerHTML = '<span style="color:#E53935;">⚠️ Sin stock en ninguna tolva</span>';
+    badge.style.display = 'block';
+    badge.style.background = '#FDECEA';
+    return;
+  }
+
+  badge.style.background = '#F1F8E9';
+  badge.style.display = 'block';
+  badge.innerHTML = '<div style="font-size:10px;font-weight:700;color:#555;margin-bottom:6px;">📍 TOCA LA TOLVA A USAR</div>' +
+    '<div style="display:flex;flex-wrap:wrap;gap:6px;">' +
+    conStock.map(([ubic, val]) => `
+      <div onclick="seleccionarTolva('${ubic}')"
+        style="background:white;border:2px solid #C8E6C9;border-radius:10px;padding:6px 12px;cursor:pointer;font-size:12px;transition:all 0.15s;"
+        id="tolvaChip_${ubic}">
+        <div style="font-weight:800;color:#2D5A1B;">${ubic}</div>
+        <div style="color:#555;font-size:11px;">${val.toLocaleString('es-MX')} ${ubicProd.unidad||'kg'}</div>
+      </div>`).join('') +
+    '</div>';
+}
+
+function seleccionarTolva(ubic) {
+  // Actualizar select oculto
+  const sel = document.getElementById('prodUbicOrigen');
+  if (sel) sel.value = ubic;
+
+  // Highlight chip seleccionado
+  document.querySelectorAll('[id^="tolvaChip_"]').forEach(chip => {
+    chip.style.background = 'white';
+    chip.style.borderColor = '#C8E6C9';
+  });
+  const chip = document.getElementById('tolvaChip_' + ubic);
+  if (chip) {
+    chip.style.background = '#2D5A1B';
+    chip.style.borderColor = '#2D5A1B';
+    chip.querySelectorAll('div').forEach(d => d.style.color = 'white');
   }
 }
 
