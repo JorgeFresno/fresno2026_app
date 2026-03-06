@@ -2309,6 +2309,27 @@ function openProdDetalle(clave) {
     if (fv&&typeof fv==='string'&&fv.startsWith('Date(')) { const parts=fv.replace('Date(','').replace(')','').split(',').map(Number); fechaStr=`${String(parts[2]).padStart(2,'0')}/${String(parts[1]+1).padStart(2,'0')}/${parts[0]}`; }
     return `<div class="prod-det-mov"><div class="prod-det-mov-icon ${esEntrada?'icon-green':'icon-orange'}">${icon}</div><div class="prod-det-mov-body"><div class="prod-det-mov-tipo">${tipo}</div><div class="prod-det-mov-fecha">${fechaStr}</div></div><div class="prod-det-mov-qty ${esEntrada?'pos':'neg'}">${esEntrada?'+':'-'}${qty}</div></div>`;
   }).join('') : '<div class="empty-state" style="padding:20px">Sin movimientos</div>';
+  // Ubicaciones con stock > 0
+  const ubicProd = allUbicaciones.find(u => u.clave === clave);
+  let ubicHTML = '';
+  if (ubicProd && Object.keys(ubicProd.ubicaciones).length) {
+    const skip = ['Total_ubicaciones','Es_Pieza'];
+    const conStock = Object.entries(ubicProd.ubicaciones)
+      .filter(([k, v]) => !skip.includes(k) && v > 0)
+      .sort((a, b) => b[1] - a[1]);
+    if (conStock.length) {
+      ubicHTML = `
+        <div class="section-title" style="margin-top:4px;">📍 Ubicaciones con stock</div>
+        <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px;">
+          ${conStock.map(([ubic, val]) => `
+            <div style="background:#E8F5E9;border-radius:10px;padding:6px 12px;font-size:12px;">
+              <span style="color:#555;font-weight:600;">${ubic}</span>
+              <span style="color:#2D5A1B;font-weight:800;margin-left:6px;">${formatNum(val)} ${ubicProd.unidad||''}</span>
+            </div>`).join('')}
+        </div>`;
+    }
+  }
+
   document.getElementById('prodDetModalBody').innerHTML = `
     <div class="det-header"><div class="det-folio">${p.clave}</div><div class="det-tipo">${p.nombre}</div><div class="det-fecha">${isGranel?'⚖️ Granel':'📦 PT'}${p.gramaje?' · '+p.gramaje:''}</div></div>
     <div class="prod-det-kpis">
@@ -2317,6 +2338,7 @@ function openProdDetalle(clave) {
       <div class="prod-det-kpi"><div class="prod-det-kpi-val green">${formatNum(disponible)}</div><div class="prod-det-kpi-lab">Disponible</div></div>
       <div class="prod-det-kpi"><div class="prod-det-kpi-val blue">${formatNum(p.porProducir||0)}</div><div class="prod-det-kpi-lab">Por producir</div></div>
     </div>
+    ${ubicHTML}
     <div class="section-title" style="margin-top:4px">Últimos movimientos</div>
     <div style="display:flex;flex-direction:column;gap:8px">${movHTML}</div>`;
   document.getElementById('prodDetModalOverlay').classList.add('open');
