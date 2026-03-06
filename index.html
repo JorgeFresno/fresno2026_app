@@ -689,10 +689,28 @@
       <div class="filter-tab" onclick="setFilter('critico',this)">● Crítico</div>
       <div class="filter-tab" onclick="setFilter('empacado',this)">📦 Empac.</div>
       <div class="filter-tab" onclick="setFilter('granel',this)">⚖️ Granel</div>
+      <div class="filter-tab" onclick="mostrarUbicaciones(this)">📍 Ubic.</div>
     </div>
     <div class="search-bar">🔍 <input id="searchInput" type="text" placeholder="Buscar producto o clave..." oninput="renderProducts()"></div>
     <div id="productsContainer"><div class="loading-state"><div class="loading-spinner"></div>Cargando inventario...</div></div>
     <div id="lastSyncInv" class="last-sync"></div>
+
+    <!-- Panel Ubicaciones -->
+    <div id="panelUbicaciones" style="display:none;">
+      <div style="margin-bottom:12px;position:relative;">
+        <input id="ubicSearchInput" type="text" placeholder="🔍 Buscar producto..." 
+          oninput="renderUbicaciones()"
+          autocomplete="off" autocorrect="off" spellcheck="false"
+          style="width:100%;padding:12px 14px;border:1.5px solid var(--border);border-radius:12px;font-size:14px;font-family:'DM Sans',sans-serif;outline:none;box-sizing:border-box;">
+      </div>
+      <div style="margin-bottom:10px;">
+        <select id="ubicFiltroUbic" onchange="renderUbicaciones()" 
+          style="width:100%;padding:10px 14px;border:1.5px solid var(--border);border-radius:12px;font-size:13px;font-family:'DM Sans',sans-serif;outline:none;background:white;appearance:none;">
+          <option value="">— Todas las ubicaciones —</option>
+        </select>
+      </div>
+      <div id="ubicContainer"><div class="empty-state">Cargando...</div></div>
+    </div>
   </div>
 </div>
 
@@ -777,11 +795,11 @@
 
       <div class="prod-form-section">
         <div class="prod-section-title">🌾 Granel origen</div>
-        <div class="prod-field">
+        <div class="prod-field" style="position:relative;">
           <label class="prod-label">Producto granel</label>
-          <select class="prod-select" id="prodGranelOrigen" onchange="onGranelChange();onGranelUbicChange()">
-            <option value="">— Seleccionar —</option>
-          </select>
+          <input class="prod-input" id="prodGranelSearch" type="text" placeholder="Escribe clave o nombre..." oninput="buscarGranel()" autocomplete="off" autocorrect="off" spellcheck="false">
+          <input type="hidden" id="prodGranelOrigen">
+          <div id="prodGranelSuggestions" style="display:none;position:absolute;left:0;right:0;background:white;border:1.5px solid var(--green-dark);border-radius:12px;z-index:200;max-height:180px;overflow-y:auto;box-shadow:0 4px 16px rgba(0,0,0,0.12);margin-top:2px;"></div>
         </div>
         <div class="prod-field">
           <label class="prod-label">Tolva / Ubicación origen</label>
@@ -794,11 +812,11 @@
 
       <div class="prod-form-section">
         <div class="prod-section-title">📦 Producto terminado</div>
-        <div class="prod-field">
+        <div class="prod-field" style="position:relative;">
           <label class="prod-label">Producto terminado</label>
-          <select class="prod-select" id="prodPTOrigen" onchange="onPTChange()">
-            <option value="">— Seleccionar —</option>
-          </select>
+          <input class="prod-input" id="prodPTSearch" type="text" placeholder="Escribe clave o nombre..." oninput="buscarPT()" autocomplete="off" autocorrect="off" spellcheck="false">
+          <input type="hidden" id="prodPTOrigen">
+          <div id="prodPTSuggestions" style="display:none;position:absolute;left:0;right:0;background:white;border:1.5px solid var(--green-dark);border-radius:12px;z-index:200;max-height:180px;overflow-y:auto;box-shadow:0 4px 16px rgba(0,0,0,0.12);margin-top:2px;"></div>
         </div>
         <div class="prod-field">
           <label class="prod-label">Lote / Caducidad</label>
@@ -3037,6 +3055,85 @@ function setProdTab(tab) {
   if (tab === 'historial') loadProdHistorial();
 }
 
+// ==========================================
+//  INVENTARIO UBICACIONES
+// ==========================================
+function mostrarUbicaciones(tabEl) {
+  // Activar tab
+  document.querySelectorAll('#page-inventario .filter-tab').forEach(t => t.classList.remove('active'));
+  if (tabEl) tabEl.classList.add('active');
+  // Ocultar productos, mostrar ubicaciones
+  document.getElementById('productsContainer').style.display = 'none';
+  document.getElementById('searchInput').parentElement.style.display = 'none';
+  document.getElementById('panelUbicaciones').style.display = 'block';
+  // Poblar filtro de ubicaciones
+  const sel = document.getElementById('ubicFiltroUbic');
+  if (sel.options.length <= 1 && allUbicaciones.length > 0) {
+    const skip = ['ClaveProducto','Descripcion','UnidadBase','Total_ubicaciones','Es_Pieza'];
+    const ubics = Object.keys(allUbicaciones[0].ubicaciones).filter(k => !skip.includes(k));
+    ubics.forEach(u => {
+      const opt = document.createElement('option');
+      opt.value = u; opt.textContent = u;
+      sel.appendChild(opt);
+    });
+  }
+  renderUbicaciones();
+}
+
+function ocultarUbicaciones() {
+  document.getElementById('productsContainer').style.display = '';
+  document.getElementById('searchInput').parentElement.style.display = '';
+  document.getElementById('panelUbicaciones').style.display = 'none';
+}
+
+function renderUbicaciones() {
+  const container = document.getElementById('ubicContainer');
+  const q = (document.getElementById('ubicSearchInput')?.value || '').toLowerCase().trim();
+  const filtroUbic = document.getElementById('ubicFiltroUbic')?.value || '';
+  const skip = ['ClaveProducto','Descripcion','UnidadBase','Total_ubicaciones','Es_Pieza'];
+
+  let lista = allUbicaciones.filter(p => {
+    if (!p.clave) return false;
+    if (q && !p.clave.toLowerCase().includes(q) && !p.descripcion.toLowerCase().includes(q)) return false;
+    if (filtroUbic) {
+      const stock = p.ubicaciones[filtroUbic] || 0;
+      if (stock === 0) return false;
+    }
+    return true;
+  });
+
+  if (!lista.length) { container.innerHTML = '<div class="empty-state">Sin resultados</div>'; return; }
+
+  // Get ubicacion columns to show
+  const todasUbics = allUbicaciones.length > 0
+    ? Object.keys(allUbicaciones[0].ubicaciones).filter(k => !skip.includes(k))
+    : [];
+  const ubicsConStock = filtroUbic ? [filtroUbic] :
+    todasUbics.filter(u => lista.some(p => (p.ubicaciones[u] || 0) !== 0));
+
+  container.innerHTML = lista.slice(0, 60).map(p => {
+    const ubicsConValor = ubicsConStock.filter(u => (p.ubicaciones[u] || 0) !== 0);
+    if (!ubicsConValor.length && !filtroUbic && q === '') return '';
+    return `<div style="background:white;border-radius:12px;padding:12px;margin-bottom:8px;border:1px solid var(--border);">
+      <div style="font-weight:700;font-size:13px;color:var(--green-dark);">${p.clave}</div>
+      <div style="font-size:11px;color:#666;margin-bottom:6px;">${p.descripcion}</div>
+      <div style="display:flex;flex-wrap:wrap;gap:6px;">
+        ${ubicsConValor.map(u => {
+          const val = p.ubicaciones[u] || 0;
+          const color = val > 0 ? '#E8F5E9' : '#FFF3E0';
+          const textColor = val > 0 ? '#2D5A1B' : '#E65100';
+          return `<div style="background:${color};border-radius:8px;padding:4px 8px;font-size:11px;">
+            <span style="color:#666;">${u}:</span> <strong style="color:${textColor};">${val.toLocaleString('es-MX')} ${p.unidad||''}</strong>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>`;
+  }).filter(Boolean).join('');
+}
+
+// Override setFilter to hide ubicaciones panel when switching tabs
+const _origSetFilter = typeof setFilter === 'function' ? setFilter : null;
+
 async function loadUbicaciones() {
   try {
     const rows = await fetchSheet('Inventario_Ubicaciones');
@@ -3087,6 +3184,56 @@ function onGranelUbicChange() {
   }
 }
 
+function buscarGranel() {
+  const q = (document.getElementById('prodGranelSearch').value || '').toLowerCase().trim();
+  const sugg = document.getElementById('prodGranelSuggestions');
+  if (!q) { sugg.style.display = 'none'; return; }
+  const matches = allProducts.filter(p => p.tipo === 'granel' &&
+    (p.clave.toLowerCase().includes(q) || p.nombre.toLowerCase().includes(q))
+  ).slice(0, 8);
+  if (!matches.length) { sugg.style.display = 'none'; return; }
+  sugg.innerHTML = matches.map(p =>
+    `<div onclick="selectGranel('${p.clave}','${p.nombre.replace(/'/g,"\'")}')"
+      style="padding:10px 14px;cursor:pointer;border-bottom:1px solid #f0f0f0;font-size:13px;">
+      <div style="font-weight:700;color:var(--green-dark);">${p.clave}</div>
+      <div style="font-size:11px;color:#666;">${p.nombre} · ${formatNum(p.stockKg||0)} kg</div>
+    </div>`
+  ).join('');
+  sugg.style.display = 'block';
+}
+
+function selectGranel(clave, nombre) {
+  document.getElementById('prodGranelSearch').value = clave + ' — ' + nombre;
+  document.getElementById('prodGranelOrigen').value = clave;
+  document.getElementById('prodGranelSuggestions').style.display = 'none';
+  onGranelUbicChange();
+}
+
+function buscarPT() {
+  const q = (document.getElementById('prodPTSearch').value || '').toLowerCase().trim();
+  const sugg = document.getElementById('prodPTSuggestions');
+  if (!q) { sugg.style.display = 'none'; return; }
+  const matches = allProducts.filter(p => p.tipo === 'empacado' &&
+    (p.clave.toLowerCase().includes(q) || p.nombre.toLowerCase().includes(q))
+  ).slice(0, 8);
+  if (!matches.length) { sugg.style.display = 'none'; return; }
+  sugg.innerHTML = matches.map(p =>
+    `<div onclick="selectPT('${p.clave}','${p.nombre.replace(/'/g,"\'")}')"
+      style="padding:10px 14px;cursor:pointer;border-bottom:1px solid #f0f0f0;font-size:13px;">
+      <div style="font-weight:700;color:var(--green-dark);">${p.clave}</div>
+      <div style="font-size:11px;color:#666;">${p.nombre}</div>
+    </div>`
+  ).join('');
+  sugg.style.display = 'block';
+}
+
+function selectPT(clave, nombre) {
+  document.getElementById('prodPTSearch').value = clave + ' — ' + nombre;
+  document.getElementById('prodPTOrigen').value = clave;
+  document.getElementById('prodPTSuggestions').style.display = 'none';
+  onPTChange();
+}
+
 function initProdForm() {
   // Fecha hoy
   document.getElementById('prodFecha').value = new Date().toISOString().split('T')[0];
@@ -3097,26 +3244,6 @@ function initProdForm() {
 
   // Personal del usuario actual
   if (currentUser) document.getElementById('prodPersonal').value = currentUser.nombre;
-
-  // Poblar granel
-  const selGranel = document.getElementById('prodGranelOrigen');
-  selGranel.innerHTML = '<option value="">— Seleccionar granel —</option>';
-  allProducts.filter(p => p.tipo === 'granel').forEach(p => {
-    const opt = document.createElement('option');
-    opt.value = p.clave;
-    opt.textContent = p.clave + ' — ' + p.nombre + ' (' + formatNum(p.stockKg || 0) + ' kg)';
-    selGranel.appendChild(opt);
-  });
-
-  // Poblar PT
-  const selPT = document.getElementById('prodPTOrigen');
-  selPT.innerHTML = '<option value="">— Seleccionar PT —</option>';
-  allProducts.filter(p => p.tipo === 'empacado').forEach(p => {
-    const opt = document.createElement('option');
-    opt.value = p.clave;
-    opt.textContent = p.clave + ' — ' + p.nombre;
-    selPT.appendChild(opt);
-  });
 
   // Poblar ubicaciones dinámicamente desde allUbicaciones
   // Obtener todas las ubicaciones que tienen al menos algún stock
@@ -3254,6 +3381,11 @@ async function guardarProduccion() {
     document.getElementById('prodLote').value     = '';
     document.getElementById('prodObs').value      = '';
     document.getElementById('prodFolioMaquila').value = '';
+    document.getElementById('prodGranelSearch').value = '';
+    document.getElementById('prodGranelOrigen').value = '';
+    document.getElementById('prodPTSearch').value = '';
+    document.getElementById('prodPTOrigen').value = '';
+    document.getElementById('prodStockUbicBadge').style.display = 'none';
 
     // Actualizar folio
     const newNum = String(allProd.length + 1).padStart(6, '0');
