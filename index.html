@@ -758,7 +758,7 @@
       <div class="filter-tab" onclick="setFilter('granel',this)">⚖️ Granel</div>
       <div class="filter-tab" onclick="mostrarUbicaciones(this)">📍 Ubic.</div>
     </div>
-    <div class="search-bar">🔍 <input id="searchInput" type="text" placeholder="Buscar producto o clave..." oninput="renderProducts()"></div>
+    <div class="search-bar" style="position:relative;">🔍 <input id="searchInput" type="text" placeholder="Buscar producto o clave..." oninput="renderProducts();document.getElementById('searchClearBtn').style.display=this.value?'flex':'none'"><button id="searchClearBtn" onclick="document.getElementById('searchInput').value='';renderProducts();this.style.display='none';" style="display:none;position:absolute;right:10px;top:50%;transform:translateY(-50%);background:#eee;border:none;font-size:13px;cursor:pointer;color:#666;width:22px;height:22px;align-items:center;justify-content:center;border-radius:50%;">✕</button></div>
     <div id="productsContainer"><div class="loading-state"><div class="loading-spinner"></div>Cargando inventario...</div></div>
     <div id="lastSyncInv" class="last-sync"></div>
 
@@ -2666,16 +2666,41 @@ function openProdDetalle(clave) {
   const reservado = isGranel?(p.reservadoKg||0):p.reservado;
   const disponible = isGranel?(p.disponibleKg||0):p.disponible;
   const unidad = isGranel?'kg':'pz';
-  const movs = allMovimientos.filter(m=>(m['ClaveProducto']||'')===clave).slice(0,8);
+  const movs = allMovimientos.filter(m=>(m['ClaveProducto']||'')===clave).slice(0,10);
   const iconMap = {'Entrada compra':'🌾','Salida venta/despacho':'🚀','Ajuste positivo':'✅','Ajuste negativo':'📉','Entrada producción':'📦','Salida a producción':'⚙️'};
   const movHTML = movs.length ? movs.map(m => {
     const tipo=m['TipoMov']||'—', esEntrada=ENTRADAS.includes(tipo);
     const cantPz=parseFloat(m['CantidadPz']||0), cantKg=parseFloat(m['CantidadKg']||0);
     const qty = cantKg>0?formatNum(cantKg)+' kg':formatNum(cantPz)+' pz';
     const icon = iconMap[tipo]||'📋';
+    const folio = m['FolioMov']||'';
+    const docRef = m['DocumentoRef']||'';
+    const lote = m['LoteCaducidad']||'';
+    const origen = m['UbicacionOrigen']||'';
+    const destino = m['UbicacionDestino']||'';
+    const ubicStr = origen&&destino ? `${origen} → ${destino}` : (origen||destino||'');
+    const captura = m['Captura']||'';
     let fechaStr='—'; const fv=m['FechaMov'];
     if (fv&&typeof fv==='string'&&fv.startsWith('Date(')) { const parts=fv.replace('Date(','').replace(')','').split(',').map(Number); fechaStr=`${String(parts[2]).padStart(2,'0')}/${String(parts[1]+1).padStart(2,'0')}/${parts[0]}`; }
-    return `<div class="prod-det-mov"><div class="prod-det-mov-icon ${esEntrada?'icon-green':'icon-orange'}">${icon}</div><div class="prod-det-mov-body"><div class="prod-det-mov-tipo">${tipo}</div><div class="prod-det-mov-fecha">${fechaStr}</div></div><div class="prod-det-mov-qty ${esEntrada?'pos':'neg'}">${esEntrada?'+':'-'}${qty}</div></div>`;
+    const chipColor = esEntrada ? '#E8F5E9' : tipo.includes('Consumo')||tipo.includes('producción') ? '#E3F2FD' : '#FFF3E0';
+    const chipText  = esEntrada ? '#2D5A1B' : tipo.includes('Consumo')||tipo.includes('producción') ? '#1565C0' : '#E65100';
+    return `<div style="background:#fafafa;border-radius:12px;padding:12px;border:1px solid #eee;">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;">
+        <div style="display:flex;align-items:center;gap:7px;">
+          <span style="font-size:16px;">${icon}</span>
+          <span style="background:${chipColor};color:${chipText};font-size:10px;font-weight:700;padding:3px 8px;border-radius:20px;">${tipo}</span>
+        </div>
+        <div style="font-size:13px;font-weight:800;color:${chipText};">${esEntrada?'+':'-'}${qty}</div>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:6px;font-size:11px;color:#666;">
+        ${folio?`<span>📋 ${folio}</span>`:''}
+        ${docRef&&docRef!==folio?`<span>🔗 ${docRef}</span>`:''}
+        ${fechaStr!=='—'?`<span>📅 ${fechaStr}</span>`:''}
+        ${ubicStr?`<span>📍 ${ubicStr}</span>`:''}
+        ${lote?`<span>🏷️ ${lote}</span>`:''}
+        ${captura?`<span>👤 ${captura}</span>`:''}
+      </div>
+    </div>`;
   }).join('') : '<div class="empty-state" style="padding:20px">Sin movimientos</div>';
   // Ubicaciones con stock > 0
   const ubicProd = allUbicaciones.find(u => u.clave === clave);
