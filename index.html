@@ -964,6 +964,7 @@
     <div class="action-card" onclick="abrirCatalogos('clientes')"><div class="action-icon" style="background:#E3F2FD;">🏢</div><div class="action-body"><div class="action-title">Catálogo Clientes</div><div class="action-sub" id="catCountClientes">Cargando...</div></div><div class="action-arrow">›</div></div>
     <div class="action-card" onclick="abrirCatalogos('proveedores')"><div class="action-icon" style="background:#FFF8E1;">🚚</div><div class="action-body"><div class="action-title">Catálogo Proveedores</div><div class="action-sub" id="catCountProveedores">Cargando...</div></div><div class="action-arrow">›</div></div>
     <div class="action-card" onclick="abrirCatalogos('productos')"><div class="action-icon" style="background:#F3E5F5;">📦</div><div class="action-body"><div class="action-title">Catálogo Productos</div><div class="action-sub" id="catCountProductos">Cargando...</div></div><div class="action-arrow">›</div></div>
+    <div class="action-card" onclick="abrirCatalogos('operadores')"><div class="action-icon" style="background:#E3F2FD;">🚛</div><div class="action-body"><div class="action-title">Catálogo Operadores</div><div class="action-sub" id="catCountOperadores">Cargando...</div></div><div class="action-arrow">›</div></div>
     <div class="action-card"><div class="action-icon icon-blue">📊</div><div class="action-body"><div class="action-title">Reportes</div><div class="action-sub">Exportar y consultar datos</div></div><div class="action-arrow">›</div></div>
     <div class="action-card"><div class="action-icon icon-orange">🏭</div><div class="action-body"><div class="action-title">Control Producción</div><div class="action-sub">Movimiento siamés automático</div></div><div class="action-arrow">›</div></div>
     <div id="userInfoCard" style="background:#f9f9f9;border-radius:16px;padding:16px;margin-top:8px;">
@@ -1166,6 +1167,19 @@
         </div>
         <input type="hidden" id="fTipoMov">
       </div>
+      <!-- RECEPCIÓN POR LOTES toggle -->
+      <div id="recepcionToggleBar" style="display:none;background:#E8F5E9;border-radius:12px;padding:12px 14px;margin-bottom:4px;border:1.5px solid #C8E6C9;">
+        <div style="display:flex;align-items:center;justify-content:space-between;">
+          <div>
+            <div style="font-weight:700;font-size:13px;color:#2D5A1B;">🚛 Modo Recepción por Lotes</div>
+            <div style="font-size:11px;color:#558B2F;margin-top:2px;">Captura múltiples camiones con el mismo folio padre</div>
+          </div>
+          <label style="position:relative;display:inline-block;width:44px;height:24px;">
+            <input type="checkbox" id="recepcionModoToggle" onchange="toggleRecepcionMode()" style="opacity:0;width:0;height:0;">
+            <span id="recepcionToggleSlider" style="position:absolute;cursor:pointer;top:0;left:0;right:0;bottom:0;background:#ccc;border-radius:24px;transition:.3s;"></span>
+          </label>
+        </div>
+      </div>
       <div class="form-group">
         <div class="form-label">Producto <span>*</span></div>
         <input class="form-input" id="fProductoSearch" type="text" placeholder="🔍 Buscar por clave o nombre..." oninput="searchProductos()" autocomplete="off">
@@ -1242,6 +1256,24 @@
         <div class="form-label">Observaciones</div>
         <input class="form-input" id="fObs" type="text" placeholder="Opcional">
       </div>
+      <!-- CAMIONES — solo visible en modo recepción -->
+      <div id="recepcionCamionesSection" style="display:none;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+          <div class="section-title" style="margin:0;">🚛 CAMIONES</div>
+          <button onclick="agregarCamion()" style="background:var(--green-dark);color:white;border:none;border-radius:8px;padding:6px 14px;font-size:12px;font-weight:700;cursor:pointer;">+ Agregar</button>
+        </div>
+        <div id="camionesContainer" style="display:flex;flex-direction:column;gap:8px;margin-bottom:12px;"></div>
+        <div id="recepcionResumen" style="display:none;background:#F1F8E9;border-radius:12px;padding:12px;margin-bottom:8px;border:1px solid #C5E1A5;">
+          <div style="font-size:12px;font-weight:700;color:#2D5A1B;margin-bottom:4px;">📊 RESUMEN RECEPCIÓN</div>
+          <div style="display:flex;gap:16px;font-size:13px;">
+            <div><span style="color:#888;">Camiones:</span> <span id="resumenCamiones" style="font-weight:700;">0</span></div>
+            <div><span style="color:#888;">KG Bruto:</span> <span id="resumenBruto" style="font-weight:700;">0</span></div>
+            <div><span style="color:#888;">KG Tara:</span> <span id="resumenTara" style="font-weight:700;">0</span></div>
+            <div><span style="color:#888;">KG Neto:</span> <span id="resumenNeto" style="font-weight:700;color:#2D5A1B;">0</span></div>
+          </div>
+        </div>
+      </div>
+
       <button class="form-btn-submit" id="fSubmitBtn" onclick="submitMovimiento()">💾 Guardar movimiento</button>
       <div style="font-size:11px;color:var(--text-muted);text-align:center;margin-top:-4px;">Se guardará directamente en Google Sheets</div>
     </div>
@@ -1495,6 +1527,16 @@ async function loadProveedoresSheet() {
     console.log('Proveedores:', catProveedores.length);
   } catch(e) { console.log('loadProveedores:', e); }
 }
+async function loadOperadoresSheet() {
+  try {
+    const table = await fetchSheet('Operadores');
+    const fixed = fixFirstHeader(table, 'NombreOperador');
+    const rows = tableToObjects(fixed);
+    catOperadores = rows.map(r => r['NombreOperador']||'').filter(Boolean);
+    console.log('Operadores:', catOperadores.length);
+  } catch(e) { console.log('loadOperadores:', e); }
+}
+
 async function loadProductosSheet() {
   try {
     const rows = await fetchSheetSimple('Productos');
@@ -1502,6 +1544,141 @@ async function loadProductosSheet() {
     actualizarContadoresCatalogos();
     console.log('Productos:', catProductos.length);
   } catch(e) { console.log('loadProductos:', e); }
+}
+
+// ═══════════════════════════════════════
+//  RECEPCIÓN POR LOTES
+// ═══════════════════════════════════════
+let camiones = []; // [{folio, chofer, kgBruto, kgTara, kgNeto, sacos}]
+let recepcionFolioCounter = 1;
+
+function toggleRecepcionMode() {
+  const activo = document.getElementById('recepcionModoToggle').checked;
+  const slider = document.getElementById('recepcionToggleSlider');
+  const section = document.getElementById('recepcionCamionesSection');
+  const submitBtn = document.getElementById('fSubmitBtn');
+  slider.style.background = activo ? '#2D5A1B' : '#ccc';
+  section.style.display = activo ? 'block' : 'none';
+  if (activo) {
+    submitBtn.textContent = '🚛 Guardar recepción completa';
+    camiones = [];
+    renderCamiones();
+    agregarCamion(); // auto-add first
+  } else {
+    submitBtn.textContent = '💾 Guardar movimiento';
+    camiones = [];
+    renderCamiones();
+  }
+}
+
+function agregarCamion() {
+  camiones.push({ id: Date.now(), folio: '', chofer: '', kgBruto: 0, kgTara: 0, kgNeto: 0, sacos: 0 });
+  renderCamiones();
+}
+
+function eliminarCamion(id) {
+  camiones = camiones.filter(c => c.id !== id);
+  renderCamiones();
+}
+
+function renderCamiones() {
+  const container = document.getElementById('camionesContainer');
+  if (!camiones.length) {
+    container.innerHTML = '<div style="text-align:center;padding:16px;color:#aaa;font-size:12px;">Toca + Agregar para añadir un camión</div>';
+    document.getElementById('recepcionResumen').style.display = 'none';
+    return;
+  }
+  container.innerHTML = camiones.map((c, i) => `
+    <div style="background:#fafafa;border-radius:12px;padding:12px;border:1px solid #e0e0e0;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+        <div style="font-weight:700;font-size:12px;color:#2D5A1B;">🚛 CAMIÓN ${i+1}</div>
+        <button onclick="eliminarCamion(${c.id})" style="background:none;border:none;color:#E53935;font-size:16px;cursor:pointer;">✕</button>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">
+        <div>
+          <div style="font-size:10px;color:#888;font-weight:600;margin-bottom:3px;">FOLIO TICKET</div>
+          <input class="form-input" style="padding:8px;font-size:12px;" placeholder="Ej. 13454"
+            value="${c.folio}" oninput="updateCamion(${c.id},'folio',this.value)">
+        </div>
+        <div>
+          <div style="font-size:10px;color:#888;font-weight:600;margin-bottom:3px;">CHOFER</div>
+          <input class="form-input" style="padding:8px;font-size:12px;" placeholder="Nombre"
+            value="${c.chofer}" oninput="updateCamion(${c.id},'chofer',this.value)">
+        </div>
+        <div>
+          <div style="font-size:10px;color:#888;font-weight:600;margin-bottom:3px;">KG BRUTO</div>
+          <input class="form-input" style="padding:8px;font-size:12px;" type="number" placeholder="0"
+            value="${c.kgBruto||''}" oninput="updateCamionKg(${c.id},'kgBruto',this.value)">
+        </div>
+        <div>
+          <div style="font-size:10px;color:#888;font-weight:600;margin-bottom:3px;">KG TARA</div>
+          <input class="form-input" style="padding:8px;font-size:12px;" type="number" placeholder="0"
+            value="${c.kgTara||''}" oninput="updateCamionKg(${c.id},'kgTara',this.value)">
+        </div>
+        <div>
+          <div style="font-size:10px;color:#888;font-weight:600;margin-bottom:3px;">KG NETO</div>
+          <div style="background:#E8F5E9;border-radius:8px;padding:8px;font-size:13px;font-weight:700;color:#2D5A1B;">${c.kgNeto.toLocaleString('es-MX')}</div>
+        </div>
+        <div>
+          <div style="font-size:10px;color:#888;font-weight:600;margin-bottom:3px;">SACOS</div>
+          <input class="form-input" style="padding:8px;font-size:12px;" type="number" placeholder="0"
+            value="${c.sacos||''}" oninput="updateCamion(${c.id},'sacos',parseFloat(this.value)||0)">
+        </div>
+        <div style="grid-column:1/-1;">
+          <div style="font-size:10px;color:#888;font-weight:600;margin-bottom:3px;">PLACA</div>
+          <input class="form-input" style="padding:8px;font-size:12px;" placeholder="Ej. ABC-123"
+            value="${c.placa||''}" oninput="updateCamion(${c.id},'placa',this.value)">
+        </div>
+      </div>
+    </div>`).join('');
+  actualizarResumenRecepcion();
+}
+
+function buscarOperador(id, q) {
+  updateCamion(id, 'chofer', q);
+  const sugBox = document.getElementById('choferSug_' + id);
+  if (!sugBox) return;
+  if (!q.trim()) { sugBox.style.display = 'none'; return; }
+  const matches = catOperadores.filter(o => o.toLowerCase().includes(q.toLowerCase())).slice(0, 6);
+  if (!matches.length) { sugBox.style.display = 'none'; return; }
+  sugBox.innerHTML = matches.map(o =>
+    `<div style="padding:8px 12px;font-size:12px;cursor:pointer;border-bottom:1px solid #f0f0f0;"
+      onmousedown="selectOperador(${id},'${o.replace(/'/g,"\'")}');event.preventDefault();">${o}</div>`
+  ).join('');
+  sugBox.style.display = 'block';
+}
+
+function selectOperador(id, nombre) {
+  updateCamion(id, 'chofer', nombre);
+  const input = document.getElementById('choferInput_' + id);
+  if (input) input.value = nombre;
+  const sugBox = document.getElementById('choferSug_' + id);
+  if (sugBox) sugBox.style.display = 'none';
+}
+
+function updateCamion(id, field, value) {
+  const c = camiones.find(c => c.id === id);
+  if (c) c[field] = value;
+}
+
+function updateCamionKg(id, field, value) {
+  const c = camiones.find(c => c.id === id);
+  if (!c) return;
+  c[field] = parseFloat(value) || 0;
+  c.kgNeto = Math.max(0, (c.kgBruto || 0) - (c.kgTara || 0));
+  renderCamiones();
+}
+
+function actualizarResumenRecepcion() {
+  if (!camiones.length) return;
+  const totalBruto = camiones.reduce((s, c) => s + (c.kgBruto||0), 0);
+  const totalTara  = camiones.reduce((s, c) => s + (c.kgTara||0), 0);
+  const totalNeto  = camiones.reduce((s, c) => s + (c.kgNeto||0), 0);
+  document.getElementById('resumenCamiones').textContent = camiones.length;
+  document.getElementById('resumenBruto').textContent = totalBruto.toLocaleString('es-MX');
+  document.getElementById('resumenTara').textContent  = totalTara.toLocaleString('es-MX');
+  document.getElementById('resumenNeto').textContent  = totalNeto.toLocaleString('es-MX');
+  document.getElementById('recepcionResumen').style.display = 'block';
 }
 
 // ═══════════════════════════════════════
@@ -1514,6 +1691,7 @@ const CATALOGO_CONFIG = {
   clientes:    { label: 'Clientes',    icon: '🏢', sheet: 'Clientes',    col: 'Cliente',    list: () => catClientes    },
   proveedores: { label: 'Proveedores', icon: '🚚', sheet: 'Proveedores', col: 'Proveedor',  list: () => catProveedores },
   productos:   { label: 'Productos',   icon: '📦', sheet: 'Productos',   col: 'ClaveProducto', list: () => catProductos.map(p => p.clave + ' — ' + p.nombre) },
+  operadores:  { label: 'Operadores',  icon: '🚛', sheet: 'Operadores',  col: 'NombreOperador', list: () => catOperadores },
 };
 
 function abrirCatalogos(tipo) {
@@ -1599,6 +1777,7 @@ function actualizarContadoresCatalogos() {
   el('catCountClientes',    catClientes.length    + ' clientes');
   el('catCountProveedores', catProveedores.length + ' proveedores');
   el('catCountProductos',   catProductos.length   + ' productos');
+  el('catCountOperadores',  catOperadores.length  + ' operadores');
 }
 
 async function loadAgenda() {
@@ -2532,6 +2711,13 @@ function resetForm() {
 }
 
 function selectTipo(tipo, el) {
+  // Mostrar toggle recepción solo en Entrada compra
+  const bar = document.getElementById('recepcionToggleBar');
+  if (bar) bar.style.display = tipo === 'Entrada compra' ? 'block' : 'none';
+  if (tipo !== 'Entrada compra') {
+    document.getElementById('recepcionModoToggle').checked = false;
+    toggleRecepcionMode();
+  }
   selectedTipo = tipo;
   document.getElementById('fTipoMov').value = tipo;
   document.querySelectorAll('.type-btn').forEach(b => b.classList.remove('selected'));
@@ -2583,6 +2769,8 @@ async function generarFolio() {
 }
 
 async function submitMovimiento() {
+  const recepcionActivo = document.getElementById('recepcionModoToggle')?.checked;
+  if (recepcionActivo) { await submitRecepcion(); return; }
   if (!selectedTipo) { showToast('⚠️ Selecciona el tipo de movimiento', 'error'); return; }
   if (!document.getElementById('fClaveProducto').value) { showToast('⚠️ Selecciona un producto', 'error'); return; }
   const cantPz = document.getElementById('fCantPz').value;
@@ -2620,6 +2808,76 @@ async function submitMovimiento() {
   } catch(e) {
     showToast('❌ Error al guardar. Revisa conexión.', 'error');
   } finally { btn.disabled=false; btn.innerHTML='💾 Guardar movimiento'; }
+}
+
+async function submitRecepcion() {
+  if (!camiones.length) { showToast('❌ Agrega al menos un camión', 'error'); return; }
+  const sinKg = camiones.filter(c => c.kgNeto <= 0);
+  if (sinKg.length) { showToast('❌ Todos los camiones deben tener KG neto > 0', 'error'); return; }
+
+  const clave       = document.getElementById('fClaveProducto').value.trim();
+  const descripcion = document.getElementById('fDescripcion').value.trim();
+  const fecha       = document.getElementById('fFecha').value;
+  const origen      = document.getElementById('fOrigen').value;
+  const destino     = document.getElementById('fDestino').value;
+  const proveedor   = document.getElementById('fProveedor').value.trim();
+  const lote        = document.getElementById('fLote').value.trim();
+  const obsBase     = document.getElementById('fObs').value.trim();
+  const docRef      = document.getElementById('fDocRef').value.trim();
+  const captura     = currentUser?.nombre || 'U01';
+
+  if (!clave)   { showToast('❌ Selecciona un producto', 'error'); return; }
+  if (!fecha)   { showToast('❌ Captura la fecha', 'error'); return; }
+  if (!destino) { showToast('❌ Selecciona destino', 'error'); return; }
+  if (!docRef)  { showToast('❌ Captura el folio padre en Documento referencia', 'error'); return; }
+
+  const btn = document.getElementById('fSubmitBtn');
+  btn.disabled = true; btn.textContent = '⏳ Guardando...';
+  let guardados = 0;
+
+  for (let i = 0; i < camiones.length; i++) {
+    const c = camiones[i];
+    const folioMov = docRef + '-C' + String(i+1).padStart(2,'0');
+    const obsCompleta = [
+      c.chofer  ? 'Chofer: ' + c.chofer   : '',
+      c.placa   ? 'Placa: '  + c.placa    : '',
+      c.folio   ? 'Ticket: ' + c.folio    : '',
+      c.kgBruto ? 'Bruto: '  + c.kgBruto + ' kg' : '',
+      c.kgTara  ? 'Tara: '   + c.kgTara  + ' kg' : '',
+      c.sacos   ? 'Sacos: '  + c.sacos           : '',
+      obsBase
+    ].filter(Boolean).join(' | ');
+
+    const mid = 'mid_' + Date.now() + '_' + Math.random().toString(36).substr(2,5);
+    const payload = {
+      FechaMov: fecha, TipoMov: 'Entrada compra', FolioMov: folioMov,
+      DocumentoRef: docRef, ClaveProducto: clave, Descripcion: descripcion,
+      Proveedor: proveedor, Cliente: '',
+      UbicacionOrigen: origen || 'Proveedor', UbicacionDestino: destino,
+      CantidadPz: c.sacos || 0, CantidadKg: c.kgNeto,
+      LoteCaducidad: lote, Captura: captura, Estado: 'OK',
+      Observaciones: obsCompleta, Folio_QR: folioMov, movId: mid
+    };
+
+    try {
+      await fetch(APPS_SCRIPT_URL, {
+        method: 'POST', mode: 'no-cors',
+        headers: { 'Content-Type': 'text/plain' },
+        body: JSON.stringify(payload)
+      });
+      guardados++;
+      if (i < camiones.length - 1) await new Promise(r => setTimeout(r, 400));
+    } catch(e) { console.error('Error camión ' + (i+1), e); }
+  }
+
+  const totalNeto = camiones.reduce((s, c) => s + c.kgNeto, 0);
+  showToast('✅ Recepción guardada: ' + guardados + ' camiones · ' + totalNeto.toLocaleString('es-MX') + ' kg netos', 'success');
+  btn.disabled = false; btn.textContent = '🚛 Guardar recepción completa';
+  closeModal();
+  camiones = [];
+  document.getElementById('recepcionModoToggle').checked = false;
+  toggleRecepcionMode();
+  setTimeout(() => syncData(), 2000);
 }
 
 async function cancelarMovimiento(folio) {
@@ -2847,7 +3105,7 @@ function buildCatalogos() {
 async function syncData() {
   document.getElementById('productsContainer').innerHTML = '<div class="loading-state"><div class="loading-spinner"></div>Sincronizando...</div>';
   document.getElementById('agendaContainer').innerHTML = '<div class="loading-state"><div class="loading-spinner"></div>Cargando pedidos...</div>';
-  await Promise.all([loadInventario(), loadMovimientos(), loadAgenda(), loadProveedores(), loadClientes(), loadUbicaciones(), loadVendedoresSheet(), loadClientesSheet(), loadProveedoresSheet(), loadProductosSheet()]);
+  await Promise.all([loadInventario(), loadMovimientos(), loadAgenda(), loadProveedores(), loadClientes(), loadUbicaciones(), loadVendedoresSheet(), loadClientesSheet(), loadProveedoresSheet(), loadProductosSheet(), loadOperadoresSheet()]);
 }
 
 function updateSyncTime() {
