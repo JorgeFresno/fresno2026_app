@@ -969,6 +969,31 @@
   </div>
 </div>
 
+<!-- MODAL DESPACHO -->
+<div class="modal-overlay" id="despachoModalOverlay">
+  <div class="modal-sheet" style="max-height:85vh;display:flex;flex-direction:column;">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--border);flex-shrink:0;">
+      <div style="font-weight:700;font-size:16px;" id="despachoModalFolio">Despachar</div>
+      <button onclick="document.getElementById('despachoModalOverlay').classList.remove('open')" 
+        style="background:none;border:none;font-size:22px;cursor:pointer;color:#888;">✕</button>
+    </div>
+    <div style="padding:4px 8px;background:#FFF8E1;border-bottom:1px solid #FFE082;flex-shrink:0;">
+      <div style="font-size:12px;color:#F57F17;padding:8px 12px;">📦 Captura el lote/caducidad de cada producto antes de despachar</div>
+    </div>
+    <div id="despachoLineasContainer" style="overflow-y:auto;flex:1;padding:16px;"></div>
+    <div style="padding:16px;border-top:1px solid var(--border);flex-shrink:0;display:flex;gap:10px;">
+      <button onclick="document.getElementById('despachoModalOverlay').classList.remove('open')"
+        style="flex:1;padding:14px;border-radius:12px;border:1.5px solid #ddd;background:white;font-size:14px;font-weight:600;cursor:pointer;">
+        Cancelar
+      </button>
+      <button id="despachoConfirmBtn"
+        style="flex:2;padding:14px;border-radius:12px;border:none;background:var(--green-dark);color:white;font-size:14px;font-weight:700;cursor:pointer;">
+        🚀 Confirmar despacho
+      </button>
+    </div>
+  </div>
+</div>
+
 <!-- MODAL CATÁLOGOS -->
 <div class="modal-overlay" id="catalogosModalOverlay">
   <div class="modal-sheet" style="max-height:85vh;display:flex;flex-direction:column;">
@@ -1977,16 +2002,94 @@ async function cambiarEstadoPedido(folio, nuevoEstado) {
 }
 
 async function despacharPedido(folio) {
-  // Pedir lote y caducidad antes de despachar
-  const lote = prompt('📦 Lote / Caducidad para el despacho de ' + folio + ':\n(Ej: 102FN1 JUN 27)');
-  if (lote === null) return; // canceló
-  if (!lote.trim()) {
-    showToast('❌ El lote/caducidad es obligatorio para despachar', 'error');
+  const ped = pedidosAgrupados[folio];
+  if (!ped) return;
+
+  // Construir modal de despacho con lote por producto + validación stock
+  const lineas = ped.lineas || [];
+  
+  // Abrir modal — el modal ya separa con stock vs sin stock
+  abrirModalDespacho(folio, lineas);
+}
+
+function getStockTotal(clave) {
+  const ubicProd = allUbicaciones.find(u => u.clave === clave);
+  if (!ubicProd) return 0;
+  return Object.entries(ubicProd.ubicaciones)
+    .filter(([k]) => !['Total_ubicaciones','Es_Pieza',''].includes(k))
+    .reduce((sum, [, v]) => sum + (parseFloat(v)||0), 0);
+}
+
+function abrirModalDespacho(folio, lineas) {
+  const overlay = document.getElementById('despachoModalOverlay');
+  document.getElementById('despachoModalFolio').textContent = '🚀 Despachar ' + folio;
+
+  // Separar con stock vs sin stock
+  const conStock  = lineas.filter(l => getStockTotal(l.clave) > 0);
+  const sinStock  = lineas.filter(l => getStockTotal(l.clave) <= 0);
+
+  const container = document.getElementById('despachoLineasContainer');
+  let html = '';
+
+  // Productos que SÍ se despachan
+  if (conStock.length) {
+    html += `<div style="font-size:11px;font-weight:700;color:#2D5A1B;letter-spacing:.06em;margin-bottom:8px;padding:0 2px;">✅ SE DESPACHARÁN (${conStock.length})</div>`;
+    html += conStock.map((l, i) => {
+      const stock = getStockTotal(l.clave);
+      const ubicProd = allUbicaciones.find(u => u.clave === l.clave);
+      return `
+        <div style="background:#F1F8F1;border-radius:12px;padding:14px;margin-bottom:10px;border:1.5px solid #C8E6C9;">
+          <div style="font-weight:700;font-size:13px;margin-bottom:2px;">${l.descripcion || l.clave}</div>
+          <div style="font-size:11px;color:#888;margin-bottom:6px;">${l.clave} · ${l.cantPz > 0 ? l.cantPz+' pz' : ''} ${l.cantKg > 0 ? l.cantKg+' kg' : ''}</div>
+          <div style="font-size:11px;color:#2D5A1B;font-weight:600;margin-bottom:8px;">📦 Stock: ${stock.toLocaleString('es-MX')} ${ubicProd?.unidad||''}</div>
+          <input class="form-input" id="lote_cs_${i}" placeholder="Lote / Caducidad *"
+            style="font-size:13px;padding:9px 12px;" required>
+        </div>`;
+    }).join('');
+  }
+
+  // Productos que se OMITEN
+  if (sinStock.length) {
+    html += `<div style="font-size:11px;font-weight:700;color:#E53935;letter-spacing:.06em;margin:12px 0 8px;padding:0 2px;">⛔ SE OMITIRÁN — SIN STOCK (${sinStock.length})</div>`;
+    html += sinStock.map(l => `
+      <div style="background:#FFF5F5;border-radius:12px;padding:12px 14px;margin-bottom:8px;border:1.5px solid #FFCDD2;opacity:0.8;">
+        <div style="font-weight:700;font-size:13px;color:#E53935;">${l.descripcion || l.clave}</div>
+        <div style="font-size:11px;color:#aaa;margin-top:2px;">${l.clave} · ${l.cantPz > 0 ? l.cantPz+' pz' : ''} ${l.cantKg > 0 ? l.cantKg+' kg' : ''}</div>
+        <div style="font-size:11px;color:#E53935;margin-top:4px;">No se generará movimiento</div>
+      </div>`
+    ).join('');
+  }
+
+  container.innerHTML = html;
+  document.getElementById('despachoConfirmBtn').onclick = () => confirmarDespacho(folio, conStock, sinStock);
+  overlay.classList.add('open');
+}
+
+async function confirmarDespacho(folio, conStock, sinStock) {
+  // Validar lotes solo de productos con stock
+  const lotes = conStock.map((l, i) => {
+    const val = document.getElementById('lote_cs_' + i)?.value.trim() || '';
+    return { clave: l.clave, descripcion: l.descripcion, lote: val };
+  });
+
+  const sinLote = lotes.filter(l => !l.lote);
+  if (sinLote.length) {
+    showToast('❌ Captura el lote de todos los productos a despachar', 'error');
+    conStock.forEach((l, i) => {
+      const inp = document.getElementById('lote_cs_' + i);
+      if (inp && !inp.value.trim()) inp.style.borderColor = 'red';
+    });
     return;
   }
-  if (!confirm('¿Despachar TODOS los productos del pedido ' + folio + '?\nLote: ' + lote)) return;
+  // Si no hay productos con stock, avisar
+  if (!conStock.length) {
+    showToast('⛔ No hay productos con stock para despachar', 'error');
+    return;
+  }
 
+  document.getElementById('despachoModalOverlay').classList.remove('open');
   showToast('⏳ Despachando pedido...', '');
+
   try {
     await fetch(APPS_SCRIPT_URL, {
       method: 'POST',
@@ -1995,14 +2098,12 @@ async function despacharPedido(folio) {
       body: JSON.stringify({
         accion: 'despacharPedido',
         PedidoRQF: folio,
-        LoteCaducidad: lote.trim()
+        lotesPorProducto: lotes,
+        clavesOmitidas: (sinStock||[]).map(l => l.clave)
       })
     });
 
-    // Actualizar localmente
-    if (pedidosAgrupados[folio]) {
-      pedidosAgrupados[folio].estado = 'Despachado';
-    }
+    if (pedidosAgrupados[folio]) pedidosAgrupados[folio].estado = 'Despachado';
     allPedidosRaw.forEach(r => {
       const f = r['Pedido/RQF'] || r['PedidoRQF'] || '';
       if (String(f).trim() === folio) r['EstadoPedido'] = 'Despachado';
@@ -2012,15 +2113,7 @@ async function despacharPedido(folio) {
     renderAgenda();
     updateAgendaKPIs();
     showToast('🚀 Pedido ' + folio + ' despachado', 'success');
-    
-    // Recargar agenda desde Sheets para reflejar el verde
-    setTimeout(() => { loadAgenda();
-  loadVendedoresSheet();
-  loadClientesSheet();
-  loadProveedoresSheet();
-  loadProductosSheet(); }, 3000);
-
-    // Abrir ticket automáticamente
+    setTimeout(() => loadAgenda(), 3000);
     setTimeout(() => generarTicket(folio), 400);
 
   } catch(e) {
