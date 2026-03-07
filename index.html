@@ -1413,32 +1413,59 @@ async function loadMovimientos() {
   }
 }
 
+async function fetchSheetSimple(sheetName) {
+  // For sheets with headers in row 1 (no logo/title rows)
+  const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(sheetName)}`;
+  const r = await fetch(url);
+  const txt = await r.text();
+  const json = JSON.parse(txt.match(/google\.visualization\.Query\.setResponse\(([\s\S]*)\)/)[1]);
+  const rows = json.table.rows || [];
+  const cols = json.table.cols.map(c => c.label || '');
+  return rows.map(row => {
+    const obj = {};
+    cols.forEach((col, i) => { obj[col] = row.c?.[i]?.v ?? ''; });
+    return obj;
+  });
+}
+
+// Extrae lista plana de hojas con una sola columna
+async function fetchSimpleList(sheetName, skipWords) {
+  const table = await fetchSheet(sheetName);
+  if (!table || !table.rows) return [];
+  const skip = skipWords || [];
+  return table.rows
+    .map(row => row && row.c && row.c[0] ? String(row.c[0].v || '').trim() : '')
+    .filter(v => v && !skip.includes(v.toUpperCase()));
+}
+
 async function loadVendedoresSheet() {
   try {
-    const table = await fetchSheet('Vendedores');
-    window._rawVendedores = tableToObjects(table);
-    buildCatalogos();
+    catVendedores = await fetchSimpleList('Vendedores', ['VENDEDORES','VENDEDOR']);
+    if (catVendedores.length) { VENDEDORES_LIST.length = 0; catVendedores.forEach(v => VENDEDORES_LIST.push(v)); }
+    actualizarContadoresCatalogos();
+    console.log('Vendedores:', catVendedores.length);
   } catch(e) { console.log('loadVendedores:', e); }
 }
 async function loadClientesSheet() {
   try {
-    const table = await fetchSheet('Clientes');
-    window._rawClientes = tableToObjects(table);
-    buildCatalogos();
+    catClientes = await fetchSimpleList('Clientes', ['CLIENTE','CLIENTES']);
+    actualizarContadoresCatalogos();
+    console.log('Clientes:', catClientes.length);
   } catch(e) { console.log('loadClientes:', e); }
 }
 async function loadProveedoresSheet() {
   try {
-    const table = await fetchSheet('Proveedores');
-    window._rawProveedores = tableToObjects(table);
-    buildCatalogos();
+    catProveedores = await fetchSimpleList('Proveedores', ['PROVEEDOR','PROVEEDORES']);
+    actualizarContadoresCatalogos();
+    console.log('Proveedores:', catProveedores.length);
   } catch(e) { console.log('loadProveedores:', e); }
 }
 async function loadProductosSheet() {
   try {
-    const table = await fetchSheet('Productos');
-    window._rawProductos = tableToObjects(table);
-    buildCatalogos();
+    const rows = await fetchSheetSimple('Productos');
+    catProductos = rows.map(r => ({ clave: r['ClaveProducto']||'', nombre: r['Descripcion']||'', unidad: r['Unidad_base']||'', tipo: r['Tipo_producto']||'' })).filter(p => p.clave);
+    actualizarContadoresCatalogos();
+    console.log('Productos:', catProductos.length);
   } catch(e) { console.log('loadProductos:', e); }
 }
 
@@ -1508,7 +1535,7 @@ async function agregarItemCatalogo() {
     });
     catProductos.push({ clave: clave.trim().toUpperCase(), nombre: nombre.trim().toUpperCase(), unidad, tipo });
   } else {
-    valor = prompt(`Nombre del nuevo ${cfg.label.slice(0,-1)}:`);
+    valor = prompt(`Nuevo registro en ${cfg.label}:`);
     if (!valor?.trim()) return;
     valor = valor.trim().toUpperCase();
     // Save to Sheets
