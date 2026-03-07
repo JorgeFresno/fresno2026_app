@@ -625,6 +625,11 @@
        pero sí podemos minimizar el contenido para que quepa en 1 página */
   }
 
+  /* Ocultar X nativa del navegador — evita doble X con nuestra clear-btn */
+  input::-webkit-search-cancel-button { display:none !important; -webkit-appearance:none !important; }
+  input::-webkit-clear-button { display:none !important; -webkit-appearance:none !important; }
+  input::-ms-clear { display:none !important; }
+
 </style>
 </head>
 <body>
