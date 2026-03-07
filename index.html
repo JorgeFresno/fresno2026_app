@@ -3157,6 +3157,51 @@ let catProductos    = [];   // todos los productos (Productos)
 let catGranel       = [];   // Producto_Granel
 let catPT           = [];   // Producto_Terminado
 
+// ── CLEARABLE INPUTS ──
+function initClearable(inputId, callback) {
+  const input = document.getElementById(inputId);
+  if (!input) return;
+  // wrap if not already wrapped
+  if (!input.parentElement.classList.contains('input-clearable')) {
+    const wrapper = document.createElement('div');
+    wrapper.className = 'input-clearable';
+    input.parentNode.insertBefore(wrapper, input);
+    wrapper.appendChild(input);
+    const btn = document.createElement('button');
+    btn.className = 'clear-btn';
+    btn.innerHTML = '✕';
+    btn.type = 'button';
+    btn.onclick = () => { input.value = ''; btn.classList.remove('visible'); if(callback) callback(); input.focus(); };
+    wrapper.appendChild(btn);
+    input.addEventListener('input', () => btn.classList.toggle('visible', input.value.length > 0));
+  }
+}
+
+function initAllClearables() {
+  // Buscadores principales
+  initClearable('agendaSearchInput', renderAgenda);
+  initClearable('movSearchInput',    renderMovimientos);
+  initClearable('prodSearchInput',   renderProdHistorial);
+  // Inventario (ya tiene su propio btn, skip si ya existe wrapper)
+  initClearable('searchInput',       renderProducts);
+  // Ubicaciones
+  initClearable('ubicSearchInput',   renderUbicaciones);
+  // Buscador universal
+  initClearable('buscadorInput',     busquedaUniversal);
+  // Producción
+  initClearable('prodGranelSearch',  buscarGranel);
+  initClearable('prodPTSearch',      buscarPT);
+  // Catálogos
+  initClearable('catSearch',         renderCatList);
+  // Nuevo pedido
+  initClearable('npClienteSearch',   () => searchCatalog('npClienteSearch','npCliente',allClientes,'npClienteSug'));
+  initClearable('npVendedor',        buscarVendedor);
+  // Nuevo movimiento
+  initClearable('fProductoSearch',   searchProductos);
+  initClearable('fProveedorSearch',  () => searchCatalog('fProveedorSearch','fProveedor',allProveedores,'fProveedorSug'));
+  initClearable('fClienteSearch',    () => searchCatalog('fClienteSearch','fCliente',allClientes,'fClienteSug'));
+}
+
 // Vendedores del sistema
 const VENDEDORES_LIST = [
   'ABRAHAM','ALEJANDRO MEJIA','ALFONSO RAMIREZ','ANGEL ALARCON',
@@ -3510,7 +3555,10 @@ function aplicarLogin() {
   // Ocultar login screen
   document.getElementById('loginScreen').classList.add('hidden');
 
-  // Actualizar badge de usuario en header y sección Más
+  // Init clearable inputs after a short delay to ensure DOM is ready
+setTimeout(initAllClearables, 800);
+
+// Actualizar badge de usuario en header y sección Más
   actualizarHeaderUsuario();
   const masNombre = document.getElementById('masUserNombre');
   const masRol    = document.getElementById('masUserRol');
