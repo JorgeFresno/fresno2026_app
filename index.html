@@ -2847,7 +2847,7 @@ function buildCatalogos() {
 async function syncData() {
   document.getElementById('productsContainer').innerHTML = '<div class="loading-state"><div class="loading-spinner"></div>Sincronizando...</div>';
   document.getElementById('agendaContainer').innerHTML = '<div class="loading-state"><div class="loading-spinner"></div>Cargando pedidos...</div>';
-  await Promise.all([loadInventario(), loadMovimientos(), loadAgenda(), loadProveedores(), loadClientes(), loadUbicaciones()]);
+  await Promise.all([loadInventario(), loadMovimientos(), loadAgenda(), loadProveedores(), loadClientes(), loadUbicaciones(), loadVendedoresSheet(), loadClientesSheet(), loadProveedoresSheet(), loadProductosSheet()]);
 }
 
 function updateSyncTime() {
