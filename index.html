@@ -1597,13 +1597,31 @@ function renderCamiones() {
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">
         <div>
           <div style="font-size:10px;color:#888;font-weight:600;margin-bottom:3px;">FOLIO TICKET</div>
-          <input class="form-input" style="padding:8px;font-size:12px;" placeholder="Ej. 13454"
-            value="${c.folio}" oninput="updateCamion(${c.id},'folio',this.value)">
+          <div style="position:relative;">
+            <input class="form-input" style="padding:8px;padding-right:30px;font-size:12px;" placeholder="Ej. 13454"
+              value="${c.folio||''}" oninput="updateCamion(${c.id},'folio',this.value);toggleClearCamion(this)">
+            <button style="position:absolute;right:6px;top:50%;transform:translateY(-50%);background:#e0e0e0;border:none;border-radius:50%;width:18px;height:18px;font-size:10px;cursor:pointer;color:#666;display:${c.folio?'flex':'none'};align-items:center;justify-content:center;"
+              onclick="clearCamionField(${c.id},'folio',this)">✕</button>
+          </div>
         </div>
         <div>
-          <div style="font-size:10px;color:#888;font-weight:600;margin-bottom:3px;">CHOFER</div>
-          <input class="form-input" style="padding:8px;font-size:12px;" placeholder="Nombre"
-            value="${c.chofer}" oninput="updateCamion(${c.id},'chofer',this.value)">
+          <div style="font-size:10px;color:#888;font-weight:600;margin-bottom:3px;">PLACA</div>
+          <div style="position:relative;">
+            <input class="form-input" style="padding:8px;padding-right:30px;font-size:12px;" placeholder="Ej. ABC-123"
+              value="${c.placa||''}" oninput="updateCamion(${c.id},'placa',this.value);toggleClearCamion(this)">
+            <button style="position:absolute;right:6px;top:50%;transform:translateY(-50%);background:#e0e0e0;border:none;border-radius:50%;width:18px;height:18px;font-size:10px;cursor:pointer;color:#666;display:${c.placa?'flex':'none'};align-items:center;justify-content:center;"
+              onclick="clearCamionField(${c.id},'placa',this)">✕</button>
+          </div>
+        </div>
+        <div style="grid-column:1/-1;">
+          <div style="font-size:10px;color:#888;font-weight:600;margin-bottom:3px;">OPERADOR / CHOFER</div>
+          <div style="position:relative;">
+            <input class="form-input" id="choferInput_${c.id}" style="padding:8px;padding-right:30px;font-size:12px;" placeholder="🔍 Buscar operador..."
+              value="${c.chofer||''}" oninput="buscarOperador(${c.id},this.value)" autocomplete="off">
+            <button style="position:absolute;right:6px;top:50%;transform:translateY(-50%);background:#e0e0e0;border:none;border-radius:50%;width:18px;height:18px;font-size:10px;cursor:pointer;color:#666;display:${c.chofer?'flex':'none'};align-items:center;justify-content:center;"
+              onclick="clearCamionField(${c.id},'chofer',this);document.getElementById('choferInput_${c.id}').value='';">✕</button>
+            <div id="choferSug_${c.id}" style="display:none;position:absolute;top:100%;left:0;right:0;background:white;border:1px solid #ddd;border-radius:8px;z-index:200;box-shadow:0 4px 12px rgba(0,0,0,0.12);max-height:180px;overflow-y:auto;"></div>
+          </div>
         </div>
         <div>
           <div style="font-size:10px;color:#888;font-weight:600;margin-bottom:3px;">KG BRUTO</div>
@@ -1623,11 +1641,6 @@ function renderCamiones() {
           <div style="font-size:10px;color:#888;font-weight:600;margin-bottom:3px;">SACOS</div>
           <input class="form-input" style="padding:8px;font-size:12px;" type="number" placeholder="0"
             value="${c.sacos||''}" oninput="updateCamion(${c.id},'sacos',parseFloat(this.value)||0)">
-        </div>
-        <div style="grid-column:1/-1;">
-          <div style="font-size:10px;color:#888;font-weight:600;margin-bottom:3px;">PLACA</div>
-          <input class="form-input" style="padding:8px;font-size:12px;" placeholder="Ej. ABC-123"
-            value="${c.placa||''}" oninput="updateCamion(${c.id},'placa',this.value)">
         </div>
       </div>
     </div>`).join('');
@@ -1654,6 +1667,16 @@ function selectOperador(id, nombre) {
   if (input) input.value = nombre;
   const sugBox = document.getElementById('choferSug_' + id);
   if (sugBox) sugBox.style.display = 'none';
+}
+
+function toggleClearCamion(input) {
+  const btn = input.nextElementSibling;
+  if (btn && btn.tagName === 'BUTTON') btn.style.display = input.value ? 'flex' : 'none';
+}
+
+function clearCamionField(id, field, btn) {
+  updateCamion(id, field, '');
+  if (btn) btn.style.display = 'none';
 }
 
 function updateCamion(id, field, value) {
